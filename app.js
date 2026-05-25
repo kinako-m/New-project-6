@@ -1016,6 +1016,276 @@ function rebalanceQuestionPool() {
 
 rebalanceQuestionPool();
 
+function addDoubleSizeQuestionPack() {
+  const byId = Object.fromEntries(stages.map((stage) => [stage.id, stage]));
+  const seen = new Set(stages.flatMap((stage) => stage.questions.map((question) => `${stage.id}:${question.text}`)));
+  const clean = (value) => String(value).replace(/です。?$/, "").replace(/。$/, "");
+
+  function add(stageId, question) {
+    const key = `${stageId}:${question.text}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    byId[stageId].questions.push(question);
+  }
+
+  function rotate(items, index) {
+    return [...items.slice(index), ...items.slice(0, index)];
+  }
+
+  function inferTag(stageId, fallback, term) {
+    const categories = {
+      technology: [
+        ["ハードウェア", ["CPU", "レジスタ", "ALU", "キャッシュメモリ", "主記憶装置", "SSD", "RAID1", "RAID5", "DMA", "パイプライン"]],
+        ["OS", ["仮想記憶", "ページフォールト", "スプーリング", "デッドロック"]],
+        ["ネットワーク", ["DNS", "DHCP", "ARP", "NAT", "VPN", "TCP", "UDP", "TLS"]],
+        ["セキュリティ", ["WAF", "SQLインジェクション", "CSRF", "クロスサイトスクリプティング", "多要素認証", "電子署名", "認証局", "ランサムウェア"]]
+      ],
+      algorithm: [
+        ["データ構造", ["スタック", "キュー", "優先度付きキュー", "連結リスト", "二分木", "ヒープ"]],
+        ["探索", ["線形探索", "二分探索", "ハッシュ探索", "幅優先探索", "深さ優先探索"]],
+        ["整列", ["バブルソート", "選択ソート", "挿入ソート", "クイックソート", "マージソート"]],
+        ["計算量", ["O(1)", "O(log n)", "O(n)", "O(n log n)", "O(n²)"]],
+        ["論理", ["論理積", "論理和", "排他的論理和"]],
+        ["擬似言語", ["再帰", "メモ化", "動的計画法", "貪欲法", "代入", "反復処理"]]
+      ],
+      database: [
+        ["SQL", ["SELECT", "INSERT", "UPDATE", "DELETE", "WHERE", "GROUP BY", "HAVING", "ORDER BY", "INNER JOIN", "LEFT OUTER JOIN"]],
+        ["キー", ["主キー", "外部キー", "候補キー", "複合キー"]],
+        ["制約", ["UNIQUE制約", "NOT NULL制約", "CHECK制約", "参照整合性制約"]],
+        ["正規化", ["第1正規形", "第2正規形", "第3正規形"]],
+        ["トランザクション", ["COMMIT", "ROLLBACK", "共有ロック", "専有ロック", "デッドロック"]],
+        ["運用", ["ビュー", "インデックス", "バックアップ", "ログ"]]
+      ],
+      management: [
+        ["開発", ["ウォータフォールモデル", "アジャイル開発", "プロトタイピング", "DevOps", "CI"]],
+        ["テスト", ["レビュー", "単体テスト", "結合テスト", "受入テスト", "リグレッションテスト"]],
+        ["プロジェクト", ["WBS", "ガントチャート", "クリティカルパス", "EVM", "CPI", "SPI"]],
+        ["サービス管理", ["インシデント管理", "問題管理", "変更管理", "構成管理", "SLA", "RTO", "RPO"]],
+        ["可用性", ["フェールオーバ", "フェールセーフ", "フォールトトレランス", "可用性管理"]],
+        ["監査", ["監査証跡", "内部統制", "職務分掌"]]
+      ],
+      strategy: [
+        ["経営戦略", ["SWOT分析", "3C分析", "PPM", "ファイブフォース分析", "バリューチェーン", "コアコンピタンス"]],
+        ["マーケティング", ["セグメンテーション", "ターゲティング", "ポジショニング", "4P"]],
+        ["会計", ["損益計算書", "貸借対照表", "キャッシュフロー計算書", "売上総利益", "営業利益", "固定費", "変動費", "損益分岐点", "ROI"]],
+        ["法務", ["著作権", "特許権", "商標権", "個人情報保護", "派遣契約", "請負契約"]],
+        ["システム戦略", ["ERP", "CRM", "SCM", "RFP", "BPR"]]
+      ]
+    };
+    const match = (categories[stageId] || []).find(([, terms]) => terms.includes(term));
+    return match ? match[0] : fallback;
+  }
+
+  function addConceptSet(stageId, tag, concepts) {
+    const limitedConcepts = concepts.slice(0, 24);
+    limitedConcepts.forEach((concept, index) => {
+      const conceptTag = inferTag(stageId, tag, concept.term);
+      const peerConcepts = limitedConcepts.filter((item) => inferTag(stageId, tag, item.term) === conceptTag);
+      const choiceSource = peerConcepts.length >= 4 ? peerConcepts : limitedConcepts;
+      const sourceIndex = Math.max(0, choiceSource.findIndex((item) => item.term === concept.term));
+      const distractors = rotate(choiceSource, sourceIndex + 1).filter((item) => item.term !== concept.term).slice(0, 3);
+      const termChoices = [concept.term, ...distractors.map((item) => item.term)];
+      const descriptionChoices = [concept.description, ...distractors.map((item) => item.description)];
+      const featureChoices = [concept.feature, ...distractors.map((item) => item.feature)];
+
+      add(stageId, {
+        tag: conceptTag,
+        text: `「${clean(concept.description)}」に該当する用語はどれか。`,
+        choices: termChoices,
+        answer: 0,
+        explanation: `${concept.term}は、${concept.description} ${concept.note}`
+      });
+
+      add(stageId, {
+        tag: conceptTag,
+        text: `${concept.term}の説明として適切なものはどれか。`,
+        choices: descriptionChoices,
+        answer: 0,
+        explanation: `${concept.term}は、${concept.description} ${concept.note}`
+      });
+
+      add(stageId, {
+        tag: conceptTag,
+        text: `${concept.term}を見分ける特徴として最も適切なものはどれか。`,
+        choices: featureChoices,
+        answer: 0,
+        explanation: `${concept.term}では「${concept.feature}」が重要です。${concept.note}`
+      });
+    });
+  }
+
+  const technology = [
+    ["CPU", "命令を解釈して演算や制御を行う装置です。", "命令実行の中心になる", "クロック周波数やコア数などが性能に関係します。"],
+    ["レジスタ", "CPU内部にある非常に高速な記憶領域です。", "CPU内部で一時保持する", "演算対象やアドレスを一時的に保持します。"],
+    ["ALU", "算術演算や論理演算を行うCPU内の装置です。", "加算やAND演算を行う", "制御装置とは役割が異なります。"],
+    ["キャッシュメモリ", "CPUと主記憶の速度差を緩和する高速記憶です。", "頻繁に使うデータを高速に読む", "ヒット率が高いほど平均アクセス時間は短くなります。"],
+    ["主記憶装置", "実行中のプログラムやデータを一時的に置く記憶装置です。", "CPUが直接扱う作業領域になる", "電源を切ると内容が失われる揮発性が一般的です。"],
+    ["SSD", "半導体メモリを使った補助記憶装置です。", "ランダムアクセスが高速", "HDDより衝撃に強く高速な傾向があります。"],
+    ["RAID1", "同じデータを複数ディスクに書き込む方式です。", "ミラーリングで耐障害性を高める", "利用可能容量はディスク合計より少なくなります。"],
+    ["RAID5", "パリティを分散して耐障害性と容量効率を両立する方式です。", "パリティで1台故障に備える", "複数台構成で利用されます。"],
+    ["DMA", "CPUを介さず入出力装置と主記憶の間で転送する方式です。", "CPU負荷を減らして転送する", "大量データ転送時に有効です。"],
+    ["パイプライン", "命令処理を複数段階に分けて並行実行する方式です。", "命令処理の段階を重ねる", "スループット向上に役立ちます。"],
+    ["仮想記憶", "補助記憶を使って主記憶を大きく見せる仕組みです。", "主記憶不足を補う", "ページング方式と合わせて問われます。"],
+    ["ページフォールト", "参照したページが主記憶にないときに発生する事象です。", "必要ページが主記憶にない", "多発すると性能が低下します。"],
+    ["スプーリング", "低速な入出力処理を補助記憶に一時保存して順に処理する方式です。", "印刷などを一時保存して処理する", "CPU待ち時間を減らす目的があります。"],
+    ["デッドロック", "複数処理が互いに資源解放を待って止まる状態です。", "待ちが循環して停止する", "OSでもDBでも発生します。"],
+    ["DNS", "ドメイン名とIPアドレスを対応付ける仕組みです。", "名前解決を行う", "Webアクセス時にも利用されます。"],
+    ["DHCP", "端末へIPアドレスなどを自動配布する仕組みです。", "IP設定を自動配布する", "管理者の設定負荷を減らします。"],
+    ["ARP", "IPアドレスからMACアドレスを求めるプロトコルです。", "同一LAN内でMACアドレスを求める", "IP通信の前段で利用されます。"],
+    ["NAT", "プライベートIPとグローバルIPを変換する仕組みです。", "アドレス変換を行う", "社内端末のインターネット接続などで使います。"],
+    ["VPN", "公衆網上に仮想的な専用通信路を作る技術です。", "安全な仮想通信路を作る", "社外から社内へ接続する場面で使われます。"],
+    ["TCP", "信頼性のあるコネクション型通信を行うプロトコルです。", "再送や順序制御を行う", "UDPとの違いが頻出です。"],
+    ["UDP", "軽量なコネクションレス通信を行うプロトコルです。", "低遅延を重視する", "動画配信や音声などで使われます。"],
+    ["TLS", "通信相手の認証と暗号化通信を提供するプロトコルです。", "HTTPSの安全性を支える", "サーバ証明書と合わせて問われます。"],
+    ["WAF", "Webアプリケーションへの攻撃を検知・防御する仕組みです。", "Webアプリ攻撃を防ぐ", "SQLインジェクションやXSS対策に関係します。"],
+    ["SQLインジェクション", "入力値にSQLの断片を混入して不正操作する攻撃です。", "SQLを混入する", "プレースホルダが代表的な対策です。"],
+    ["CSRF", "利用者の意図しないリクエストを送信させる攻撃です。", "意図しないリクエストを送る", "トークン検証が対策になります。"],
+    ["クロスサイトスクリプティング", "Webページへ悪意あるスクリプトを埋め込む攻撃です。", "スクリプトを埋め込む", "出力時のエスケープが重要です。"],
+    ["多要素認証", "複数種類の認証要素で本人確認する方式です。", "知識・所持・生体を組み合わせる", "パスワード単独より安全性が高まります。"],
+    ["電子署名", "改ざん検知と署名者確認に使う仕組みです。", "改ざん検知と本人確認を行う", "秘密鍵で署名し公開鍵で検証します。"],
+    ["認証局", "公開鍵証明書を発行し公開鍵の正当性を保証する機関です。", "証明書を発行する", "CAとも呼ばれます。"],
+    ["ランサムウェア", "データを暗号化するなどして身代金を要求するマルウェアです。", "身代金を要求する", "バックアップと復旧訓練が重要です。"]
+  ].map(([term, description, feature, note]) => ({ term, description, feature, note }));
+
+  const algorithm = [
+    ["スタック", "最後に入れたデータを最初に取り出す構造です。", "後入れ先出しで扱う", "Undoや再帰呼出しの管理で使われます。"],
+    ["キュー", "先に入れたデータを先に取り出す構造です。", "先入れ先出しで扱う", "印刷待ち行列などで使われます。"],
+    ["優先度付きキュー", "優先度が高いデータから取り出す構造です。", "優先度で取り出し順が決まる", "単純なFIFOとは異なります。"],
+    ["連結リスト", "要素が次の要素への参照を持つデータ構造です。", "ポインタで要素をつなぐ", "途中への挿入や削除を扱いやすい構造です。"],
+    ["二分木", "各節点が最大二つの子を持つ木構造です。", "子が最大二つ", "探索木やヒープの基礎になります。"],
+    ["ヒープ", "親子間に大小関係を持たせた木構造です。", "最大値や最小値を取り出しやすい", "優先度付きキューの実装に使われます。"],
+    ["線形探索", "先頭から順に目的の値を探す方法です。", "未整列でも使える", "最悪では全件比較します。"],
+    ["二分探索", "整列済みデータの中央と比較して探索範囲を半分にする方法です。", "整列済みが前提", "計算量はO(log n)です。"],
+    ["ハッシュ探索", "キーから格納位置を計算して高速に探す方法です。", "キーから位置を計算する", "衝突処理が必要です。"],
+    ["幅優先探索", "近い頂点から順に調べるグラフ探索です。", "近い順に広げる", "重みなし最短手数に向いています。"],
+    ["深さ優先探索", "進めるところまで進んでから戻るグラフ探索です。", "深く進んでから戻る", "再帰やスタックで実装できます。"],
+    ["バブルソート", "隣接要素を比較して交換を繰り返す整列法です。", "隣同士を比較交換する", "単純ですが計算量はO(n²)です。"],
+    ["選択ソート", "未整列部分から最小値などを選んで並べる整列法です。", "最小値を選んで配置する", "比較回数が多い整列法です。"],
+    ["挿入ソート", "整列済み部分へ要素を挿入していく整列法です。", "適切な位置へ挿入する", "ほぼ整列済みなら効率的です。"],
+    ["クイックソート", "基準値で分割して再帰的に整列する方法です。", "基準値で左右に分ける", "平均的に高速な整列法です。"],
+    ["マージソート", "分割した列を整列しながら併合する方法です。", "分割して併合する", "安定したO(n log n)の整列法です。"],
+    ["O(1)", "入力件数に関係なく一定時間で処理できる計算量です。", "件数に左右されない", "配列の添字アクセスなどが例です。"],
+    ["O(log n)", "処理対象を半分ずつ減らす計算量です。", "半分ずつ絞り込む", "二分探索でよく現れます。"],
+    ["O(n)", "入力件数に比例して処理量が増える計算量です。", "全件を一度見る", "線形探索などが例です。"],
+    ["O(n log n)", "効率のよい比較ソートでよく現れる計算量です。", "分割と全体処理を組み合わせる", "マージソートなどで現れます。"],
+    ["O(n²)", "二重ループなどで入力件数の2乗に比例する計算量です。", "二重に全件を回す", "単純な比較ソートで現れます。"],
+    ["再帰", "処理の中で自分自身を呼び出す考え方です。", "自分自身を呼び出す", "終了条件が必須です。"],
+    ["メモ化", "計算済み結果を保存して再利用する考え方です。", "同じ計算を再利用する", "再帰の高速化でよく使います。"],
+    ["動的計画法", "部分問題の結果を利用して全体の解を求める手法です。", "部分問題を再利用する", "重複計算を減らせます。"],
+    ["貪欲法", "その時点で最も良い選択を繰り返す手法です。", "局所的に最良を選ぶ", "常に最適解になるとは限りません。"],
+    ["論理積", "二つの条件がどちらも真のときだけ真になる演算です。", "両方真で真になる", "AND演算のことです。"],
+    ["論理和", "少なくとも一方が真なら真になる演算です。", "一方でも真なら真になる", "OR演算のことです。"],
+    ["排他的論理和", "二つの入力が異なるときだけ真になる論理演算です。", "入力が異なると真になる", "XORとも呼ばれます。"],
+    ["代入", "変数に値を格納する操作です。", "変数へ値を入れる", "右辺の結果を左辺へ入れます。"],
+    ["反復処理", "条件を満たす間、同じ処理を繰り返す制御構造です。", "同じ処理を繰り返す", "for文やwhile文が代表です。"]
+  ].map(([term, description, feature, note]) => ({ term, description, feature, note }));
+
+  const database = [
+    ["SELECT", "表からデータを取り出すSQL命令です。", "データを検索する", "列の指定やWHERE句と組み合わせます。"],
+    ["INSERT", "表へ新しい行を追加するSQL命令です。", "行を追加する", "登録処理で使われます。"],
+    ["UPDATE", "表の既存行を更新するSQL命令です。", "既存行を変更する", "WHERE句を忘れると広範囲に影響します。"],
+    ["DELETE", "表から行を削除するSQL命令です。", "行を削除する", "条件指定が重要です。"],
+    ["WHERE", "集計前の行を条件で絞り込むSQL句です。", "行を条件で絞る", "HAVINGとの違いが頻出です。"],
+    ["GROUP BY", "指定列の値ごとに行をグループ化するSQL句です。", "集計単位を作る", "COUNTやSUMと組み合わせます。"],
+    ["HAVING", "集計後のグループに条件を付けるSQL句です。", "集計後に条件を付ける", "WHEREは集計前の条件です。"],
+    ["ORDER BY", "検索結果を並べ替えるSQL句です。", "結果を並べ替える", "昇順・降順を指定できます。"],
+    ["INNER JOIN", "両方の表で条件に一致する行を結合する操作です。", "一致行だけを結合する", "内部結合とも呼ばれます。"],
+    ["LEFT OUTER JOIN", "左表の行を残し右表の一致行を結合する操作です。", "左表を残す", "一致しない右表側はNULLになります。"],
+    ["主キー", "表の行を一意に識別するための項目です。", "行を一意に識別する", "NULLや重複は許されません。"],
+    ["外部キー", "他の表の主キーなどを参照する項目です。", "他表を参照する", "参照整合性に関係します。"],
+    ["候補キー", "行を一意に識別でき主キー候補になる項目です。", "主キー候補になる", "複数存在することがあります。"],
+    ["複合キー", "複数列の組合せで行を一意に識別するキーです。", "複数列で識別する", "注文IDと商品IDの組などが例です。"],
+    ["UNIQUE制約", "列の値の重複を防ぐための制約です。", "重複を防ぐ", "主キー以外にも一意性を持たせられます。"],
+    ["NOT NULL制約", "列にNULLを入れられないようにする制約です。", "NULLを禁止する", "必須項目に設定します。"],
+    ["CHECK制約", "列の値が指定条件を満たすようにする制約です。", "値の範囲を制限する", "年齢が0以上などを表せます。"],
+    ["参照整合性制約", "存在しない親レコードを参照しないようにする制約です。", "不正な参照を防ぐ", "外部キーと関係します。"],
+    ["第1正規形", "繰返し項目をなくし値を原子的にした形です。", "繰返し項目をなくす", "まずここから正規化します。"],
+    ["第2正規形", "部分関数従属を取り除いた形です。", "部分関数従属を除く", "複合キーの一部依存を分離します。"],
+    ["第3正規形", "推移的関数従属を取り除いた形です。", "推移的関数従属を除く", "非キー項目経由の依存を分離します。"],
+    ["COMMIT", "トランザクションの更新を確定する処理です。", "更新を確定する", "確定後はDBに反映されます。"],
+    ["ROLLBACK", "未確定の更新を取り消す処理です。", "更新を取り消す", "障害時に整合性を保ちます。"],
+    ["共有ロック", "他処理の参照は許すが更新を制限するロックです。", "参照は許して更新を制限する", "読み取り時に使われます。"],
+    ["専有ロック", "他処理の参照や更新を制限するロックです。", "参照も更新も制限する", "更新時に使われます。"],
+    ["デッドロック", "互いに相手のロック解放を待って処理が進まない状態です。", "ロック待ちが循環する", "排他制御の頻出論点です。"],
+    ["ビュー", "SELECT文の結果を仮想的な表として扱う仕組みです。", "仮想的な表として扱う", "元データを保持せず参照を簡単にします。"],
+    ["インデックス", "検索を高速化するための索引です。", "検索を速くする", "更新時の負荷が増えることがあります。"],
+    ["バックアップ", "障害時に復旧できるようデータを保存しておくことです。", "復旧用に保存する", "ログと組み合わせて復旧します。"],
+    ["ログ", "更新履歴や処理履歴を記録した情報です。", "履歴を記録する", "障害解析や復旧に利用されます。"]
+  ].map(([term, description, feature, note]) => ({ term, description, feature, note }));
+
+  const management = [
+    ["ウォータフォールモデル", "工程を上流から下流へ順に進める開発モデルです。", "工程を順番に進める", "要件が安定している場合に向きます。"],
+    ["アジャイル開発", "短い反復で開発と改善を進める手法です。", "短い反復で改善する", "変化への対応を重視します。"],
+    ["プロトタイピング", "試作品を作り利用者の確認を得ながら進める手法です。", "試作品で要求を確認する", "要求が曖昧な場合に有効です。"],
+    ["DevOps", "開発と運用が連携して継続的に改善する考え方です。", "開発と運用が連携する", "自動化や継続的改善を重視します。"],
+    ["CI", "変更を頻繁に統合し自動ビルドやテストを行う取組みです。", "変更を継続的に統合する", "継続的インテグレーションです。"],
+    ["レビュー", "成果物を人が確認して欠陥を早期発見する活動です。", "人が成果物を確認する", "テスト前の品質向上に役立ちます。"],
+    ["単体テスト", "個々の部品や関数が正しく動くか確認するテストです。", "部品単位で確認する", "結合前に行います。"],
+    ["結合テスト", "複数部品を組み合わせた動作を確認するテストです。", "部品間の連携を確認する", "インタフェース不具合を見つけます。"],
+    ["受入テスト", "利用者要求を満たすか確認するテストです。", "利用者視点で確認する", "本番受入前に行います。"],
+    ["リグレッションテスト", "修正で既存機能に悪影響がないか確認するテストです。", "修正の副作用を確認する", "回帰テストとも呼ばれます。"],
+    ["WBS", "作業を階層的に分解して管理する手法です。", "作業を分解する", "スコープ把握に役立ちます。"],
+    ["ガントチャート", "作業と期間を横棒で表す進捗管理図です。", "日程を横棒で表す", "スケジュール把握に使います。"],
+    ["クリティカルパス", "遅れると全体完了が遅れる作業経路です。", "全体完了を左右する経路", "余裕時間がない経路です。"],
+    ["EVM", "出来高を使って進捗とコストを統合管理する手法です。", "PV・EV・ACで管理する", "CPIやSPIを求めます。"],
+    ["CPI", "コスト効率を示す指標でEV/ACで求めます。", "コスト効率を見る", "1未満ならコスト効率が悪い状態です。"],
+    ["SPI", "スケジュール効率を示す指標でEV/PVで求めます。", "進捗効率を見る", "1未満なら予定より遅れ気味です。"],
+    ["インシデント管理", "障害などを早期復旧させる活動です。", "早期復旧を重視する", "根本原因分析は問題管理です。"],
+    ["問題管理", "根本原因を分析して再発防止する活動です。", "再発防止を重視する", "インシデント管理と区別します。"],
+    ["変更管理", "変更を評価・承認してリスクを抑える活動です。", "変更リスクを抑える", "本番変更前に重要です。"],
+    ["構成管理", "IT資産や構成項目と関係を管理する活動です。", "構成品目を管理する", "障害対応や変更管理を支えます。"],
+    ["SLA", "サービス提供者と利用者が合意したサービス水準です。", "サービス水準を合意する", "稼働率や応答時間などを定めます。"],
+    ["RTO", "障害後に復旧するまでの目標時間です。", "復旧までの時間目標", "BCPと合わせて問われます。"],
+    ["RPO", "障害時にどの時点のデータまで戻すかの目標です。", "復旧するデータ時点の目標", "バックアップ設計に関係します。"],
+    ["フェールオーバ", "障害時に待機系へ処理を引き継ぐ仕組みです。", "待機系へ切り替える", "可用性を高めます。"],
+    ["フェールセーフ", "故障時に安全側へ動作させる考え方です。", "安全側に倒す", "安全性重視の設計です。"],
+    ["フォールトトレランス", "一部故障しても機能を継続する考え方です。", "故障しても継続する", "冗長化などで実現します。"],
+    ["監査証跡", "処理や操作の履歴を追跡できる記録です。", "操作履歴を追跡する", "不正調査や統制評価で重要です。"],
+    ["内部統制", "業務を適切に行うための組織内のルールや手続きです。", "組織内の統制を整える", "不正や誤りの防止に関係します。"],
+    ["職務分掌", "権限や作業を分けて不正や誤りを防ぐ考え方です。", "権限を分ける", "一人に権限を集中させません。"],
+    ["可用性管理", "必要なときにサービスを利用できるよう管理する活動です。", "利用可能性を管理する", "停止時間削減が重要です。"]
+  ].map(([term, description, feature, note]) => ({ term, description, feature, note }));
+
+  const strategy = [
+    ["SWOT分析", "強み・弱み・機会・脅威で分析する手法です。", "内部と外部を整理する", "経営環境分析で使われます。"],
+    ["3C分析", "顧客・競合・自社の三つの視点で分析する手法です。", "顧客・競合・自社を見る", "市場環境を整理します。"],
+    ["PPM", "市場成長率と市場占有率で事業を分類する手法です。", "事業を4象限で分類する", "花形・金のなる木などに分けます。"],
+    ["ファイブフォース分析", "業界の競争要因を五つの力で分析する手法です。", "業界構造を分析する", "新規参入や代替品などを見ます。"],
+    ["バリューチェーン", "企業活動を価値創出の連鎖として分析する考え方です。", "活動ごとの価値を分析する", "主活動と支援活動に分けます。"],
+    ["コアコンピタンス", "他社がまねしにくい中核的な能力です。", "競争優位の源泉になる", "強みの中心を表します。"],
+    ["セグメンテーション", "市場を顧客属性やニーズで細分化することです。", "市場を細分化する", "STPのSです。"],
+    ["ターゲティング", "細分化した市場から狙う市場を選ぶことです。", "狙う市場を選ぶ", "STPのTです。"],
+    ["ポジショニング", "顧客の中で自社製品の位置付けを明確にすることです。", "差別化位置を決める", "STPのPです。"],
+    ["4P", "Product・Price・Place・Promotionの組合せです。", "マーケティング施策を整理する", "マーケティングミックスとも呼ばれます。"],
+    ["損益計算書", "一定期間の収益・費用・利益を示す財務諸表です。", "期間の利益を示す", "P/Lとも呼ばれます。"],
+    ["貸借対照表", "ある時点の資産・負債・純資産を示す財務諸表です。", "時点の財政状態を示す", "B/Sとも呼ばれます。"],
+    ["キャッシュフロー計算書", "一定期間のお金の流れを示す財務諸表です。", "資金の流れを見る", "営業・投資・財務活動に分けます。"],
+    ["売上総利益", "売上高から売上原価を引いた利益です。", "粗利益を見る", "粗利とも呼ばれます。"],
+    ["営業利益", "本業で得た利益を表す指標です。", "本業のもうけを見る", "売上総利益から販管費を引きます。"],
+    ["固定費", "販売量に関係なく発生する費用です。", "量に関係なく一定", "家賃などが例です。"],
+    ["変動費", "販売量に応じて増減する費用です。", "量に応じて増減する", "材料費などが例です。"],
+    ["損益分岐点", "売上と費用が等しく利益が0になる点です。", "利益が0になる点", "固定費と限界利益から求めます。"],
+    ["ROI", "投資利益率で投資に対する利益の割合です。", "投資効率を見る", "利益÷投資額で考えます。"],
+    ["著作権", "創作的な表現を保護する権利です。", "表現を保護する", "プログラムも保護対象になります。"],
+    ["特許権", "発明を保護する産業財産権です。", "発明を保護する", "技術的思想の創作が対象です。"],
+    ["商標権", "商品やサービスの識別標識を保護する権利です。", "ブランド名やロゴを保護する", "登録商標の無断使用が問題になります。"],
+    ["個人情報保護", "特定の個人を識別できる情報を適切に扱う考え方です。", "個人を識別できる情報を守る", "利用目的や安全管理措置が重要です。"],
+    ["派遣契約", "派遣先が作業者へ指揮命令する契約形態です。", "派遣先が指揮命令する", "請負契約との違いが頻出です。"],
+    ["請負契約", "仕事の完成を目的とする契約形態です。", "成果物の完成を目的にする", "発注者は直接指揮命令しません。"],
+    ["ERP", "企業全体の経営資源を統合的に管理するシステムです。", "経営資源を統合管理する", "販売・会計・生産などを統合します。"],
+    ["CRM", "顧客情報を活用して顧客関係を管理する考え方やシステムです。", "顧客関係を管理する", "顧客満足や売上向上を目指します。"],
+    ["SCM", "調達から販売までの供給連鎖を管理する考え方です。", "供給連鎖を管理する", "在庫削減や納期短縮を目指します。"],
+    ["RFP", "ベンダに提案を求めるための提案依頼書です。", "提案を依頼する", "システム企画で使われます。"],
+    ["BPR", "業務プロセスを抜本的に見直し再設計する考え方です。", "業務を根本から再設計する", "単なる改善より大きな見直しです。"]
+  ].map(([term, description, feature, note]) => ({ term, description, feature, note }));
+
+  addConceptSet("technology", "追加頻出", technology);
+  addConceptSet("algorithm", "追加頻出", algorithm);
+  addConceptSet("database", "追加頻出", database);
+  addConceptSet("management", "追加頻出", management);
+  addConceptSet("strategy", "追加頻出", strategy);
+}
+
 function improveChoiceRelevance() {
   const pools = [
     {
@@ -1614,7 +1884,7 @@ function fixRemainingMixedExplanationChoices() {
       ]
     },
     {
-      test: (q) => q.text.includes("ビュー"),
+      test: (q) => q.text.includes("ビュー") && !q.text.includes("レビュー"),
       choices: [
         "SELECT文の結果を仮想的な表として扱う仕組み",
         "列の値の重複を防ぐための制約",
@@ -1773,15 +2043,458 @@ function fixUseCaseChoiceStyles() {
 fixUseCaseChoiceStyles();
 sanitizeNumericChoices();
 
+function finalizeChoiceConsistency() {
+  const exactFixes = [
+    {
+      text: "キャッシュのヒット率が高いほど一般にどうなるか。",
+      choices: [
+        "平均アクセス時間が短くなる",
+        "平均アクセス時間が長くなる",
+        "主記憶への参照回数が増える",
+        "CPUの命令実行が停止する"
+      ]
+    },
+    {
+      text: "マルウェア感染に備えた対策として最も適切なものはどれか。",
+      choices: [
+        "定期バックアップと復旧手順の確認",
+        "パスワードを全員で共有する",
+        "更新プログラムの適用を止める",
+        "不審な添付ファイルを確認せず開く"
+      ]
+    },
+    {
+      text: "配列 A の全要素の合計を求める処理で最低限必要な操作はどれか。",
+      choices: [
+        "各要素を1回ずつ加算する",
+        "全要素を昇順に整列してから最大値だけを加算する",
+        "先頭要素だけを加算して残りを無視する",
+        "配列を複製して片方だけを削除する"
+      ]
+    },
+    {
+      text: "AND演算の結果が真になる条件はどれか。",
+      choices: [
+        "両方の条件が真である",
+        "どちらか一方の条件だけが真である",
+        "両方の条件が偽である",
+        "入力条件に関係なく常に真である"
+      ]
+    },
+    {
+      text: "否定の説明として最も適切なものはどれか。",
+      choices: [
+        "真偽を反転させる演算",
+        "二つの条件が両方真のときだけ真になる演算",
+        "二つの条件の少なくとも一方が真なら真になる演算",
+        "二つの条件が異なるときだけ真になる演算"
+      ]
+    },
+    {
+      text: "配列[3, 1, 4, 2]を昇順に整列した結果はどれか。",
+      choices: ["[1, 2, 3, 4]", "[1, 3, 2, 4]", "[2, 4, 1, 3]", "[4, 3, 2, 1]"]
+    },
+    {
+      text: "再帰呼出しで終了条件を書き忘れたときに起こりやすい問題はどれか。",
+      choices: [
+        "呼出しが止まらずスタック領域を使い切る",
+        "再帰呼出しが1回だけで必ず終了する",
+        "探索対象が自動的に整列済みになる",
+        "通信経路が自動的に暗号化される"
+      ]
+    },
+    {
+      text: "配列の全要素から最大値を求める基本処理で必要な考え方はどれか。",
+      choices: [
+        "暫定最大値を更新しながら全要素を見る",
+        "先頭要素だけを確認して残りを見ない",
+        "要素数を0にしてから比較を始める",
+        "全要素を文字列として結合して比較する"
+      ]
+    },
+    {
+      text: "変数 flag がtrueのときだけ処理Aを実行する。flag=falseなら実行される処理はどれか。",
+      choices: [
+        "処理Aは実行されない",
+        "処理Aが必ず1回実行される",
+        "処理Aが必ず2回実行される",
+        "条件判定なしで無限に実行される"
+      ]
+    },
+    {
+      text: "部署ごとの平均給与を求めるときに使う句の組合せとして適切なものはどれか。",
+      choices: ["GROUP BYとAVG", "WHEREとCOUNT", "ORDER BYとMAX", "HAVINGとDELETE"]
+    },
+    {
+      text: "売上表から商品ごとの売上合計を求めるSQLで必要な指定はどれか。",
+      choices: ["GROUP BY 商品", "ORDER BY 商品", "WHERE 商品", "HAVING 商品"]
+    },
+    {
+      text: "要件定義から保守までを段階的に進める代表的な開発モデルはどれか。",
+      choices: ["ウォータフォールモデル", "アジャイル開発", "プロトタイピングモデル", "スパイラルモデル"]
+    },
+    {
+      text: "システム監査の目的として適切なものはどれか。",
+      choices: [
+        "情報システムの信頼性・安全性・効率性を点検評価する",
+        "業務システムの新機能を直接実装する",
+        "データベースの全データを削除する",
+        "社員の給与額を監査人が決定する"
+      ]
+    },
+    {
+      text: "監査で職務分掌を確認する目的はどれか。",
+      choices: [
+        "権限集中による不正や誤りを防ぐ",
+        "一人にすべての権限を集めて処理を速くする",
+        "売上高を増やすために商品価格を下げる",
+        "表を結合して検索結果を増やす"
+      ]
+    },
+    {
+      text: "個人情報保護法で保護対象となる情報として適切なものはどれか。",
+      choices: [
+        "特定の個人を識別できる情報",
+        "創作的な表現を保護する権利",
+        "発明を保護する産業財産権",
+        "商品やサービスの識別標識を保護する権利"
+      ]
+    },
+    {
+      text: "ソフトウェアのプログラムそのものを保護する代表的な権利はどれか。",
+      choices: ["著作権", "特許権", "商標権", "意匠権"]
+    },
+    {
+      text: "他社の登録商標を自社商品名として無断使用した場合に問題となる権利はどれか。",
+      choices: ["商標権", "著作権", "特許権", "意匠権"]
+    },
+    {
+      text: "発注者が作業者へ直接指揮命令する形態として適切なのはどれか。",
+      choices: ["派遣契約", "請負契約", "準委任契約", "売買契約"]
+    },
+    {
+      text: "ハッシュ関数に求められる性質として適切なものはどれか。",
+      choices: [
+        "元データが少し変わるとハッシュ値も大きく変わる",
+        "同じ入力でも毎回異なる値を返す",
+        "ハッシュ値から元データを簡単に復元できる",
+        "どのような入力でも必ず値が小さくなる"
+      ]
+    },
+    {
+      text: "バブルソートの基本的な考え方はどれか。",
+      choices: [
+        "隣り合う要素を比較して交換を繰り返す",
+        "最小値を探して未整列部分の先頭へ移す",
+        "整列済み部分へ要素を適切な位置に挿入する",
+        "基準値で分割しながら再帰的に整列する"
+      ]
+    },
+    {
+      text: "線形探索の特徴として適切なものはどれか。",
+      choices: [
+        "先頭から順に調べるので未整列でも使える",
+        "整列済みデータを半分ずつ絞り込んで探す",
+        "キーから格納位置を計算して探す",
+        "木構造を深さ方向にたどって探す"
+      ]
+    },
+    {
+      text: "ハッシュ表の説明として最も適切なものはどれか。",
+      choices: [
+        "キーから格納位置を計算して高速に探索するデータ構造",
+        "要素を先頭から順番に比較して探す構造",
+        "整列済みデータを半分ずつ絞り込む構造",
+        "最後に入れたデータから取り出す構造"
+      ]
+    },
+    {
+      text: "二分探索を使う前提として最も重要なものはどれか。",
+      choices: [
+        "データが探索キーで整列済みである",
+        "データが暗号化されている",
+        "データが必ず重複している",
+        "データをスタックに格納している"
+      ]
+    },
+    {
+      text: "正規化の主な目的はどれか。",
+      choices: [
+        "データの重複や更新時異状を減らす",
+        "検索結果を必ず暗号化する",
+        "表の行数を常に1行にする",
+        "通信速度を上げるために表を圧縮する"
+      ]
+    },
+    {
+      text: "顧客表から氏名列だけを取り出す操作はどれか。",
+      choices: ["射影", "選択", "結合", "和集合"]
+    },
+    {
+      text: "顧客表から東京都の行だけを取り出す操作はどれか。",
+      choices: ["選択", "射影", "結合", "差集合"]
+    },
+    {
+      text: "二つの表を共通列で対応付ける操作はどれか。",
+      choices: ["結合", "選択", "射影", "直積"]
+    },
+    {
+      text: "表から重複行を取り除く集合演算はどれか。",
+      choices: ["重複排除", "結合", "射影", "選択"]
+    },
+    {
+      text: "インデックスの主な目的はどれか。",
+      choices: [
+        "検索を高速化する",
+        "表の全データを暗号化する",
+        "トランザクションを取り消す",
+        "列の値を必ず一意にする"
+      ]
+    },
+    {
+      text: "WHERE句とHAVING句の違いとして適切なものはどれか。",
+      choices: [
+        "WHEREは集計前の行、HAVINGは集計後のグループに条件を付ける",
+        "WHEREは並べ替え、HAVINGは列名の別名を付ける",
+        "WHEREは表を結合し、HAVINGは行を挿入する",
+        "WHEREは更新を確定し、HAVINGは更新を取り消す"
+      ]
+    },
+    {
+      text: "SLAで定める内容として適切なものはどれか。",
+      choices: [
+        "サービス提供者と利用者の合意したサービス水準",
+        "障害の根本原因を調査して再発を防ぐ活動",
+        "変更を評価して本番環境へ反映する活動",
+        "構成品目の状態や履歴を管理する活動"
+      ]
+    },
+    {
+      text: "レビューの説明として最も適切なものはどれか。",
+      choices: [
+        "成果物を人が確認して欠陥を早期発見する活動",
+        "作成したモジュール単体の動作を確認する活動",
+        "複数のモジュールを組み合わせて動作を確認する活動",
+        "利用者の要求を満たすか最終的に確認する活動"
+      ]
+    },
+    {
+      text: "信頼性の説明として最も適切なものはどれか。",
+      choices: [
+        "一定条件で故障せず機能を果たす性質",
+        "不正な情報開示を防ぐ性質",
+        "データが正確で改ざんされない性質",
+        "必要なときにサービスを利用できる性質"
+      ]
+    },
+    {
+      text: "WBSで分解した最下位の作業単位を何と呼ぶか。",
+      choices: ["ワークパッケージ", "マイルストーン", "クリティカルパス", "ベースライン"]
+    },
+    {
+      text: "CPIを求める式として適切なものはどれか。",
+      choices: ["EV / AC", "EV / PV", "AC / EV", "PV / EV"]
+    },
+    {
+      text: "SPIを求める式として適切なものはどれか。",
+      choices: ["EV / PV", "EV / AC", "PV / EV", "AC / EV"]
+    },
+    {
+      text: "フェールセーフの説明はどれか。",
+      choices: [
+        "故障時に安全側へ動作させる考え方",
+        "故障しても機能を継続する考え方",
+        "操作ミスが起きにくいようにする考え方",
+        "負荷を複数装置へ分散する考え方"
+      ]
+    },
+    {
+      text: "レビューで設計書の欠陥を早期発見する主な効果はどれか。",
+      choices: [
+        "後工程での手戻りを減らす",
+        "必ず通信速度を上げる",
+        "データベースの表を結合する",
+        "会計上の利益を自動で増やす"
+      ]
+    },
+    {
+      text: "個人情報の取扱いで最も適切なものはどれか。",
+      choices: [
+        "利用目的を明確にし必要な範囲で扱う",
+        "本人に知らせず目的外で自由に利用する",
+        "管理方法を決めずに委託先へ渡す",
+        "漏えい後だけ対策を検討する"
+      ]
+    },
+    {
+      text: "売上高100万円、変動費60万円、固定費20万円の利益はいくらか。",
+      choices: ["20万円", "40万円", "60万円", "80万円"]
+    },
+    {
+      text: "固定費が30万円、商品1個あたりの限界利益が300円のとき損益分岐点販売数量はどれか。",
+      choices: ["1000個", "300個", "600個", "3000個"]
+    },
+    {
+      text: "売上高500万円、変動費300万円、固定費120万円の利益はどれか。",
+      choices: ["80万円", "120万円", "200万円", "300万円"]
+    },
+    {
+      text: "固定費100万円、販売単価1000円、変動費600円の損益分岐点販売数量はどれか。",
+      choices: ["2500個", "1000個", "1600個", "4000個"]
+    }
+  ];
+
+  stages.forEach((stage) => {
+    stage.questions.forEach((question) => {
+      const fix = exactFixes.find((item) => item.text === question.text);
+      if (!fix) return;
+      question.choices = fix.choices;
+      question.answer = 0;
+    });
+  });
+}
+
+finalizeChoiceConsistency();
+
+addDoubleSizeQuestionPack();
+
+function polishQuestionQuality() {
+  const fixes = [
+    {
+      text: "スケジューリングの説明として最も適切なものはどれか。",
+      choices: [
+        "CPUを割り当てるプロセスの順序を決める処理",
+        "複数の処理を短い時間で切り替えて実行する仕組み",
+        "資源の解放待ちが循環して処理が止まる状態",
+        "補助記憶を使って主記憶を大きく見せる仕組み"
+      ],
+      explanation: "スケジューリングは、OSがどのプロセスへCPUを割り当てるかを決める処理です。優先度や待ち時間などを考慮します。"
+    },
+    {
+      text: "ブルートフォース攻撃の説明として最も適切なものはどれか。",
+      choices: [
+        "可能な組合せを総当たりで試す攻撃",
+        "辞書にある単語やよくある文字列を試す攻撃",
+        "偽サイトなどへ誘導して認証情報を盗む攻撃",
+        "ファイルを暗号化して身代金を要求する攻撃"
+      ],
+      explanation: "ブルートフォース攻撃は、考えられる文字列を順に試す攻撃です。試行回数制限や多要素認証が対策になります。"
+    },
+    {
+      text: "辞書攻撃の説明として最も適切なものはどれか。",
+      choices: [
+        "辞書にある単語やよくある文字列を試す攻撃",
+        "可能な組合せを総当たりで試す攻撃",
+        "偽サイトなどへ誘導して認証情報を盗む攻撃",
+        "ファイルを暗号化して身代金を要求する攻撃"
+      ],
+      explanation: "辞書攻撃は、よく使われる単語や漏えい済みパスワードを試す攻撃です。推測されにくい長いパスワードが有効です。"
+    },
+    {
+      text: "SQLインジェクションの説明として最も適切なものはどれか。",
+      choices: [
+        "入力値にSQLの断片を混入して不正操作する攻撃",
+        "Webページへ悪意あるスクリプトを埋め込む攻撃",
+        "利用者の意図しないリクエストを送信させる攻撃",
+        "可能な組合せを総当たりで試す攻撃"
+      ],
+      explanation: "SQLインジェクションは、入力欄などにSQLを紛れ込ませてDBを不正操作する攻撃です。プレースホルダ利用が代表的な対策です。"
+    },
+    {
+      text: "クロスサイトスクリプティングの説明として最も適切なものはどれか。",
+      choices: [
+        "Webページへ悪意あるスクリプトを埋め込む攻撃",
+        "入力値にSQLの断片を混入して不正操作する攻撃",
+        "利用者の意図しないリクエストを送信させる攻撃",
+        "可能な組合せを総当たりで試す攻撃"
+      ],
+      explanation: "クロスサイトスクリプティングは、画面出力にスクリプトを混入させる攻撃です。出力時のエスケープが重要です。"
+    },
+    {
+      text: "CSRFの説明として最も適切なものはどれか。",
+      choices: [
+        "利用者の意図しないリクエストを送信させる攻撃",
+        "入力値にSQLの断片を混入して不正操作する攻撃",
+        "Webページへ悪意あるスクリプトを埋め込む攻撃",
+        "可能な組合せを総当たりで試す攻撃"
+      ],
+      explanation: "CSRFは、ログイン済み利用者の権限で意図しない処理を実行させる攻撃です。トークン検証などで対策します。"
+    },
+    {
+      text: "障害発生時にデータベースを復旧するために重要なものはどれか。",
+      choices: [
+        "バックアップとログ",
+        "バックアップだけでログを保存しない運用",
+        "ログだけでバックアップを取らない運用",
+        "障害発生後に本番データを削除する運用"
+      ],
+      explanation: "復旧では、バックアップから戻した後にログで更新内容を反映します。両方を組み合わせることで障害直前に近い状態へ戻せます。"
+    },
+    {
+      text: "プロジェクトの進捗を、計画価値・出来高・実コストで管理する手法はどれか。",
+      choices: ["EVM", "ガントチャート", "WBS", "クリティカルパス法"],
+      explanation: "EVMはPV、EV、ACを使い、進捗とコストを同時に評価する管理手法です。ガントチャートは日程の見える化に使います。"
+    },
+    {
+      text: "計画価値をPV、出来高をEV、実コストをACとして管理する手法はどれか。",
+      choices: ["EVM", "ガントチャート", "WBS", "クリティカルパス法"],
+      explanation: "EVMではPV、EV、ACからCPIやSPIを求め、コスト効率や進捗効率を判断します。"
+    },
+    {
+      text: "業務プロセスを抜本的に見直し再設計する考え方はどれか。",
+      choices: ["BPR", "BPM", "ERP", "BPO"],
+      explanation: "BPRは業務プロセスを根本から再設計する考え方です。BPMは業務プロセスを継続的に管理・改善する考え方です。"
+    },
+    {
+      text: "企業活動の継続能力を高めるための計画はどれか。",
+      choices: ["BCP", "RTO", "RPO", "SLA"],
+      explanation: "BCPは災害や障害時にも重要業務を継続・早期復旧するための計画です。RTOやRPOは復旧目標を表す指標です。"
+    }
+  ];
+
+  stages.forEach((stage) => {
+    stage.questions.forEach((question) => {
+      if (stage.id === "technology" && question.tag === "OS" && question.text === "デッドロックの説明として最も適切なものはどれか。") {
+        question.text = "OSにおけるデッドロックの説明として最も適切なものはどれか。";
+        question.explanation = "OSのデッドロックは、複数の処理が互いに資源の解放を待ち続ける状態です。資源の占有と待ちが循環すると発生します。";
+      }
+
+      const fix = fixes.find((item) => item.text === question.text);
+      if (fix) {
+        question.choices = fix.choices;
+        question.answer = 0;
+        question.explanation = fix.explanation;
+      }
+
+      const explanation = question.explanation || "";
+      if (explanation.length >= 38) return;
+
+      const correctChoice = question.choices[question.answer];
+      const note = explainChoice(correctChoice);
+      const tip = getExplanationTip(question, correctChoice);
+      const base = explanation.endsWith("。") ? explanation : `${explanation}。`;
+      const parts = [base];
+      if (note) parts.push(`補足: ${correctChoice}は${note}`);
+      if (tip && !base.includes(tip)) parts.push(tip);
+      question.explanation = parts.join(" ");
+    });
+  });
+}
+
+polishQuestionQuality();
+
 const els = {
   stageView: document.querySelector("#stageView"),
   quizView: document.querySelector("#quizView"),
   resultView: document.querySelector("#resultView"),
   statsView: document.querySelector("#statsView"),
+  evolutionView: document.querySelector("#evolutionView"),
+  auditView: document.querySelector("#auditView"),
   stageGrid: document.querySelector("#stageGrid"),
   clearedCount: document.querySelector("#clearedCount"),
   stageCount: document.querySelector("#stageCount"),
   showStats: document.querySelector("#showStats"),
+  showAudit: document.querySelector("#showAudit"),
   closeStats: document.querySelector("#closeStats"),
   weakMode: document.querySelector("#weakMode"),
   randomMode: document.querySelector("#randomMode"),
@@ -1791,6 +2504,7 @@ const els = {
   questionCounter: document.querySelector("#questionCounter"),
   progressBar: document.querySelector("#progressBar"),
   questionTag: document.querySelector("#questionTag"),
+  timeRemaining: document.querySelector("#timeRemaining"),
   questionText: document.querySelector("#questionText"),
   choiceList: document.querySelector("#choiceList"),
   feedback: document.querySelector("#feedback"),
@@ -1799,7 +2513,9 @@ const els = {
   resultTitle: document.querySelector("#resultTitle"),
   resultSummary: document.querySelector("#resultSummary"),
   earnedFood: document.querySelector("#earnedFood"),
+  resultAdvice: document.querySelector("#resultAdvice"),
   scoreRing: document.querySelector("#scoreRing"),
+  startRecommendation: document.querySelector("#startRecommendation"),
   retryStage: document.querySelector("#retryStage"),
   returnStages: document.querySelector("#returnStages"),
   statsSummary: document.querySelector("#statsSummary"),
@@ -1812,11 +2528,21 @@ const els = {
   creatureNeed: document.querySelector("#creatureNeed"),
   growthBar: document.querySelector("#growthBar"),
   feedCreature: document.querySelector("#feedCreature"),
+  showEvolutionDex: document.querySelector("#showEvolutionDex"),
+  closeEvolutionDex: document.querySelector("#closeEvolutionDex"),
+  evolutionSummary: document.querySelector("#evolutionSummary"),
+  ultimateProgress: document.querySelector("#ultimateProgress"),
+  evolutionDexGrid: document.querySelector("#evolutionDexGrid"),
+  closeAudit: document.querySelector("#closeAudit"),
+  auditSummary: document.querySelector("#auditSummary"),
+  auditFilters: document.querySelector("#auditFilters"),
+  auditList: document.querySelector("#auditList"),
   evolutionLog: document.querySelector("#evolutionLog")
 };
 
 let progress = JSON.parse(localStorage.getItem("fe-stage-progress") || "{}");
 let history = JSON.parse(localStorage.getItem("fe-score-history") || "[]");
+let auditMarks = JSON.parse(localStorage.getItem("fe-question-audit") || "{}");
 let creature = JSON.parse(localStorage.getItem("fe-creature") || "null") || {
   speciesIndex: 0,
   phaseIndex: 0,
@@ -1828,6 +2554,7 @@ let creature = JSON.parse(localStorage.getItem("fe-creature") || "null") || {
 creature.branchId = creature.branchId || "balanced";
 creature.finalVariant = creature.finalVariant || null;
 let current = null;
+let quizTimer = null;
 
 const evolutionBranches = {
   god: {
@@ -1934,6 +2661,10 @@ function saveProgress() {
 
 function saveHistory() {
   localStorage.setItem("fe-score-history", JSON.stringify(history));
+}
+
+function saveAuditMarks() {
+  localStorage.setItem("fe-question-audit", JSON.stringify(auditMarks));
 }
 
 function saveCreature() {
@@ -2213,6 +2944,53 @@ function setView(view) {
   els.quizView.classList.toggle("hidden", view !== "quiz");
   els.resultView.classList.toggle("hidden", view !== "result");
   els.statsView.classList.toggle("hidden", view !== "stats");
+  els.evolutionView.classList.toggle("hidden", view !== "evolution");
+  els.auditView.classList.toggle("hidden", view !== "audit");
+}
+
+function getQuestionTimeLimit(question) {
+  const text = `${question.stageId || ""} ${question.tag || ""} ${question.text || ""}`;
+  if (/algorithm|アルゴリズム|トレース|探索|整列|擬似|配列|再帰|論理/.test(text)) return 90;
+  if (/計算|稼働率|利益|ROI|損益|平均|合計|何回|いくら|数量|アクセス時間/.test(text)) return 60;
+  return 45;
+}
+
+function formatTime(seconds) {
+  return `${Math.max(0, seconds)}秒`;
+}
+
+function clearQuizTimer() {
+  if (quizTimer) {
+    clearInterval(quizTimer);
+    quizTimer = null;
+  }
+}
+
+function updateTimerDisplay(seconds, limit) {
+  if (!els.timeRemaining) return;
+  const timer = els.timeRemaining.closest(".timer");
+  els.timeRemaining.textContent = formatTime(seconds);
+  timer?.classList.toggle("warning", seconds <= Math.ceil(limit * 0.35) && seconds > 10);
+  timer?.classList.toggle("danger", seconds <= 10);
+}
+
+function startQuestionTimer(question) {
+  clearQuizTimer();
+  const limit = getQuestionTimeLimit(question);
+  current.timeLimit = limit;
+  current.questionStartedAt = Date.now();
+  updateTimerDisplay(limit, limit);
+
+  quizTimer = setInterval(() => {
+    if (!current || current.answered) {
+      clearQuizTimer();
+      return;
+    }
+    const elapsed = Math.floor((Date.now() - current.questionStartedAt) / 1000);
+    const remaining = Math.max(0, limit - elapsed);
+    updateTimerDisplay(remaining, limit);
+    if (remaining <= 0) timeOutQuestion();
+  }, 250);
 }
 
 function startStage(stageId) {
@@ -2222,6 +3000,7 @@ function startStage(stageId) {
     questions: sampleQuestions(stage),
     index: 0,
     score: 0,
+    timeBonus: 0,
     answered: false,
     selectedIndex: null,
     records: [],
@@ -2243,6 +3022,7 @@ function startWeakMode() {
     questions: weakQuestions,
     index: 0,
     score: 0,
+    timeBonus: 0,
     answered: false,
     selectedIndex: null,
     records: [],
@@ -2263,6 +3043,7 @@ function startRandomMode() {
     questions: buildRandomQuestions(),
     index: 0,
     score: 0,
+    timeBonus: 0,
     answered: false,
     selectedIndex: null,
     records: [],
@@ -2361,6 +3142,8 @@ function renderQuestion() {
     choice.addEventListener("click", () => answerQuestion(shownIndex));
     els.choiceList.append(choice);
   });
+
+  startQuestionTimer(question);
 }
 
 function buildExplanation(question, isCorrect) {
@@ -2539,16 +3322,24 @@ function answerQuestion(shownIndex) {
   const question = current.questions[current.index];
   const selected = question.order[shownIndex];
   const isCorrect = selected.index === question.answer;
+  clearQuizTimer();
   current.answered = true;
   current.selectedIndex = shownIndex;
   current.score += isCorrect ? 1 : 0;
+  if (isCorrect) current.timeBonus += 1;
   current.records.push({
     questionId: question.id,
+    stageId: question.stageId || current.stage.id,
     tag: question.tag,
-    correct: isCorrect
+    correct: isCorrect,
+    answeredSeconds: Math.min(
+      current.timeLimit || 0,
+      Math.max(0, Math.ceil((Date.now() - current.questionStartedAt) / 1000))
+    )
   });
 
   [...els.choiceList.children].forEach((choiceEl, index) => {
+    choiceEl.disabled = true;
     const originalIndex = question.order[index].index;
     if (originalIndex === question.answer) choiceEl.classList.add("correct");
     if (index === shownIndex && !isCorrect) choiceEl.classList.add("wrong");
@@ -2563,17 +3354,43 @@ function showAnswer() {
   if (current.answered) return;
 
   const question = current.questions[current.index];
+  clearQuizTimer();
   current.answered = true;
   current.records.push({
     questionId: question.id,
+    stageId: question.stageId || current.stage.id,
     tag: question.tag,
-    correct: false
+    correct: false,
+    showedAnswer: true
   });
   [...els.choiceList.children].forEach((choiceEl, index) => {
+    choiceEl.disabled = true;
     if (question.order[index].index === question.answer) choiceEl.classList.add("correct");
   });
   els.feedback.classList.remove("hidden");
   els.feedback.textContent = buildExplanation(question, false);
+  els.nextQuestion.disabled = false;
+}
+
+function timeOutQuestion() {
+  if (!current || current.answered) return;
+
+  const question = current.questions[current.index];
+  clearQuizTimer();
+  current.answered = true;
+  current.records.push({
+    questionId: question.id,
+    stageId: question.stageId || current.stage.id,
+    tag: question.tag,
+    correct: false,
+    timedOut: true
+  });
+  [...els.choiceList.children].forEach((choiceEl, index) => {
+    choiceEl.disabled = true;
+    if (question.order[index].index === question.answer) choiceEl.classList.add("correct");
+  });
+  els.feedback.classList.remove("hidden");
+  els.feedback.textContent = `時間切れです。${buildExplanation(question, false)}`;
   els.nextQuestion.disabled = false;
 }
 
@@ -2586,10 +3403,110 @@ function goNext() {
   showResult();
 }
 
+function normalizeResultTag(tag) {
+  return String(tag || "その他").split("/").pop().trim() || "その他";
+}
+
+function countRecords(records, keyFn) {
+  return records.reduce((counts, record) => {
+    const key = keyFn(record);
+    counts[key] = (counts[key] || 0) + 1;
+    return counts;
+  }, {});
+}
+
+function getTopEntries(counts, limit = 3) {
+  return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, limit);
+}
+
+function getStageNameById(stageId) {
+  const stage = stages.find((item) => item.id === stageId);
+  return stage ? stage.name : "分野別ステージ";
+}
+
+function buildResultAdvice(percentage) {
+  const wrongRecords = current.records.filter((record) => !record.correct);
+  const wrongTagEntries = getTopEntries(countRecords(wrongRecords, (record) => normalizeResultTag(record.tag)));
+  const wrongStageEntries = getTopEntries(countRecords(wrongRecords, (record) => record.stageId || current.stage.id), 1);
+  const weakTags = wrongTagEntries.length
+    ? wrongTagEntries.map(([tag, count]) => ({ tag, count }))
+    : [{ tag: "大きな弱点なし", count: 0 }];
+
+  let recommendation = {
+    type: "random",
+    label: "ランダム模試",
+    button: "ランダム模試を開始",
+    reason: "今回の正解率は安定しています。次は分野を混ぜて、本番に近い判断力を鍛えましょう。"
+  };
+
+  if (wrongRecords.length) {
+    recommendation = {
+      type: "weakness",
+      label: "弱点克服モード",
+      button: "弱点克服を開始",
+      reason: `${weakTags[0].tag} の取りこぼしが目立ちます。間違えた問題と低めの分野を優先して復習しましょう。`
+    };
+  }
+
+  if (percentage >= 90 && !wrongRecords.length) {
+    recommendation = {
+      type: "random",
+      label: "ランダム模試",
+      button: "ランダム模試を開始",
+      reason: "満点に近い仕上がりです。分野を混ぜた短時間演習で、知識の取り出し速度を上げましょう。"
+    };
+  } else if (!wrongRecords.length && current.mode !== "stage") {
+    const lowStage = getStageStats()
+      .filter((row) => row.attempts === 0 || row.average < 80)
+      .sort((a, b) => a.average - b.average || a.attempts - b.attempts)[0];
+    if (lowStage) {
+      recommendation = {
+        type: "stage",
+        stageId: lowStage.stageId,
+        label: lowStage.name,
+        button: `${lowStage.name}を開始`,
+        reason: "今回はよくできています。次は記録上まだ薄い分野を埋めて、進化先の判定も安定させましょう。"
+      };
+    }
+  } else if (percentage < 70 && wrongStageEntries.length && current.mode === "random") {
+    const [stageId] = wrongStageEntries[0];
+    recommendation = {
+      type: "stage",
+      stageId,
+      label: getStageNameById(stageId),
+      button: `${getStageNameById(stageId)}を開始`,
+      reason: "ランダム模試で落とした分野を先に固めると、次回の得点が伸びやすくなります。"
+    };
+  }
+
+  current.recommendation = recommendation;
+  els.resultAdvice.innerHTML = `
+    <div class="advice-card">
+      <span>Weak Point</span>
+      <strong>今回の弱点</strong>
+      <p>${wrongRecords.length ? "間違いが多かったタグです。次の復習候補にしましょう。" : "今回の範囲では目立つ弱点はありません。"}</p>
+      <div class="weak-chip-list">
+        ${weakTags.map((item) => `<span class="weak-chip">${item.tag}${item.count ? ` ${item.count}問` : ""}</span>`).join("")}
+      </div>
+    </div>
+    <div class="advice-card">
+      <span>Next</span>
+      <strong>${recommendation.label}</strong>
+      <p>${recommendation.reason}</p>
+    </div>
+  `;
+
+  els.startRecommendation.textContent = recommendation.button;
+  els.startRecommendation.classList.remove("hidden");
+}
+
 function showResult() {
+  clearQuizTimer();
   const percentage = Math.round((current.score / current.questions.length) * 100);
   const cleared = percentage >= 70;
-  const earnedFood = calculateFoodReward(current.score, current.questions.length);
+  const baseFood = calculateFoodReward(current.score, current.questions.length);
+  const timeBonus = current.timeBonus || 0;
+  const earnedFood = baseFood + timeBonus;
   if (current.mode === "stage") {
     progress[current.stage.id] = progress[current.stage.id] || cleared;
   }
@@ -2603,6 +3520,7 @@ function showResult() {
     score: current.score,
     total: current.questions.length,
     percentage,
+    timeBonus,
     date: new Date().toISOString(),
     wrongQuestionIds: current.records.filter((record) => !record.correct).map((record) => record.questionId),
     wrongTags: current.records.filter((record) => !record.correct).map((record) => record.tag)
@@ -2620,7 +3538,8 @@ function showResult() {
       : `${current.stage.name}: ${current.questions.length}問中 ${current.score}問正解。結果は履歴に保存されました。`;
   els.scoreRing.textContent = `${percentage}%`;
   els.scoreRing.style.setProperty("--score", `${percentage}%`);
-  els.earnedFood.textContent = `餌を${earnedFood}個獲得しました。正解数と正解率ボーナスで増えます。`;
+  els.earnedFood.textContent = `餌を${earnedFood}個獲得しました。内訳: 基本${baseFood}個 + 時間内正解ボーナス${timeBonus}個。`;
+  buildResultAdvice(percentage);
   setView("result");
   renderStages();
   renderCreature(`餌を${earnedFood}個獲得しました。`, "happy");
@@ -2642,6 +3561,158 @@ function getStageStats() {
       best
     };
   });
+}
+
+function getUltimateChecklist(stats = getStageStats()) {
+  const totalAttempts = stats.reduce((sum, stage) => sum + stage.attempts, 0);
+  const overallAverage = stats.length
+    ? Math.round(stats.reduce((sum, stage) => sum + stage.average, 0) / stats.length)
+    : 0;
+  return [
+    {
+      label: "全5分野を演習",
+      done: stats.every((stage) => stage.attempts > 0),
+      detail: `${stats.filter((stage) => stage.attempts > 0).length}/5分野`
+    },
+    {
+      label: "各分野5回以上",
+      done: stats.every((stage) => stage.attempts >= 5),
+      detail: `最少 ${Math.min(...stats.map((stage) => stage.attempts))}/5回`
+    },
+    {
+      label: "各分野平均75%以上",
+      done: stats.every((stage) => stage.average >= 75),
+      detail: `最低 ${Math.min(...stats.map((stage) => stage.average))}%`
+    },
+    {
+      label: "総合平均80%以上",
+      done: overallAverage >= 80,
+      detail: `${overallAverage}%`
+    },
+    {
+      label: "総挑戦35回以上",
+      done: totalAttempts >= 35,
+      detail: `${totalAttempts}/35回`
+    }
+  ];
+}
+
+function getEvolutionDexRows() {
+  return [
+    {
+      id: "balanced",
+      condition: "全分野を均等に演習し、平均との差が小さい",
+      tip: "迷ったら全分野3回以上を目安に回すと人間ルートに寄ります。"
+    },
+    {
+      id: "technology",
+      condition: "テクノロジ系の挑戦数と正解率が強い",
+      tip: "ネットワーク、セキュリティ、基礎理論を伸ばすと宇宙人ルートに寄ります。"
+    },
+    {
+      id: "algorithm",
+      condition: "アルゴリズムの挑戦数と正解率が強い",
+      tip: "探索、整列、トレースを伸ばすとエルフルートに寄ります。"
+    },
+    {
+      id: "database",
+      condition: "データベースの挑戦数と正解率が強い",
+      tip: "SQL、正規化、トランザクションを伸ばすとドワーフルートに寄ります。"
+    },
+    {
+      id: "management",
+      condition: "マネジメント系の挑戦数と正解率が強い",
+      tip: "プロジェクト管理、サービス管理、監査を伸ばすとホビットルートに寄ります。"
+    },
+    {
+      id: "strategy",
+      condition: "ストラテジ系の挑戦数と正解率が強い",
+      tip: "経営、会計、法務、企画を伸ばすと竜人ルートに寄ります。"
+    },
+    {
+      id: "god",
+      condition: "全分野で合格見込みの演習量と正解率を満たす",
+      tip: "全分野5回以上、各平均75%以上、総合平均80%以上、総挑戦35回以上が目安です。"
+    }
+  ];
+}
+
+function renderEvolutionDex() {
+  const stats = getStageStats();
+  const branchId = chooseEvolutionBranch();
+  const branch = evolutionBranches[branchId] || evolutionBranches.balanced;
+  const species = getCreatureSpecies();
+  const checklist = getUltimateChecklist(stats);
+  const completeCount = checklist.filter((item) => item.done).length;
+  const branchScores = stats
+    .filter((stage) => stage.stageId in evolutionBranches)
+    .map((stage) => ({ ...stage, branchScore: getBranchScore(stage) }))
+    .sort((a, b) => b.branchScore - a.branchScore);
+
+  els.evolutionSummary.innerHTML = `
+    <div class="metric"><span>現在の段階</span><strong>${species.name}</strong></div>
+    <div class="metric"><span>現在の分岐候補</span><strong>${branch.finalName}</strong></div>
+    <div class="metric"><span>神進化条件</span><strong>${completeCount}/5</strong></div>
+  `;
+
+  els.ultimateProgress.innerHTML = `
+    <div class="evolution-note">
+      <strong>${branch.label}: ${branch.finalName}</strong>
+      <p>${branch.description}</p>
+      <p>分岐は爬虫類以降の進化時に、分野別の挑戦数と正解率から再判定されます。</p>
+    </div>
+    <div class="ultimate-list">
+      ${checklist
+        .map(
+          (item) => `
+            <div class="ultimate-item ${item.done ? "done" : ""}">
+              <span>${item.done ? "達成" : "未達"}</span>
+              <strong>${item.label}</strong>
+              <small>${item.detail}</small>
+            </div>
+          `
+        )
+        .join("")}
+    </div>
+  `;
+
+  els.evolutionDexGrid.innerHTML = getEvolutionDexRows()
+    .map((row) => {
+      const branchData = evolutionBranches[row.id];
+      const stat = stats.find((stage) => stage.stageId === row.id);
+      const score = stat ? getBranchScore(stat) : 0;
+      const image =
+        row.id === "god"
+          ? "assets/finals/final-god.png"
+          : `assets/finals/final-${row.id}-male.png`;
+      const isCurrent = row.id === branchId;
+      const isGod = row.id === "god";
+      const progressText = isGod
+        ? `条件 ${completeCount}/5`
+        : stat
+          ? `${stat.attempts}回 / 平均${stat.average}% / 分岐点${score}`
+          : "未挑戦";
+      return `
+        <article class="evolution-dex-card ${isCurrent ? "current" : ""}">
+          <img src="${image}" alt="${branchData.finalName}">
+          <div>
+            <span>${branchData.label}</span>
+            <h3>${branchData.finalName}</h3>
+            <p>${row.condition}</p>
+            <p>${row.tip}</p>
+            <strong>${progressText}</strong>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+
+  if (branchScores.length) {
+    els.evolutionSummary.insertAdjacentHTML(
+      "beforeend",
+      `<div class="metric"><span>最有力分野</span><strong>${branchScores[0].name}</strong></div>`
+    );
+  }
 }
 
 function renderStats() {
@@ -2700,13 +3771,159 @@ function renderStats() {
     : `<div class="feedback">まだ結果がありません。ステージを1つ解くと、ここに成績が表示されます。</div>`;
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function getAuditPriority(question) {
+  const text = `${question.stageName} ${question.tag} ${question.text} ${question.choices.join(" ")}`;
+  let score = 0;
+  const flags = [];
+  if (/計算|稼働率|ROI|損益|利益|平均|合計|数量|ビット|バイト|時間/.test(text)) {
+    score += 4;
+    flags.push("計算");
+  }
+  if (/SQL|SELECT|WHERE|GROUP BY|HAVING|JOIN|正規化|キー|トランザクション|ロック|DB/.test(text)) {
+    score += 4;
+    flags.push("DB/SQL");
+  }
+  if (/著作権|特許|商標|個人情報|派遣|請負|契約|法務|不正アクセス/.test(text)) {
+    score += 4;
+    flags.push("法務");
+  }
+  if (/セキュリティ|攻撃|暗号|認証|TLS|WAF|CSRF|SQLインジェクション|ランサムウェア/.test(text)) {
+    score += 3;
+    flags.push("セキュリティ");
+  }
+  if (/説明として|該当する用語|見分ける特徴/.test(question.text)) {
+    score += 2;
+    flags.push("用語説明");
+  }
+  if (question.answer !== 0) {
+    score += 2;
+    flags.push("正解位置注意");
+  }
+  if (!question.explanation || question.explanation.length < 55) {
+    score += 1;
+    flags.push("解説短め");
+  }
+  return { score, flags: flags.length ? flags : ["通常"] };
+}
+
+function getAuditItems() {
+  return stages
+    .flatMap((stage) =>
+      stage.questions.map((question) => {
+        const id = questionId(stage.id, question);
+        const priority = getAuditPriority({ ...question, stageName: stage.name });
+        return {
+          id,
+          stageId: stage.id,
+          stageName: stage.name,
+          ...question,
+          priority: priority.score,
+          flags: priority.flags,
+          status: auditMarks[id]?.status || "pending"
+        };
+      })
+    )
+    .sort((a, b) => b.priority - a.priority || a.stageName.localeCompare(b.stageName, "ja"));
+}
+
+function renderAudit(filter = "priority") {
+  const items = getAuditItems();
+  const counts = {
+    all: items.length,
+    priority: items.filter((item) => item.priority >= 6 && item.status !== "ok").length,
+    pending: items.filter((item) => item.status === "pending").length,
+    needs: items.filter((item) => item.status === "needs").length,
+    ok: items.filter((item) => item.status === "ok").length
+  };
+
+  const filtered = items.filter((item) => {
+    if (filter === "all") return true;
+    if (filter === "priority") return item.priority >= 6 && item.status !== "ok";
+    return item.status === filter;
+  });
+
+  els.auditSummary.innerHTML = `
+    <div class="metric"><span>総問題数</span><strong>${counts.all}</strong></div>
+    <div class="metric"><span>重点未確認</span><strong>${counts.priority}</strong></div>
+    <div class="metric"><span>要確認</span><strong>${counts.needs}</strong></div>
+    <div class="metric"><span>確認済み</span><strong>${counts.ok}</strong></div>
+  `;
+
+  const filters = [
+    ["priority", "重点"],
+    ["pending", "未確認"],
+    ["needs", "要確認"],
+    ["ok", "確認済み"],
+    ["all", "全件"]
+  ];
+  els.auditFilters.innerHTML = filters
+    .map(([key, label]) => `<button class="audit-filter ${filter === key ? "active" : ""}" type="button" data-filter="${key}">${label} ${counts[key]}</button>`)
+    .join("");
+
+  els.auditList.innerHTML = filtered.length
+    ? filtered
+        .slice(0, 120)
+        .map((item) => {
+          const statusLabel = item.status === "ok" ? "確認済み" : item.status === "needs" ? "要確認" : "未確認";
+          return `
+            <article class="audit-card ${item.status === "ok" ? "ok" : item.status === "needs" ? "needs" : ""}">
+              <div class="audit-meta">
+                <span>${escapeHtml(item.stageName)}</span>
+                <span>${escapeHtml(item.tag)}</span>
+                ${item.flags.map((flag) => `<span>${escapeHtml(flag)}</span>`).join("")}
+                <b class="audit-status ${item.status === "ok" ? "ok" : item.status === "needs" ? "needs" : ""}">${statusLabel}</b>
+              </div>
+              <h3>${escapeHtml(item.text)}</h3>
+              <ul class="audit-choices">
+                ${item.choices
+                  .map((choice, index) => `<li class="${index === item.answer ? "correct" : ""}">${String.fromCharCode(65 + index)}. ${escapeHtml(choice)}</li>`)
+                  .join("")}
+              </ul>
+              <p class="audit-explanation">${escapeHtml(item.explanation || "")}</p>
+              <div class="audit-actions">
+                <button class="secondary-button compact" type="button" data-audit-status="ok" data-id="${escapeHtml(item.id)}">OK</button>
+                <button class="secondary-button compact" type="button" data-audit-status="needs" data-id="${escapeHtml(item.id)}">要確認</button>
+                <button class="ghost-button compact" type="button" data-audit-status="pending" data-id="${escapeHtml(item.id)}">未確認へ</button>
+              </div>
+            </article>
+          `;
+        })
+        .join("")
+    : `<div class="feedback">この条件の問題はありません。</div>`;
+}
+
 els.backToStages.addEventListener("click", () => {
+  clearQuizTimer();
   setView("stage");
   current = null;
 });
 
 els.showAnswer.addEventListener("click", showAnswer);
 els.nextQuestion.addEventListener("click", goNext);
+els.startRecommendation.addEventListener("click", () => {
+  const recommendation = current?.recommendation;
+  if (!recommendation) return;
+  if (recommendation.type === "weakness") {
+    startWeakMode();
+    return;
+  }
+  if (recommendation.type === "random") {
+    startRandomMode();
+    return;
+  }
+  if (recommendation.type === "stage" && recommendation.stageId) {
+    startStage(recommendation.stageId);
+  }
+});
 els.retryStage.addEventListener("click", () => {
   if (current.mode === "weakness") {
     startWeakMode();
@@ -2714,12 +3931,42 @@ els.retryStage.addEventListener("click", () => {
   }
   startStage(current.stage.id);
 });
-els.returnStages.addEventListener("click", () => setView("stage"));
+els.returnStages.addEventListener("click", () => {
+  clearQuizTimer();
+  setView("stage");
+});
 els.showStats.addEventListener("click", () => {
+  clearQuizTimer();
   renderStats();
   setView("stats");
 });
 els.closeStats.addEventListener("click", () => setView("stage"));
+els.showAudit.addEventListener("click", () => {
+  clearQuizTimer();
+  renderAudit("priority");
+  setView("audit");
+});
+els.closeAudit.addEventListener("click", () => setView("stage"));
+els.auditFilters.addEventListener("click", (event) => {
+  const filter = event.target.dataset.filter;
+  if (filter) renderAudit(filter);
+});
+els.auditList.addEventListener("click", (event) => {
+  const status = event.target.dataset.auditStatus;
+  const id = event.target.dataset.id;
+  if (!status || !id) return;
+  auditMarks[id] = { status, updatedAt: new Date().toISOString() };
+  if (status === "pending") delete auditMarks[id];
+  saveAuditMarks();
+  const activeFilter = els.auditFilters.querySelector(".audit-filter.active")?.dataset.filter || "priority";
+  renderAudit(activeFilter);
+});
+els.showEvolutionDex.addEventListener("click", () => {
+  clearQuizTimer();
+  renderEvolutionDex();
+  setView("evolution");
+});
+els.closeEvolutionDex.addEventListener("click", () => setView("stage"));
 els.weakMode.addEventListener("click", startWeakMode);
 els.randomMode.addEventListener("click", startRandomMode);
 els.feedCreature.addEventListener("click", feedCreature);

@@ -21,6 +21,7 @@
         <div class="stats" aria-label="学習状況">
           <span><strong id="clearedCount">0</strong> / <span id="stageCount">0</span> cleared</span>
           <button class="secondary-button compact" id="showStats" type="button">成績</button>
+          <button class="secondary-button compact" id="showAudit" type="button">監査</button>
           <button class="icon-button" id="resetProgress" type="button" title="進捗をリセット" aria-label="進捗をリセット">
             ↺
           </button>
@@ -43,6 +44,7 @@
             </div>
             <div class="creature-actions">
               <button class="primary-button" id="feedCreature" type="button">餌をあげる</button>
+              <button class="secondary-button compact" id="showEvolutionDex" type="button">進化図鑑</button>
               <span id="evolutionLog"></span>
             </div>
           </div>
@@ -64,7 +66,7 @@
         <button id="randomMode" class="random-mode-button" type="button">
           <span>
             <strong>ランダム模試</strong>
-            <small>全分野350問から5〜10問を完全ランダム出題</small>
+            <small>全分野700問超から5〜10問を完全ランダム出題</small>
           </span>
           <b>開始 →</b>
         </button>
@@ -86,7 +88,13 @@
           </div>
 
           <article class="question-card">
-            <p id="questionTag" class="question-tag"></p>
+            <div class="question-topline">
+              <p id="questionTag" class="question-tag"></p>
+              <div class="timer" aria-live="polite">
+                <span>残り</span>
+                <strong id="timeRemaining">--秒</strong>
+              </div>
+            </div>
             <h2 id="questionText"></h2>
             <div id="choiceList" class="choice-list"></div>
           </article>
@@ -106,8 +114,10 @@
           <h2 id="resultTitle"></h2>
           <p id="resultSummary"></p>
           <p id="earnedFood" class="earned-food"></p>
+          <div id="resultAdvice" class="result-advice"></div>
           <div class="score-ring" id="scoreRing" aria-label="スコア"></div>
           <div class="result-actions">
+            <button class="secondary-button hidden" id="startRecommendation" type="button">おすすめを開始</button>
             <button class="secondary-button" id="retryStage" type="button">もう一度</button>
             <button class="primary-button" id="returnStages" type="button">ステージ一覧へ</button>
           </div>
@@ -126,6 +136,36 @@
           <div id="statsSummary" class="stats-summary"></div>
           <div id="statsTable" class="stats-table"></div>
           <div id="historyList" class="history-list"></div>
+        </div>
+      </section>
+
+      <section id="evolutionView" class="evolution-view hidden">
+        <div class="stats-panel">
+          <div class="quiz-header">
+            <div>
+              <p class="eyebrow">Evolution Dex</p>
+              <h2>進化図鑑</h2>
+            </div>
+            <button class="ghost-button" id="closeEvolutionDex" type="button">← 戻る</button>
+          </div>
+          <div id="evolutionSummary" class="evolution-summary"></div>
+          <div id="ultimateProgress" class="ultimate-progress"></div>
+          <div id="evolutionDexGrid" class="evolution-dex-grid"></div>
+        </div>
+      </section>
+
+      <section id="auditView" class="audit-view hidden">
+        <div class="stats-panel">
+          <div class="quiz-header">
+            <div>
+              <p class="eyebrow">Question Audit</p>
+              <h2>問題監査</h2>
+            </div>
+            <button class="ghost-button" id="closeAudit" type="button">← 戻る</button>
+          </div>
+          <div id="auditSummary" class="stats-summary"></div>
+          <div id="auditFilters" class="audit-toolbar"></div>
+          <div id="auditList" class="audit-list"></div>
         </div>
       </section>
     </main>

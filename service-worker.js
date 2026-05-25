@@ -1,4 +1,4 @@
-const CACHE_NAME = "fe-stage-practice-v1";
+const CACHE_NAME = "fe-stage-practice-v8";
 const APP_SHELL = [
   "./",
   "./index.html",
