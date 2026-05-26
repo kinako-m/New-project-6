@@ -118,6 +118,7 @@ h1 {
 }
 
 .creature-card {
+  position: relative;
   display: grid;
   grid-template-columns: 174px 1fr;
   gap: 18px;
@@ -127,6 +128,12 @@ h1 {
   border-radius: 8px;
   background: var(--surface);
   box-shadow: 0 12px 28px rgba(24, 38, 32, 0.08);
+}
+
+.creature-stage {
+  position: relative;
+  width: 174px;
+  min-height: 168px;
 }
 
 .creature-visual {
@@ -144,8 +151,8 @@ h1 {
 .creature-visual {
   border: 0;
   background:
-    radial-gradient(circle at 50% 75%, rgba(15, 118, 110, 0.12), transparent 46%),
-    #f8fbf8;
+    radial-gradient(circle at 50% 82%, rgba(15, 118, 110, 0.14), transparent 44%),
+    transparent;
   overflow: visible;
 }
 
@@ -190,10 +197,46 @@ h1 {
   height: 138px;
   max-width: 160px;
   object-fit: contain;
+  transform-origin: 50% 82%;
   transform: translateX(-50%) translateY(var(--creature-lift)) scale(var(--creature-scale));
   filter: drop-shadow(0 12px 16px rgba(24, 38, 32, 0.16));
   transition: height 180ms ease;
-  animation: creatureIdle 2.8s ease-in-out infinite;
+  animation: creatureIdle 2.8s ease-in-out infinite, creatureBreath 1.8s ease-in-out infinite;
+}
+
+.creature-speech {
+  position: absolute;
+  z-index: 3;
+  left: 96px;
+  top: 0;
+  min-width: 176px;
+  max-width: min(280px, 54vw);
+  padding: 10px 12px;
+  border: 1px solid rgba(15, 118, 110, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 10px 24px rgba(24, 38, 32, 0.12);
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.creature-speech::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 36px;
+  width: 14px;
+  height: 14px;
+  border-left: 1px solid rgba(15, 118, 110, 0.2);
+  border-bottom: 1px solid rgba(15, 118, 110, 0.2);
+  background: rgba(255, 255, 255, 0.96);
+  transform: rotate(45deg);
+}
+
+.creature-speech.pop {
+  animation: speechPop 280ms ease-out;
 }
 
 .creature-visual .body,
@@ -282,6 +325,24 @@ h1 {
   filter: drop-shadow(0 12px 16px rgba(24, 38, 32, 0.16)) hue-rotate(310deg) saturate(1.08);
 }
 
+.creature-visual.branch-god img {
+  filter: drop-shadow(0 0 16px rgba(217, 119, 6, 0.32)) saturate(1.18) brightness(1.05);
+}
+
+.creature-visual.final-specialist img,
+.creature-visual.final-ultimate-specialist img {
+  filter: drop-shadow(0 0 18px rgba(217, 119, 6, 0.34)) saturate(1.22) brightness(1.06);
+}
+
+.creature-visual.reptile.branch-strategy::before,
+.creature-visual.reptile.branch-god::before {
+  display: block;
+  inset: 10px;
+  background: radial-gradient(circle at 50% 26%, rgba(217, 119, 6, 0.24), transparent 34%);
+  background-image: none;
+  animation: dragonAura 2.8s ease-in-out infinite;
+}
+
 .creature-visual.happy img {
   animation: creatureHappy 650ms ease-out, creatureIdle 2.8s ease-in-out 650ms infinite;
 }
@@ -305,10 +366,20 @@ h1 {
 @keyframes creatureIdle {
   0%,
   100% {
-    transform: translateX(-50%) translateY(var(--creature-lift)) scale(var(--creature-scale)) rotate(-1deg);
+    transform: translateX(-50%) translateY(var(--creature-lift)) scale(var(--creature-scale)) rotate(-1.5deg);
   }
   50% {
-    transform: translateX(-50%) translateY(calc(var(--creature-lift) - 8px)) scale(var(--creature-scale)) rotate(1deg);
+    transform: translateX(-50%) translateY(calc(var(--creature-lift) - 8px)) scale(var(--creature-scale)) rotate(1.5deg);
+  }
+}
+
+@keyframes creatureBreath {
+  0%,
+  100% {
+    transform-origin: 50% 82%;
+  }
+  50% {
+    transform-origin: 50% 76%;
   }
 }
 
@@ -353,6 +424,29 @@ h1 {
   100% {
     opacity: 0;
     transform: scale(1.45) rotate(180deg);
+  }
+}
+
+@keyframes speechPop {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes dragonAura {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
   }
 }
 
@@ -928,6 +1022,86 @@ h1 {
   margin: 18px 0;
 }
 
+.mission-board,
+.badge-board {
+  margin: 16px 0;
+}
+
+.mini-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.mini-section-heading h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.mini-section-heading span {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.mission-grid,
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+}
+
+.mission-card,
+.badge-card {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+}
+
+.mission-card.done,
+.badge-card.unlocked {
+  border-color: rgba(15, 118, 110, 0.38);
+  background: #eef7f2;
+}
+
+.mission-card strong,
+.badge-card strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.mission-card p,
+.badge-card small {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.mission-card small {
+  display: block;
+  margin-top: 6px;
+  color: var(--brand-dark);
+  font-weight: 900;
+}
+
+.mini-progress {
+  height: 8px;
+  overflow: hidden;
+  margin-top: 10px;
+  border-radius: 999px;
+  background: #e4ebe6;
+}
+
+.mini-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--brand), var(--accent));
+}
+
 .evolution-summary {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -1054,10 +1228,92 @@ h1 {
 }
 
 .evolution-dex-grid {
+  margin-top: 18px;
+}
+
+.evolution-tree {
+  display: grid;
+  gap: 18px;
+}
+
+.evolution-tree-spine {
+  position: relative;
+  display: grid;
+  gap: 14px;
+}
+
+.evolution-tree-spine::before {
+  content: "";
+  position: absolute;
+  top: 34px;
+  bottom: 34px;
+  left: 47px;
+  width: 3px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(15, 118, 110, 0.28), rgba(217, 119, 6, 0.24));
+}
+
+.evolution-tree-node {
+  position: relative;
+  z-index: 1;
+}
+
+.evolution-tree-node::before {
+  content: "";
+  position: absolute;
+  left: 39px;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  border: 3px solid #fbfcfa;
+  border-radius: 50%;
+  background: var(--brand);
+  box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.26);
+  transform: translateY(-50%);
+}
+
+.evolution-tree-node.locked::before {
+  background: #4b5563;
+}
+
+.evolution-branch-fan {
+  position: relative;
+  padding-top: 28px;
+}
+
+.evolution-branch-fan::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 47px;
+  right: 47px;
+  height: 22px;
+  border-top: 3px solid rgba(15, 118, 110, 0.2);
+  border-left: 3px solid rgba(15, 118, 110, 0.2);
+  border-right: 3px solid rgba(15, 118, 110, 0.2);
+  border-radius: 16px 16px 0 0;
+}
+
+.evolution-branch-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.evolution-branch-heading span {
+  color: var(--brand-dark);
+  font-weight: 900;
+}
+
+.evolution-final-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 12px;
-  margin-top: 18px;
 }
 
 .evolution-dex-card {
@@ -1073,12 +1329,65 @@ h1 {
   box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
 }
 
+.evolution-dex-card.locked img {
+  filter: grayscale(1) brightness(0) contrast(2.2) opacity(0.92);
+}
+
+.evolution-dex-card.locked h3 {
+  color: var(--muted);
+}
+
+.evolution-dex-card.special-preview img {
+  filter: drop-shadow(0 10px 14px rgba(24, 38, 32, 0.14));
+}
+
+.evolution-dex-card.special-preview.branch-technology img {
+  filter: drop-shadow(0 10px 14px rgba(24, 38, 32, 0.14)) hue-rotate(185deg) saturate(1.18);
+}
+
+.evolution-dex-card.special-preview.branch-algorithm img {
+  filter: drop-shadow(0 10px 14px rgba(24, 38, 32, 0.14)) hue-rotate(80deg) saturate(1.12);
+}
+
+.evolution-dex-card.special-preview.branch-database img {
+  filter: drop-shadow(0 10px 14px rgba(24, 38, 32, 0.14)) hue-rotate(135deg) saturate(1.1);
+}
+
+.evolution-dex-card.special-preview.branch-management img {
+  filter: drop-shadow(0 10px 14px rgba(24, 38, 32, 0.14)) hue-rotate(25deg) saturate(1.12);
+}
+
+.evolution-dex-card.special-preview.branch-strategy img {
+  filter: drop-shadow(0 0 14px rgba(217, 119, 6, 0.28)) hue-rotate(310deg) saturate(1.08);
+}
+
+.evolution-dex-card.special-preview.branch-god img {
+  filter: drop-shadow(0 0 16px rgba(217, 119, 6, 0.34)) saturate(1.18) brightness(1.05);
+}
+
+.evolution-dex-card.special-final.unlocked {
+  border-color: rgba(217, 119, 6, 0.38);
+  background: #fff8ed;
+}
+
+.evolution-dex-card.special-final.unlocked img {
+  filter: drop-shadow(0 0 14px rgba(217, 119, 6, 0.28)) saturate(1.16) brightness(1.04);
+}
+
+.evolution-dex-card.special-preview.locked img {
+  filter: grayscale(1) brightness(0) contrast(2.2) opacity(0.92);
+}
+
 .evolution-dex-card img {
   width: 96px;
   height: 96px;
   object-fit: contain;
   border-radius: 8px;
   background: #eef7f2;
+}
+
+.evolution-dex-card.locked img {
+  background: #dfe6e2;
 }
 
 .evolution-dex-card span {
@@ -1269,6 +1578,18 @@ h1 {
   line-height: 1.6;
 }
 
+.evolution-choice-card {
+  border-color: rgba(217, 119, 6, 0.34);
+  background: #fff8ed;
+}
+
+.evolution-choice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
 .weak-chip-list {
   display: flex;
   flex-wrap: wrap;
@@ -1351,9 +1672,20 @@ h1 {
     grid-template-columns: 1fr;
   }
 
+  .creature-stage {
+    width: 100%;
+    min-height: 202px;
+  }
+
   .creature-visual {
     width: 100%;
     min-height: 154px;
+  }
+
+  .creature-speech {
+    left: 92px;
+    top: 4px;
+    max-width: calc(100% - 104px);
   }
 
   .quiz-view,
@@ -1378,6 +1710,20 @@ h1 {
   .ultimate-progress,
   .evolution-dex-card {
     grid-template-columns: 1fr;
+  }
+
+  .evolution-tree-spine::before {
+    left: 55px;
+  }
+
+  .evolution-tree-node::before {
+    left: 46px;
+    top: 58px;
+  }
+
+  .evolution-branch-fan::before {
+    left: 55px;
+    right: 20px;
   }
 
   .evolution-dex-card img {

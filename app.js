@@ -2499,6 +2499,8 @@ const els = {
   weakMode: document.querySelector("#weakMode"),
   randomMode: document.querySelector("#randomMode"),
   resetProgress: document.querySelector("#resetProgress"),
+  missionBoard: document.querySelector("#missionBoard"),
+  badgeBoard: document.querySelector("#badgeBoard"),
   backToStages: document.querySelector("#backToStages"),
   activeStageName: document.querySelector("#activeStageName"),
   questionCounter: document.querySelector("#questionCounter"),
@@ -2528,6 +2530,7 @@ const els = {
   creatureNeed: document.querySelector("#creatureNeed"),
   growthBar: document.querySelector("#growthBar"),
   feedCreature: document.querySelector("#feedCreature"),
+  creatureSpeech: document.querySelector("#creatureSpeech"),
   showEvolutionDex: document.querySelector("#showEvolutionDex"),
   closeEvolutionDex: document.querySelector("#closeEvolutionDex"),
   evolutionSummary: document.querySelector("#evolutionSummary"),
@@ -2543,18 +2546,72 @@ const els = {
 let progress = JSON.parse(localStorage.getItem("fe-stage-progress") || "{}");
 let history = JSON.parse(localStorage.getItem("fe-score-history") || "[]");
 let auditMarks = JSON.parse(localStorage.getItem("fe-question-audit") || "{}");
+let gameState = JSON.parse(localStorage.getItem("fe-game-state") || "null") || {
+  unlockedBadges: [],
+  unlockedEvolutions: [],
+  unlockedSpecialForms: [],
+  lastMissionDate: "",
+  completedMissions: []
+};
 let creature = JSON.parse(localStorage.getItem("fe-creature") || "null") || {
   speciesIndex: 0,
   phaseIndex: 0,
   food: 0,
   totalFood: 0,
   branchId: "balanced",
-  finalVariant: null
+  finalVariant: null,
+  finalFormId: null,
+  specialBranchId: null,
+  specialChain: 0,
+  currentSpecial: false
 };
 creature.branchId = creature.branchId || "balanced";
 creature.finalVariant = creature.finalVariant || null;
+creature.finalFormId = creature.finalFormId || null;
+creature.specialBranchId = creature.specialBranchId || null;
+creature.specialChain = creature.specialChain || 0;
+creature.currentSpecial = Boolean(creature.currentSpecial);
+gameState.unlockedBadges = gameState.unlockedBadges || [];
+gameState.unlockedEvolutions = gameState.unlockedEvolutions || [];
+gameState.unlockedSpecialForms = gameState.unlockedSpecialForms || [];
+gameState.completedMissions = gameState.completedMissions || [];
 let current = null;
 let quizTimer = null;
+let pendingEvolutionChoice = null;
+const ASSET_VERSION = "v16";
+
+const creatureLines = {
+  idle: [
+    "今日も少しずつ進化しよう。",
+    "得意分野が育つと姿も変わるよ。",
+    "次の問題、いい感じにいこう。"
+  ],
+  quiz: [
+    "問題文のキーワードを拾っていこう。",
+    "選択肢は急がず、同じ種類で比べよう。",
+    "迷ったら、目的と役割を先に見るといいよ。",
+    "いまの一問が進化ポイントになるよ。"
+  ],
+  correct: [
+    "正解。いい進化ポイントだね。",
+    "その調子。知識がなじんできた。",
+    "やった、今の判断きれいだったよ。"
+  ],
+  wrong: [
+    "大丈夫。解説で次の一問が強くなる。",
+    "惜しい。選択肢の違いを一緒に見よう。",
+    "ここで覚えれば、次は取れるよ。"
+  ],
+  timeout: [
+    "時間切れ。次は先に選択肢を削ろう。",
+    "焦らなくていいよ。型を覚えていこう。"
+  ],
+  evolve: [
+    "進化の気配がする。",
+    "姿が変わるかも。条件を見てみよう。",
+    "このまま伸びると分岐が開くよ。"
+  ]
+};
 
 const evolutionBranches = {
   god: {
@@ -2590,17 +2647,194 @@ const evolutionBranches = {
   strategy: {
     label: "ストラテジ型",
     finalName: "竜人",
-    description: "ストラテジ系の正解率が高い、経営・法務・企画を見渡す力を持つ人型進化です。"
+    description: "ストラテジ系の挑戦数と正解率が高い、経営・法務・企画を見渡す力を持つ人型進化です。"
   }
 };
 
 const branchStageNames = {
   god: "全分野",
+  balanced: "総合",
   technology: "テクノロジ系",
   algorithm: "アルゴリズム",
   database: "データベース",
   management: "マネジメント系",
   strategy: "ストラテジ系"
+};
+
+const finalEvolutionForms = {
+  balanced: {
+    branchId: "balanced",
+    mode: "normal",
+    label: "総合型",
+    finalName: "人間",
+    description: "全分野をバランスよく伸ばす、標準的で万能な最終進化です。",
+    condition: "全分野を均等に演習し、平均との差が小さい",
+    tip: "迷ったら全分野3回以上を目安に回すと人間ルートに寄ります。"
+  },
+  "balanced-specialist": {
+    branchId: "balanced",
+    mode: "specialist",
+    label: "総合特化型",
+    finalName: "賢者",
+    description: "序盤から総合型の特殊進化を維持した、知識を横断して使える特化進化です。",
+    condition: "総合型の特殊進化を2回以上継続",
+    tip: "全分野を偏らせず、平均を高く保つと賢者を狙えます。"
+  },
+  technology: {
+    branchId: "technology",
+    mode: "normal",
+    label: "テクノロジ型",
+    finalName: "宇宙人",
+    description: "テクノロジ系の正解率が高い、未知の技術とセキュリティに強い人型進化です。",
+    condition: "テクノロジ系の挑戦数と正解率が強い",
+    tip: "ネットワーク、セキュリティ、基礎理論を伸ばすと宇宙人ルートに寄ります。"
+  },
+  "technology-specialist": {
+    branchId: "technology",
+    mode: "specialist",
+    label: "テクノロジ特化型",
+    finalName: "機械天使",
+    description: "回路魚から機甲系へ進化を重ねた、機械と知性が融合した特化進化です。",
+    condition: "テクノロジ型の特殊進化を2回以上継続",
+    tip: "テクノロジ系を続けて高正解率にすると機械天使を狙えます。"
+  },
+  algorithm: {
+    branchId: "algorithm",
+    mode: "normal",
+    label: "アルゴリズム型",
+    finalName: "エルフ",
+    description: "アルゴリズムの正解率が高い、論理と探索に優れた俊敏な人型進化です。",
+    condition: "アルゴリズムの挑戦数と正解率が強い",
+    tip: "探索、整列、トレースを伸ばすとエルフルートに寄ります。"
+  },
+  "algorithm-specialist": {
+    branchId: "algorithm",
+    mode: "specialist",
+    label: "アルゴリズム特化型",
+    finalName: "時詠み",
+    description: "手順と分岐を読み切る力が極まった、時間を先読みするような特化進化です。",
+    condition: "アルゴリズム型の特殊進化を2回以上継続",
+    tip: "探索、整列、計算量、トレースを続けて伸ばすと時詠みに寄ります。"
+  },
+  database: {
+    branchId: "database",
+    mode: "normal",
+    label: "データベース型",
+    finalName: "ドワーフ",
+    description: "データベースの正解率が高い、蓄積と設計に強い堅実な人型進化です。",
+    condition: "データベースの挑戦数と正解率が強い",
+    tip: "SQL、正規化、トランザクションを伸ばすとドワーフルートに寄ります。"
+  },
+  "database-specialist": {
+    branchId: "database",
+    mode: "specialist",
+    label: "データベース特化型",
+    finalName: "記録王",
+    description: "知識を整理し、巨大な記録を守ることに特化した最終進化です。",
+    condition: "データベース型の特殊進化を2回以上継続",
+    tip: "データベース系を継続し、SQLと正規化を安定させると記録王を狙えます。"
+  },
+  management: {
+    branchId: "management",
+    mode: "normal",
+    label: "マネジメント型",
+    finalName: "ホビット",
+    description: "マネジメント系の正解率が高い、仲間を支え運用に強い穏やかな人型進化です。",
+    condition: "マネジメント系の挑戦数と正解率が強い",
+    tip: "プロジェクト管理、サービス管理、監査を伸ばすとホビットルートに寄ります。"
+  },
+  "management-specialist": {
+    branchId: "management",
+    mode: "specialist",
+    label: "マネジメント特化型",
+    finalName: "守護者",
+    description: "チームと運用を守る力に特化した、支援と防御の最終進化です。",
+    condition: "マネジメント型の特殊進化を2回以上継続",
+    tip: "プロジェクト管理とサービス管理を続けて伸ばすと守護者を狙えます。"
+  },
+  strategy: {
+    branchId: "strategy",
+    mode: "normal",
+    label: "ストラテジ型",
+    finalName: "竜人",
+    description: "ストラテジ系の正解率が高い、経営・法務・企画を見渡す通常ドラゴン進化です。",
+    condition: "ストラテジ系の挑戦数と正解率が強い",
+    tip: "経営、会計、法務、企画を伸ばすと竜人ルートに寄ります。"
+  },
+  "strategy-specialist": {
+    branchId: "strategy",
+    mode: "specialist",
+    label: "ドラゴン特化型",
+    finalName: "バハムート",
+    description: "竜鱗系の特殊進化を維持した、ストラテジ特化の伝説級進化です。",
+    condition: "ストラテジ型の特殊進化を2回以上継続",
+    tip: "魚類・両生類・爬虫類でストラテジ型を維持するとバハムートを狙えます。"
+  },
+  god: {
+    branchId: "god",
+    mode: "ultimate",
+    label: "究極型",
+    finalName: "神",
+    description: "全分野で十分な挑戦数と高い正解率を満たした究極進化です。",
+    condition: "全分野で合格見込みの演習量と正解率を満たす",
+    tip: "全分野5回以上、各平均75%以上、総合平均80%以上、総挑戦35回以上が目安です。"
+  },
+  "creator-god": {
+    branchId: "god",
+    mode: "ultimate-specialist",
+    label: "創造型",
+    finalName: "創造神",
+    description: "神進化条件に加え、序盤から特殊進化を維持した最高位の特化進化です。",
+    condition: "神進化条件を満たし、特殊進化を3回継続",
+    tip: "全分野高水準に加えて、同じ特殊系統を魚類・両生類・爬虫類で維持すると狙えます。"
+  }
+};
+
+const finalFormOrder = [
+  "balanced",
+  "balanced-specialist",
+  "technology",
+  "technology-specialist",
+  "algorithm",
+  "algorithm-specialist",
+  "database",
+  "database-specialist",
+  "management",
+  "management-specialist",
+  "strategy",
+  "strategy-specialist",
+  "god",
+  "creator-god"
+];
+
+const specialEvolutionForms = {
+  fish: {
+    balanced: { name: "銀鱗フィッシュ", cue: "全分野に適応する銀色の鱗が出ます。" },
+    technology: { name: "回路魚", cue: "ひれに回路のような模様が浮かびます。" },
+    algorithm: { name: "閃き魚", cue: "素早く曲がる尾びれと鋭い目つきになります。" },
+    database: { name: "記録魚", cue: "硬い鱗が層のように並びます。" },
+    management: { name: "群泳魚", cue: "仲間を導くような丸いひれになります。" },
+    strategy: { name: "航路魚", cue: "遠くを見渡す帆のような背びれが伸びます。" },
+    god: { name: "星核魚", cue: "全身に星粒のような光が宿ります。" }
+  },
+  amphibian: {
+    balanced: { name: "森渡り両生類", cue: "水辺と陸地の両方に馴染む姿です。" },
+    technology: { name: "電脈サラマンダー", cue: "体表に青い発光ラインが走ります。" },
+    algorithm: { name: "跳躍サラマンダー", cue: "探索するように身軽な脚が発達します。" },
+    database: { name: "甲羅イモリ", cue: "背中に小さな装甲板が増えます。" },
+    management: { name: "見守りイモリ", cue: "穏やかな表情と大きな前脚になります。" },
+    strategy: { name: "地図ガエル", cue: "背中に地図のような模様が浮かびます。" },
+    god: { name: "星泉サラマンダー", cue: "水面のような光をまといます。" }
+  },
+  reptile: {
+    balanced: { name: "調和リザード", cue: "全体のバランスがよい素直な体つきです。" },
+    technology: { name: "機甲リザード", cue: "金属質の鱗と発光する角が出ます。" },
+    algorithm: { name: "探索リザード", cue: "俊敏な脚と鋭い尾で動きます。" },
+    database: { name: "書庫リザード", cue: "重なった鱗が本棚のように整います。" },
+    management: { name: "守りリザード", cue: "味方を守る盾のような背中になります。" },
+    strategy: { name: "ドラゴン幼体", cue: "翼の芽と王冠のような角が出て、バハムートの気配が出ます。" },
+    god: { name: "星竜の幼体", cue: "神進化に近い白金の光を帯びます。" }
+  }
 };
 
 const evolutionPath = [
@@ -2609,7 +2843,7 @@ const evolutionPath = [
     name: "原生生物",
     phases: ["原始の核"],
     costs: [8],
-    description: "まだ成長段階はありません。餌をためると一気に魚類へ進化します。"
+    description: "まだ成長段階はありません。進化ポイントがたまると自動で魚類へ進化します。"
   },
   {
     id: "fish",
@@ -2667,6 +2901,10 @@ function saveAuditMarks() {
   localStorage.setItem("fe-question-audit", JSON.stringify(auditMarks));
 }
 
+function saveGameState() {
+  localStorage.setItem("fe-game-state", JSON.stringify(gameState));
+}
+
 function saveCreature() {
   localStorage.setItem("fe-creature", JSON.stringify(creature));
 }
@@ -2675,8 +2913,43 @@ function getCreatureSpecies() {
   return evolutionPath[creature.speciesIndex] || evolutionPath[0];
 }
 
+function assetUrl(path) {
+  return `${path}?${ASSET_VERSION}`;
+}
+
+function pick(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+function speakCreature(kind = "idle", extraLine = "") {
+  if (!els.creatureSpeech) return;
+  const lines = creatureLines[kind] || creatureLines.idle;
+  els.creatureSpeech.textContent = extraLine || pick(lines);
+  els.creatureSpeech.classList.remove("hidden");
+  els.creatureSpeech.classList.remove("pop");
+  void els.creatureSpeech.offsetWidth;
+  els.creatureSpeech.classList.add("pop");
+}
+
+function getQuestionCheerLine(question) {
+  const tag = question.tag || "";
+  if (/SQL|DB|データベース/.test(tag)) return "DBは、行・列・表・集計のどれを聞いているか見よう。";
+  if (/アルゴリズム|探索|整列|トレース/.test(tag)) return "小さい例で動きを追うと見えてくるよ。";
+  if (/セキュリティ|ネットワーク/.test(tag)) return "誰を守る話か、どこで通信する話かを切り分けよう。";
+  if (/法務|経営|会計|戦略/.test(tag)) return "ストラテジは用語の目的を合わせにいこう。";
+  if (/プロジェクト|サービス|監査|開発/.test(tag)) return "管理系は、計画・品質・運用・改善のどれかを見よう。";
+  if (/計算|基数|稼働率|ROI/.test(tag)) return "計算は先に式の意味を決めると強いよ。";
+  return pick(creatureLines.quiz);
+}
+
 function getEvolutionBranch() {
   return evolutionBranches[creature.branchId] || evolutionBranches.balanced;
+}
+
+function getSpecialEvolutionForm(speciesId = getCreatureSpecies().id, branchId = creature.branchId) {
+  const forms = specialEvolutionForms[speciesId];
+  if (!forms) return null;
+  return forms[branchId] || forms.balanced;
 }
 
 function chooseEvolutionBranch() {
@@ -2714,11 +2987,60 @@ function isUltimateEvolutionReady() {
   return allEnoughAttempts && allPassReady && overallAverage >= 80 && enoughTotalAttempts;
 }
 
+function chooseFinalEvolutionFormId(branchId = creature.branchId) {
+  if (branchId === "god") {
+    return creature.specialChain >= 3 ? "creator-god" : "god";
+  }
+  if (creature.specialBranchId === branchId && creature.specialChain >= 2) {
+    return `${branchId}-specialist`;
+  }
+  return branchId in finalEvolutionForms ? branchId : "balanced";
+}
+
+function getFinalEvolutionForm(formId = creature.finalFormId || chooseFinalEvolutionFormId()) {
+  return finalEvolutionForms[formId] || finalEvolutionForms.balanced;
+}
+
+function getFinalFormImageSrc(form, variant = "male") {
+  if (form.mode === "ultimate" || form.mode === "ultimate-specialist") return assetUrl("assets/finals/final-god.png");
+  return assetUrl(`assets/finals/final-${form.branchId}-${variant}.png`);
+}
+
+function updateSpecializationProgress(branchId = creature.branchId, speciesId = getCreatureSpecies().id) {
+  if (!specialEvolutionForms[speciesId]) return;
+  if (creature.specialBranchId === branchId) {
+    creature.specialChain += 1;
+  } else {
+    creature.specialBranchId = branchId;
+    creature.specialChain = 1;
+  }
+}
+
+function recordEvolutionUnlock(branchId = creature.branchId) {
+  const species = getCreatureSpecies();
+  const unlockId = species.id === "human" ? creature.finalFormId || chooseFinalEvolutionFormId(branchId) : branchId;
+  if (species.id !== "human" && creature.speciesIndex < 3) return;
+  if (!gameState.unlockedEvolutions.includes(unlockId)) {
+    gameState.unlockedEvolutions.push(unlockId);
+    saveGameState();
+  }
+}
+
+function recordSpecialEvolutionUnlock(speciesId = getCreatureSpecies().id, branchId = creature.branchId) {
+  if (!specialEvolutionForms[speciesId]) return;
+  const unlockId = `${speciesId}:${branchId}`;
+  if (!gameState.unlockedSpecialForms.includes(unlockId)) {
+    gameState.unlockedSpecialForms.push(unlockId);
+    saveGameState();
+  }
+}
+
 function getCreatureDisplayName() {
   const species = getCreatureSpecies();
   const branch = getEvolutionBranch();
-  if (creature.branchId === "god" && species.id === "human") return "神";
-  if (species.id === "human") return branch.finalName;
+  if (species.id === "human") return getFinalEvolutionForm().finalName;
+  const specialForm = creature.currentSpecial ? getSpecialEvolutionForm(species.id) : null;
+  if (specialForm) return specialForm.name;
   if (creature.speciesIndex >= 4) return `${branch.label}${species.name}`;
   return species.name;
 }
@@ -2730,17 +3052,16 @@ function chooseFinalVariant() {
 function getCreatureImageSrc() {
   const species = getCreatureSpecies();
   const branchId = creature.branchId || "balanced";
-  if (species.id === "human" && branchId === "god") {
-    return "assets/finals/final-god.png";
-  }
+  const assetBranchId = branchId === "god" ? "strategy" : branchId;
   if (species.id === "human") {
+    const form = getFinalEvolutionForm();
     const variant = creature.finalVariant || "male";
-    return `assets/finals/final-${branchId}-${variant}.png`;
+    return getFinalFormImageSrc(form, variant);
   }
   if (["reptile", "mammal", "primate"].includes(species.id)) {
-    return `assets/branches/branch-${branchId}-${species.id}.png`;
+    return assetUrl(`assets/branches/branch-${assetBranchId}-${species.id}.png`);
   }
-  return `assets/creature-${species.id}.png`;
+  return assetUrl(`assets/creature-${species.id}.png`);
 }
 
 function getBranchStatusText() {
@@ -2748,10 +3069,12 @@ function getBranchStatusText() {
   const nextBranch = evolutionBranches[chooseEvolutionBranch()] || evolutionBranches.balanced;
   const stageName = branchStageNames[creature.branchId] || "総合";
   const nextName = nextBranch.label;
+  const specialForm = creature.currentSpecial ? getSpecialEvolutionForm() : null;
+  const specialText = specialForm ? ` 特殊進化: ${specialForm.name}（${specialForm.cue}）` : "";
   if (creature.speciesIndex < 2) {
-    return `現在の分岐候補: ${nextName}。分野別の正解率で進化先が変わります。`;
+    return `現在の分岐候補: ${nextName}。分野別の正解率で進化先が変わります。${specialText}`;
   }
-  return `進化タイプ: ${branch.label}（得意傾向: ${stageName}）。次の進化時に成績次第で変化します。`;
+  return `進化タイプ: ${branch.label}（得意傾向: ${stageName}）。次の進化時に成績次第で変化します。${specialText}`;
 }
 
 function getCreaturePhase() {
@@ -2773,7 +3096,9 @@ function getCreatureClass() {
   const species = getCreatureSpecies();
   const phase = getCreaturePhase();
   const phaseClass = phase === "赤ちゃん" || phase === "幼生" || phase === "稚魚" ? "baby" : phase === "幼児期" || phase === "幼体" || phase === "若魚" || phase === "若体" ? "child" : "adult";
-  return `${species.id} ${phaseClass} branch-${creature.branchId || "balanced"}`;
+  const form = species.id === "human" ? getFinalEvolutionForm() : null;
+  const finalClass = form ? ` final-${form.mode}` : "";
+  return `${species.id} ${phaseClass} branch-${creature.branchId || "balanced"}${finalClass}`;
 }
 
 function renderCreature(message = "", mood = "") {
@@ -2783,6 +3108,7 @@ function renderCreature(message = "", mood = "") {
   const readiness = getHumanEvolutionReadiness();
   const needsReadiness = isHumanEvolutionStep();
   const progressPercent = nextCost ? Math.min(100, Math.round((creature.food / nextCost) * 100)) : 100;
+  const form = species.id === "human" ? getFinalEvolutionForm() : null;
 
   els.creatureVisual.className = `creature-visual ${getCreatureClass()} ${mood}`.trim();
   els.creatureVisual.innerHTML = `
@@ -2791,7 +3117,7 @@ function renderCreature(message = "", mood = "") {
   els.creatureName.textContent = `${getCreatureDisplayName()} / ${phase}`;
   els.creatureStageLabel.textContent = needsReadiness && !readiness.ready
     ? `人間への進化には合格見込みが必要です。${readiness.message}`
-    : `${species.description} ${getBranchStatusText()} ${getEvolutionBranch().description}`;
+    : `${species.description} ${getBranchStatusText()} ${form ? form.description : getEvolutionBranch().description}`;
   els.creatureFood.textContent = creature.food;
   els.creatureNeed.textContent = isCreatureComplete()
     ? "最終形態"
@@ -2799,55 +3125,135 @@ function renderCreature(message = "", mood = "") {
       ? `次: ${nextCost} + 合格見込み`
       : `次: ${nextCost}`;
   els.growthBar.style.width = `${progressPercent}%`;
-  els.feedCreature.disabled = isCreatureComplete() || creature.food < nextCost;
-  els.feedCreature.textContent = isCreatureComplete() ? "進化完了" : "餌をあげる";
+  els.feedCreature.disabled = true;
+  els.feedCreature.textContent = isCreatureComplete() ? "進化完了" : "自動進化";
   els.evolutionLog.textContent = message;
   if (mood) {
+    speakCreature(mood === "evolving" ? "evolve" : "idle", message);
     window.setTimeout(() => {
       els.creatureVisual.className = `creature-visual ${getCreatureClass()}`;
     }, mood === "evolving" ? 900 : 650);
   }
 }
 
-function feedCreature() {
-  if (isCreatureComplete()) {
-    renderCreature("最終形態まで育っています。");
-    return;
+function canChooseSpecialEvolution(branchId, speciesId) {
+  if (!specialEvolutionForms[speciesId]) return false;
+  if (branchId === "god") return isUltimateEvolutionReady();
+  const stat = getStageStats().find((stage) => stage.stageId === branchId);
+  if (branchId === "balanced") {
+    const stats = getStageStats();
+    return stats.every((stage) => stage.attempts > 0) && Math.max(...stats.map((stage) => stage.average)) - Math.min(...stats.map((stage) => stage.average)) <= 10;
   }
+  return Boolean(stat && stat.attempts >= 2 && stat.average >= 75);
+}
 
+function completeCreatureStep(branchId = chooseEvolutionBranch(), useSpecial = false) {
   const species = getCreatureSpecies();
-  const cost = getNextCreatureCost();
-  if (creature.food < cost) {
-    renderCreature(`餌があと${cost - creature.food}必要です。`);
-    return;
-  }
 
-  if (isHumanEvolutionStep()) {
-    const readiness = getHumanEvolutionReadiness();
-    if (!readiness.ready) {
-      renderCreature(readiness.message);
-      return;
-    }
-  }
-
-  creature.food -= cost;
   if (creature.phaseIndex < species.phases.length - 1) {
     creature.phaseIndex += 1;
-    saveCreature();
-    renderCreature(`${getCreatureSpecies().name}が${getCreaturePhase()}に成長しました。`, "happy");
-    return;
+    return `${getCreatureSpecies().name}が${getCreaturePhase()}に成長しました。`;
   }
 
-  if (creature.speciesIndex < evolutionPath.length - 1) {
-    creature.branchId = chooseEvolutionBranch();
-    creature.speciesIndex += 1;
-    creature.phaseIndex = 0;
-    if (getCreatureSpecies().id === "human") {
-      creature.finalVariant = creature.branchId === "god" ? "ultimate" : chooseFinalVariant();
+  if (creature.speciesIndex >= evolutionPath.length - 1) return "最終形態まで育っています。";
+
+  creature.branchId = branchId;
+  creature.speciesIndex += 1;
+  creature.phaseIndex = 0;
+  const nextSpecies = getCreatureSpecies();
+
+  if (specialEvolutionForms[nextSpecies.id]) {
+    creature.currentSpecial = useSpecial;
+    if (useSpecial) {
+      updateSpecializationProgress(branchId, nextSpecies.id);
+      recordSpecialEvolutionUnlock(nextSpecies.id, branchId);
+    } else {
+      creature.specialBranchId = null;
+      creature.specialChain = 0;
     }
-    saveCreature();
-    renderCreature(`${getCreatureSpecies().name}へ進化しました。`, "evolving");
+  } else {
+    creature.currentSpecial = false;
   }
+
+  if (nextSpecies.id === "human") {
+    creature.finalFormId = chooseFinalEvolutionFormId(branchId);
+    const form = getFinalEvolutionForm(creature.finalFormId);
+    creature.finalVariant = form.mode === "ultimate" || form.mode === "ultimate-specialist" ? "ultimate" : chooseFinalVariant();
+    recordEvolutionUnlock(branchId);
+  }
+
+  return `${getCreatureDisplayName()}へ進化しました。`;
+}
+
+function renderEvolutionChoice() {
+  if (!pendingEvolutionChoice || !els.resultAdvice) return;
+  const form = getSpecialEvolutionForm(pendingEvolutionChoice.speciesId, pendingEvolutionChoice.branchId);
+  const branch = evolutionBranches[pendingEvolutionChoice.branchId] || evolutionBranches.balanced;
+  els.resultAdvice.insertAdjacentHTML(
+    "afterbegin",
+    `
+      <div class="advice-card evolution-choice-card">
+        <span>進化選択</span>
+        <strong>${form.name}に特殊進化できます</strong>
+        <p>${form.cue} 通常進化を選ぶと特化ルートは一度リセットされます。</p>
+        <div class="evolution-choice-actions">
+          <button class="secondary-button compact" id="chooseNormalEvolution" type="button">通常進化</button>
+          <button class="primary-button compact" id="chooseSpecialEvolution" type="button">${branch.label}の特殊進化</button>
+        </div>
+      </div>
+    `
+  );
+  document.querySelector("#chooseNormalEvolution")?.addEventListener("click", () => resolveEvolutionChoice(false));
+  document.querySelector("#chooseSpecialEvolution")?.addEventListener("click", () => resolveEvolutionChoice(true));
+}
+
+function resolveEvolutionChoice(useSpecial) {
+  if (!pendingEvolutionChoice) return;
+  const cost = getNextCreatureCost();
+  if (creature.food < cost) {
+    pendingEvolutionChoice = null;
+    renderCreature("進化ポイントが足りません。");
+    return;
+  }
+  creature.food -= cost;
+  const message = completeCreatureStep(pendingEvolutionChoice.branchId, useSpecial);
+  pendingEvolutionChoice = null;
+  const followUp = autoAdvanceCreature();
+  saveCreature();
+  buildResultAdvice(current ? Math.round((current.score / current.questions.length) * 100) : 0);
+  renderCreature(followUp.at(-1) || message, "evolving");
+  renderEvolutionChoice();
+}
+
+function autoAdvanceCreature() {
+  const messages = [];
+  while (!isCreatureComplete()) {
+    const cost = getNextCreatureCost();
+    if (!cost || creature.food < cost) break;
+    if (isHumanEvolutionStep()) {
+      const readiness = getHumanEvolutionReadiness();
+      if (!readiness.ready) {
+        messages.push(readiness.message);
+        break;
+      }
+    }
+
+    const species = getCreatureSpecies();
+    const willEvolveSpecies = creature.phaseIndex >= species.phases.length - 1;
+    const branchId = willEvolveSpecies ? chooseEvolutionBranch() : creature.branchId;
+    const nextSpecies = willEvolveSpecies ? evolutionPath[creature.speciesIndex + 1] : null;
+
+    if (nextSpecies && canChooseSpecialEvolution(branchId, nextSpecies.id)) {
+      pendingEvolutionChoice = { branchId, speciesId: nextSpecies.id };
+      messages.push(`${nextSpecies.name}への進化条件を満たしました。特殊進化を選べます。`);
+      break;
+    }
+
+    creature.food -= cost;
+    messages.push(completeCreatureStep(branchId, false));
+  }
+  saveCreature();
+  return messages;
 }
 
 function calculateFoodReward(score, total) {
@@ -2913,9 +3319,157 @@ function questionId(stageId, question) {
   return `${stageId}:${question.tag}:${question.text}`;
 }
 
+function todayKey(date = new Date()) {
+  return new Date(date).toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" });
+}
+
+function getTodayAttempts() {
+  const today = todayKey();
+  return history.filter((attempt) => attempt.date && todayKey(attempt.date) === today);
+}
+
+function getTodayQuestionCount() {
+  return getTodayAttempts().reduce((sum, attempt) => sum + attempt.total, 0);
+}
+
+function getTodayTimeBonus() {
+  return getTodayAttempts().reduce((sum, attempt) => sum + (attempt.timeBonus || 0), 0);
+}
+
+function getTodayStageIds() {
+  return new Set(getTodayAttempts().map((attempt) => attempt.stageId));
+}
+
+function refreshDailyMissionDate() {
+  const today = todayKey();
+  if (gameState.lastMissionDate !== today) {
+    gameState.lastMissionDate = today;
+    gameState.completedMissions = [];
+    saveGameState();
+  }
+}
+
+function getDailyMissions() {
+  refreshDailyMissionDate();
+  const todayAttempts = getTodayAttempts();
+  const todayQuestions = getTodayQuestionCount();
+  const todayStages = getTodayStageIds();
+  const todayTimeBonus = getTodayTimeBonus();
+  return [
+    {
+      id: "daily-questions",
+      title: "今日の5問",
+      detail: "どのモードでもよいので5問解く",
+      current: Math.min(todayQuestions, 5),
+      target: 5,
+      done: todayQuestions >= 5
+    },
+    {
+      id: "daily-weakness",
+      title: "弱点ひとつぶし",
+      detail: "弱点克服モードを1回プレイ",
+      current: todayAttempts.some((attempt) => attempt.mode === "weakness") ? 1 : 0,
+      target: 1,
+      done: todayAttempts.some((attempt) => attempt.mode === "weakness")
+    },
+    {
+      id: "daily-speed",
+      title: "時間内正解3問",
+      detail: "時間内正解ボーナスを3個獲得",
+      current: Math.min(todayTimeBonus, 3),
+      target: 3,
+      done: todayTimeBonus >= 3
+    },
+    {
+      id: "daily-variety",
+      title: "分野を広げる",
+      detail: "今日2種類以上の分野に挑戦",
+      current: Math.min(todayStages.size, 2),
+      target: 2,
+      done: todayStages.size >= 2
+    }
+  ];
+}
+
+function getBadgeDefinitions() {
+  const stats = getStageStats();
+  const totalQuestions = history.reduce((sum, attempt) => sum + attempt.total, 0);
+  const perfectCount = history.filter((attempt) => attempt.percentage === 100).length;
+  const totalTimeBonus = history.reduce((sum, attempt) => sum + (attempt.timeBonus || 0), 0);
+  const unlockedEvolutionCount = new Set(gameState.unlockedEvolutions).size;
+  return [
+    { id: "first-step", name: "はじめの一歩", detail: "ステージを1回プレイ", done: history.length >= 1 },
+    { id: "hundred", name: "100問演習", detail: "累計100問解く", done: totalQuestions >= 100 },
+    { id: "three-hundred", name: "300問演習", detail: "累計300問解く", done: totalQuestions >= 300 },
+    { id: "perfect", name: "満点の証", detail: "100%を1回達成", done: perfectCount >= 1 },
+    { id: "speedster", name: "スピードスター", detail: "時間内正解ボーナス累計30個", done: totalTimeBonus >= 30 },
+    { id: "balanced-learner", name: "全分野入門", detail: "全5分野を1回以上プレイ", done: stats.every((stage) => stage.attempts > 0) },
+    { id: "pass-ready", name: "合格圏の気配", detail: "全分野平均70%以上", done: stats.every((stage) => stage.attempts > 0 && stage.average >= 70) },
+    { id: "evolution-hunter", name: "進化観測者", detail: "進化先を3種類解放", done: unlockedEvolutionCount >= 3 },
+    { id: "ultimate-candidate", name: "神話候補", detail: "神進化条件をすべて達成", done: getUltimateChecklist(stats).every((item) => item.done) }
+  ];
+}
+
+function syncGameAchievements() {
+  const unlocked = new Set(gameState.unlockedBadges);
+  getBadgeDefinitions().forEach((badge) => {
+    if (badge.done) unlocked.add(badge.id);
+  });
+  gameState.unlockedBadges = [...unlocked];
+  saveGameState();
+}
+
+function renderMissionsAndBadges() {
+  if (!els.missionBoard || !els.badgeBoard) return;
+  const missions = getDailyMissions();
+  const completed = missions.filter((mission) => mission.done).length;
+  els.missionBoard.innerHTML = `
+    <div class="mini-section-heading">
+      <h3>デイリーミッション</h3>
+      <span>${completed}/${missions.length}達成</span>
+    </div>
+    <div class="mission-grid">
+      ${missions
+        .map(
+          (mission) => `
+            <div class="mission-card ${mission.done ? "done" : ""}">
+              <strong>${mission.title}</strong>
+              <p>${mission.detail}</p>
+              <div class="mini-progress"><span style="width:${Math.round((mission.current / mission.target) * 100)}%"></span></div>
+              <small>${mission.current}/${mission.target}</small>
+            </div>
+          `
+        )
+        .join("")}
+    </div>
+  `;
+
+  const badges = getBadgeDefinitions();
+  const unlocked = new Set(gameState.unlockedBadges);
+  els.badgeBoard.innerHTML = `
+    <div class="mini-section-heading">
+      <h3>称号・バッジ</h3>
+      <span>${badges.filter((badge) => unlocked.has(badge.id)).length}/${badges.length}解放</span>
+    </div>
+    <div class="badge-grid">
+      ${badges
+        .map(
+          (badge) => `
+            <div class="badge-card ${unlocked.has(badge.id) ? "unlocked" : ""}">
+              <strong>${badge.name}</strong>
+              <small>${badge.detail}</small>
+            </div>
+          `
+        )
+        .join("")}
+    </div>
+  `;
+}
+
 function renderStages() {
   els.stageCount.textContent = stages.length;
   els.clearedCount.textContent = Object.values(progress).filter(Boolean).length;
+  renderMissionsAndBadges();
   els.stageGrid.innerHTML = "";
 
   stages.forEach((stage) => {
@@ -3144,6 +3698,7 @@ function renderQuestion() {
   });
 
   startQuestionTimer(question);
+  speakCreature("quiz", getQuestionCheerLine(question));
 }
 
 function buildExplanation(question, isCorrect) {
@@ -3347,6 +3902,7 @@ function answerQuestion(shownIndex) {
 
   els.feedback.classList.remove("hidden");
   els.feedback.textContent = buildExplanation(question, isCorrect);
+  speakCreature(isCorrect ? "correct" : "wrong");
   els.nextQuestion.disabled = false;
 }
 
@@ -3369,6 +3925,7 @@ function showAnswer() {
   });
   els.feedback.classList.remove("hidden");
   els.feedback.textContent = buildExplanation(question, false);
+  speakCreature("wrong", "解説を見てから、次の一問で取り返そう。");
   els.nextQuestion.disabled = false;
 }
 
@@ -3391,6 +3948,7 @@ function timeOutQuestion() {
   });
   els.feedback.classList.remove("hidden");
   els.feedback.textContent = `時間切れです。${buildExplanation(question, false)}`;
+  speakCreature("timeout");
   els.nextQuestion.disabled = false;
 }
 
@@ -3526,9 +4084,11 @@ function showResult() {
     wrongTags: current.records.filter((record) => !record.correct).map((record) => record.tag)
   });
   history = history.slice(0, 100);
+  const evolutionMessages = autoAdvanceCreature();
   saveProgress();
   saveHistory();
   saveCreature();
+  syncGameAchievements();
 
   els.progressBar.style.width = "100%";
   els.resultTitle.textContent = cleared ? "ステージクリア" : "もう一歩";
@@ -3538,11 +4098,12 @@ function showResult() {
       : `${current.stage.name}: ${current.questions.length}問中 ${current.score}問正解。結果は履歴に保存されました。`;
   els.scoreRing.textContent = `${percentage}%`;
   els.scoreRing.style.setProperty("--score", `${percentage}%`);
-  els.earnedFood.textContent = `餌を${earnedFood}個獲得しました。内訳: 基本${baseFood}個 + 時間内正解ボーナス${timeBonus}個。`;
+  els.earnedFood.textContent = `進化ポイントを${earnedFood}獲得しました。内訳: 基本${baseFood} + 時間内正解ボーナス${timeBonus}。条件を満たすと自動で成長・進化します。`;
   buildResultAdvice(percentage);
+  renderEvolutionChoice();
   setView("result");
   renderStages();
-  renderCreature(`餌を${earnedFood}個獲得しました。`, "happy");
+  renderCreature(evolutionMessages.at(-1) || `進化ポイントを${earnedFood}獲得しました。`, evolutionMessages.length ? "evolving" : "happy");
 }
 
 function getStageStats() {
@@ -3598,49 +4159,77 @@ function getUltimateChecklist(stats = getStageStats()) {
 }
 
 function getEvolutionDexRows() {
-  return [
+  return finalFormOrder.map((id) => ({ id, ...finalEvolutionForms[id] }));
+}
+
+function getSpecialEvolutionDexRows(branchId) {
+  const assetBranchId = branchId === "god" ? "strategy" : branchId;
+  return ["fish", "amphibian", "reptile"].map((speciesId) => {
+    const species = evolutionPath.find((item) => item.id === speciesId);
+    const form = getSpecialEvolutionForm(speciesId, branchId);
+    const image = speciesId === "reptile"
+      ? assetUrl(`assets/branches/branch-${assetBranchId}-${speciesId}.png`)
+      : assetUrl(`assets/creature-${speciesId}.png`);
+    return {
+      id: `${speciesId}:${branchId}`,
+      speciesId,
+      speciesName: species ? species.name : speciesId,
+      form,
+      image
+    };
+  });
+}
+
+function getEvolutionRouteRows(branchId, species) {
+  const branch = evolutionBranches[branchId] || evolutionBranches.balanced;
+  const assetBranchId = branchId === "god" ? "strategy" : branchId;
+  const routeRows = [
     {
-      id: "balanced",
-      condition: "全分野を均等に演習し、平均との差が小さい",
-      tip: "迷ったら全分野3回以上を目安に回すと人間ルートに寄ります。"
+      id: "proto",
+      speciesId: "proto",
+      label: "始まり",
+      name: "原生生物",
+      detail: "最初の生命。ここから学習の進化が始まります。",
+      image: assetUrl("assets/creature-proto.png"),
+      unlocked: true
+    },
+    ...getSpecialEvolutionDexRows(branchId).map((row) => ({
+      id: row.id,
+      speciesId: row.speciesId,
+      label: `${row.speciesName}の特殊進化`,
+      name: row.form.name,
+      detail: row.form.cue,
+      image: row.image,
+      unlocked: gameState.unlockedSpecialForms.includes(row.id) || row.speciesId === species.id
+    })),
+    {
+      id: `mammal:${branchId}`,
+      speciesId: "mammal",
+      label: "高等生物",
+      name: `${branch.label}哺乳類`,
+      detail: "赤ちゃん、幼児期、成人期を通って知能が伸びます。",
+      image: assetUrl(`assets/branches/branch-${assetBranchId}-mammal.png`),
+      unlocked: creature.speciesIndex >= 4
     },
     {
-      id: "technology",
-      condition: "テクノロジ系の挑戦数と正解率が強い",
-      tip: "ネットワーク、セキュリティ、基礎理論を伸ばすと宇宙人ルートに寄ります。"
-    },
-    {
-      id: "algorithm",
-      condition: "アルゴリズムの挑戦数と正解率が強い",
-      tip: "探索、整列、トレースを伸ばすとエルフルートに寄ります。"
-    },
-    {
-      id: "database",
-      condition: "データベースの挑戦数と正解率が強い",
-      tip: "SQL、正規化、トランザクションを伸ばすとドワーフルートに寄ります。"
-    },
-    {
-      id: "management",
-      condition: "マネジメント系の挑戦数と正解率が強い",
-      tip: "プロジェクト管理、サービス管理、監査を伸ばすとホビットルートに寄ります。"
-    },
-    {
-      id: "strategy",
-      condition: "ストラテジ系の挑戦数と正解率が強い",
-      tip: "経営、会計、法務、企画を伸ばすと竜人ルートに寄ります。"
-    },
-    {
-      id: "god",
-      condition: "全分野で合格見込みの演習量と正解率を満たす",
-      tip: "全分野5回以上、各平均75%以上、総合平均80%以上、総挑戦35回以上が目安です。"
+      id: `primate:${branchId}`,
+      speciesId: "primate",
+      label: "最終前段階",
+      name: `${branch.label}霊長類`,
+      detail: "最終進化に近い姿。ここから分野成績で大きく分岐します。",
+      image: assetUrl(`assets/branches/branch-${assetBranchId}-primate.png`),
+      unlocked: creature.speciesIndex >= 5
     }
   ];
+
+  return routeRows;
 }
 
 function renderEvolutionDex() {
   const stats = getStageStats();
   const branchId = chooseEvolutionBranch();
   const branch = evolutionBranches[branchId] || evolutionBranches.balanced;
+  const predictedFinalForm = getFinalEvolutionForm(chooseFinalEvolutionFormId(branchId));
   const species = getCreatureSpecies();
   const checklist = getUltimateChecklist(stats);
   const completeCount = checklist.filter((item) => item.done).length;
@@ -3651,15 +4240,15 @@ function renderEvolutionDex() {
 
   els.evolutionSummary.innerHTML = `
     <div class="metric"><span>現在の段階</span><strong>${species.name}</strong></div>
-    <div class="metric"><span>現在の分岐候補</span><strong>${branch.finalName}</strong></div>
+    <div class="metric"><span>現在の分岐候補</span><strong>${predictedFinalForm.finalName}</strong></div>
     <div class="metric"><span>神進化条件</span><strong>${completeCount}/5</strong></div>
   `;
 
   els.ultimateProgress.innerHTML = `
     <div class="evolution-note">
-      <strong>${branch.label}: ${branch.finalName}</strong>
-      <p>${branch.description}</p>
-      <p>分岐は爬虫類以降の進化時に、分野別の挑戦数と正解率から再判定されます。</p>
+      <strong>${predictedFinalForm.label}: ${predictedFinalForm.finalName}</strong>
+      <p>${predictedFinalForm.description}</p>
+      <p>分岐は魚類から姿に出始め、進化時に分野別の挑戦数と正解率から再判定されます。</p>
     </div>
     <div class="ultimate-list">
       ${checklist
@@ -3676,36 +4265,67 @@ function renderEvolutionDex() {
     </div>
   `;
 
-  els.evolutionDexGrid.innerHTML = getEvolutionDexRows()
+  const routeRows = getEvolutionRouteRows(branchId, species)
     .map((row) => {
-      const branchData = evolutionBranches[row.id];
-      const stat = stats.find((stage) => stage.stageId === row.id);
+      return `
+        <article class="evolution-dex-card evolution-tree-node special-preview ${row.unlocked ? "unlocked" : "locked"} branch-${branchId}">
+          <img src="${row.image}" alt="${row.name}">
+          <div>
+            <span>${row.label}</span>
+            <h3>${row.unlocked ? row.name : "未解放"}</h3>
+            <p>${row.detail}</p>
+            <strong>${row.unlocked ? `${branch.label}ルート` : "その段階まで進化すると解放"}</strong>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+
+  const finalRows = getEvolutionDexRows()
+    .map((row) => {
+      const stat = stats.find((stage) => stage.stageId === row.branchId);
       const score = stat ? getBranchScore(stat) : 0;
-      const image =
-        row.id === "god"
-          ? "assets/finals/final-god.png"
-          : `assets/finals/final-${row.id}-male.png`;
-      const isCurrent = row.id === branchId;
-      const isGod = row.id === "god";
+      const image = getFinalFormImageSrc(row, "male");
+      const predictedFinalId = chooseFinalEvolutionFormId(branchId);
+      const isCurrent = row.id === predictedFinalId || row.id === creature.finalFormId;
+      const isGod = row.mode === "ultimate" || row.mode === "ultimate-specialist";
+      const isUnlocked = gameState.unlockedEvolutions.includes(row.id) || isCurrent || (row.id === "god" && isUltimateEvolutionReady()) || (row.id === "creator-god" && isUltimateEvolutionReady() && creature.specialChain >= 3);
       const progressText = isGod
         ? `条件 ${completeCount}/5`
         : stat
           ? `${stat.attempts}回 / 平均${stat.average}% / 分岐点${score}`
           : "未挑戦";
       return `
-        <article class="evolution-dex-card ${isCurrent ? "current" : ""}">
-          <img src="${image}" alt="${branchData.finalName}">
+        <article class="evolution-dex-card final-card ${row.mode.includes("special") ? "special-final" : ""} branch-${row.branchId} ${isCurrent ? "current" : ""} ${isUnlocked ? "unlocked" : "locked"}">
+          <img src="${image}" alt="${row.finalName}">
           <div>
-            <span>${branchData.label}</span>
-            <h3>${branchData.finalName}</h3>
+            <span>${row.label}</span>
+            <h3>${isUnlocked ? row.finalName : "未解放"}</h3>
             <p>${row.condition}</p>
             <p>${row.tip}</p>
-            <strong>${progressText}</strong>
+            <strong>${isUnlocked ? progressText : `ヒント: ${progressText}`}</strong>
           </div>
         </article>
       `;
     })
     .join("");
+
+  els.evolutionDexGrid.innerHTML = `
+    <div class="evolution-tree">
+      <div class="evolution-tree-spine">
+        ${routeRows}
+      </div>
+      <div class="evolution-branch-fan">
+        <div class="evolution-branch-heading">
+          <span>最終進化の分岐</span>
+          <strong>分野別の挑戦数と正解率で決定</strong>
+        </div>
+        <div class="evolution-final-grid">
+          ${finalRows}
+        </div>
+      </div>
+    </div>
+  `;
 
   if (branchScores.length) {
     els.evolutionSummary.insertAdjacentHTML(
@@ -3969,25 +4589,38 @@ els.showEvolutionDex.addEventListener("click", () => {
 els.closeEvolutionDex.addEventListener("click", () => setView("stage"));
 els.weakMode.addEventListener("click", startWeakMode);
 els.randomMode.addEventListener("click", startRandomMode);
-els.feedCreature.addEventListener("click", feedCreature);
 els.resetProgress.addEventListener("click", () => {
   progress = {};
   history = [];
+  gameState = {
+    unlockedBadges: [],
+    unlockedEvolutions: [],
+    unlockedSpecialForms: [],
+    lastMissionDate: todayKey(),
+    completedMissions: []
+  };
   creature = {
     speciesIndex: 0,
     phaseIndex: 0,
     food: 0,
     totalFood: 0,
     branchId: "balanced",
-    finalVariant: null
+    finalVariant: null,
+    finalFormId: null,
+    specialBranchId: null,
+    specialChain: 0,
+    currentSpecial: false
   };
   saveProgress();
   saveHistory();
+  saveGameState();
   saveCreature();
   renderStages();
   renderCreature("進化の記録をリセットしました。");
 });
 
+recordEvolutionUnlock(creature.branchId);
+syncGameAchievements();
 renderStages();
 renderCreature();
 setView("stage");
