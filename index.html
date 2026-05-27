@@ -21,7 +21,7 @@
         <div class="stats" aria-label="学習状況">
           <span><strong id="clearedCount">0</strong> / <span id="stageCount">0</span> cleared</span>
           <button class="secondary-button compact" id="showStats" type="button">成績</button>
-          <button class="secondary-button compact" id="showAudit" type="button">監査</button>
+          <button class="secondary-button compact hidden" id="showAudit" type="button">監査</button>
           <button class="icon-button" id="resetProgress" type="button" title="進捗をリセット" aria-label="進捗をリセット">
             ↺
           </button>
@@ -90,6 +90,11 @@
 
           <div class="progress-track" aria-hidden="true">
             <div id="progressBar" class="progress-bar"></div>
+          </div>
+
+          <div class="quiz-creature-companion" aria-hidden="true">
+            <div id="quizCreatureVisual" class="creature-visual quiz-creature-visual"></div>
+            <div id="quizCreatureSpeech" class="quiz-creature-speech"></div>
           </div>
 
           <article class="question-card">

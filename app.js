@@ -2531,6 +2531,8 @@ const els = {
   growthBar: document.querySelector("#growthBar"),
   feedCreature: document.querySelector("#feedCreature"),
   creatureSpeech: document.querySelector("#creatureSpeech"),
+  quizCreatureVisual: document.querySelector("#quizCreatureVisual"),
+  quizCreatureSpeech: document.querySelector("#quizCreatureSpeech"),
   showEvolutionDex: document.querySelector("#showEvolutionDex"),
   closeEvolutionDex: document.querySelector("#closeEvolutionDex"),
   evolutionSummary: document.querySelector("#evolutionSummary"),
@@ -2578,7 +2580,7 @@ gameState.completedMissions = gameState.completedMissions || [];
 let current = null;
 let quizTimer = null;
 let pendingEvolutionChoice = null;
-const ASSET_VERSION = "v18";
+const ASSET_VERSION = "v21";
 
 const creatureLines = {
   idle: [
@@ -2924,11 +2926,18 @@ function pick(items) {
 function speakCreature(kind = "idle", extraLine = "") {
   if (!els.creatureSpeech) return;
   const lines = creatureLines[kind] || creatureLines.idle;
-  els.creatureSpeech.textContent = extraLine || pick(lines);
+  const line = extraLine || pick(lines);
+  els.creatureSpeech.textContent = line;
   els.creatureSpeech.classList.remove("hidden");
   els.creatureSpeech.classList.remove("pop");
   void els.creatureSpeech.offsetWidth;
   els.creatureSpeech.classList.add("pop");
+  if (els.quizCreatureSpeech) {
+    els.quizCreatureSpeech.textContent = line;
+    els.quizCreatureSpeech.classList.remove("pop");
+    void els.quizCreatureSpeech.offsetWidth;
+    els.quizCreatureSpeech.classList.add("pop");
+  }
 }
 
 function getQuestionCheerLine(question) {
@@ -3114,6 +3123,10 @@ function renderCreature(message = "", mood = "") {
   els.creatureVisual.innerHTML = `
     <img src="${getCreatureImageSrc()}" alt="" />
   `;
+  if (els.quizCreatureVisual) {
+    els.quizCreatureVisual.className = `creature-visual quiz-creature-visual ${getCreatureClass()} ${mood}`.trim();
+    els.quizCreatureVisual.innerHTML = `<img src="${getCreatureImageSrc()}" alt="" />`;
+  }
   els.creatureName.textContent = `${getCreatureDisplayName()} / ${phase}`;
   els.creatureStageLabel.textContent = needsReadiness && !readiness.ready
     ? `人間への進化には合格見込みが必要です。${readiness.message}`
@@ -3132,6 +3145,9 @@ function renderCreature(message = "", mood = "") {
     speakCreature(mood === "evolving" ? "evolve" : "idle", message);
     window.setTimeout(() => {
       els.creatureVisual.className = `creature-visual ${getCreatureClass()}`;
+      if (els.quizCreatureVisual) {
+        els.quizCreatureVisual.className = `creature-visual quiz-creature-visual ${getCreatureClass()}`;
+      }
     }, mood === "evolving" ? 900 : 650);
   }
 }
@@ -4610,6 +4626,9 @@ els.closeEvolutionDex.addEventListener("click", () => setView("stage"));
 els.weakMode.addEventListener("click", startWeakMode);
 els.randomMode.addEventListener("click", startRandomMode);
 els.resetProgress.addEventListener("click", () => {
+  const confirmed = window.confirm("進捗、成績履歴、進化状態、称号をすべてリセットします。本当に実行しますか？");
+  if (!confirmed) return;
+
   progress = {};
   history = [];
   gameState = {
