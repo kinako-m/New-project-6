@@ -2578,7 +2578,7 @@ gameState.completedMissions = gameState.completedMissions || [];
 let current = null;
 let quizTimer = null;
 let pendingEvolutionChoice = null;
-const ASSET_VERSION = "v16";
+const ASSET_VERSION = "v18";
 
 const creatureLines = {
   idle: [
@@ -3305,14 +3305,40 @@ function shuffle(items) {
   return [...items].sort(() => Math.random() - 0.5);
 }
 
-function sampleQuestions(stage) {
-  const count = Math.min(stage.questions.length, randomInt(stage.min, stage.max));
-  return shuffle(stage.questions).slice(0, count).map((question) => ({
+function questionUniqueKey(question) {
+  return String(question.text || "")
+    .replace(/\s+/g, "")
+    .replace(/[。．.？?]/g, "")
+    .toLowerCase();
+}
+
+function uniqueQuestionsByText(questions) {
+  const seen = new Set();
+  return questions.filter((question) => {
+    const key = questionUniqueKey(question);
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function withQuestionOrder(question) {
+  return {
     ...question,
-    id: questionId(stage.id, question),
-    stageId: stage.id,
     order: shuffle(question.choices.map((choice, index) => ({ choice, index })))
-  }));
+  };
+}
+
+function sampleQuestions(stage) {
+  const candidates = uniqueQuestionsByText(
+    shuffle(stage.questions).map((question) => ({
+      ...question,
+      id: questionId(stage.id, question),
+      stageId: stage.id
+    }))
+  );
+  const count = Math.min(candidates.length, randomInt(stage.min, stage.max));
+  return candidates.slice(0, count).map(withQuestionOrder);
 }
 
 function questionId(stageId, question) {
@@ -3617,13 +3643,15 @@ function buildRandomQuestions() {
     }))
   );
 
-  return shuffle(allQuestions)
+  const candidates = uniqueQuestionsByText(shuffle(allQuestions));
+  return candidates
     .slice(0, randomInt(5, 10))
-    .map((question) => ({
-      ...question,
-      tag: `${question.sourceStageName} / ${question.tag}`,
-      order: shuffle(question.choices.map((choice, index) => ({ choice, index })))
-    }));
+    .map((question) =>
+      withQuestionOrder({
+        ...question,
+        tag: `${question.sourceStageName} / ${question.tag}`
+      })
+    );
 }
 
 function buildWeakQuestions() {
@@ -3652,21 +3680,13 @@ function buildWeakQuestions() {
 
   const lowStageQuestions = allQuestions.filter((question) => lowStageIds.includes(question.stageId));
   const pool = [...sortedWrong, ...shuffle(lowStageQuestions), ...shuffle(allQuestions)];
-  const unique = [];
-  const seen = new Set();
-
-  pool.forEach((question) => {
-    if (!seen.has(question.id)) {
-      seen.add(question.id);
-      unique.push(question);
-    }
-  });
-
-  return unique.slice(0, randomInt(5, 10)).map((question) => ({
-    ...question,
-    tag: `${question.sourceStageName || "分野"} / ${question.tag}`,
-    order: shuffle(question.choices.map((choice, index) => ({ choice, index })))
-  }));
+  const unique = uniqueQuestionsByText(pool);
+  return unique.slice(0, randomInt(5, 10)).map((question) =>
+    withQuestionOrder({
+      ...question,
+      tag: `${question.sourceStageName || "分野"} / ${question.tag}`
+    })
+  );
 }
 
 function renderQuestion() {
