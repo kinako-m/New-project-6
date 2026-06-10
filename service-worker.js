@@ -1,8 +1,9 @@
-const CACHE_NAME = "fe-stage-practice-v21";
+const CACHE_NAME = "fe-stage-practice-v23";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./styles.css",
+  "./improvement-questions.js",
   "./app.js",
   "./manifest.webmanifest",
   "./assets/icons/icon-192.png",

@@ -2358,6 +2358,42 @@ finalizeChoiceConsistency();
 
 addDoubleSizeQuestionPack();
 
+function addImprovementQuestionPack() {
+  const pack = globalThis.IMPROVEMENT_QUESTIONS || {};
+  const byId = Object.fromEntries(stages.map((stage) => [stage.id, stage]));
+  const seen = new Set(stages.flatMap((stage) => stage.questions.map((question) => `${stage.id}:${question.text}`)));
+  const replacementTargets = {
+    technology: { tags: new Set(["ハードウェア", "ネットワーク", "基数変換"]), count: 25 },
+    database: { tags: new Set(["SQL"]), count: 20 },
+    management: { tags: new Set(["サービス管理", "プロジェクト"]), count: 15 },
+    strategy: { tags: new Set(["会計"]), count: 15 }
+  };
+  const definitionPattern = /(説明|目的|役割|特徴|適切なもの|正しい説明|見分ける特徴)/;
+
+  Object.entries(replacementTargets).forEach(([stageId, target]) => {
+    const stage = byId[stageId];
+    const candidates = stage.questions
+      .map((question, index) => ({ question, index }))
+      .filter(({ question }) => target.tags.has(question.tag))
+      .sort((a, b) => Number(definitionPattern.test(b.question.text)) - Number(definitionPattern.test(a.question.text)))
+      .slice(0, target.count);
+    const remove = new Set(candidates.map(({ index }) => index));
+    stage.questions = stage.questions.filter((_, index) => !remove.has(index));
+  });
+
+  Object.entries(pack).forEach(([stageId, questions]) => {
+    if (!byId[stageId]) return;
+    questions.forEach(([tag, text, choices, explanation]) => {
+      const key = `${stageId}:${text}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      byId[stageId].questions.push({ tag, text, choices, answer: 0, explanation });
+    });
+  });
+}
+
+addImprovementQuestionPack();
+
 function polishQuestionQuality() {
   const fixes = [
     {
@@ -2580,7 +2616,7 @@ gameState.completedMissions = gameState.completedMissions || [];
 let current = null;
 let quizTimer = null;
 let pendingEvolutionChoice = null;
-const ASSET_VERSION = "v21";
+const ASSET_VERSION = "v23";
 
 const creatureLines = {
   idle: [

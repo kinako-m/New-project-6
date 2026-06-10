@@ -1,0 +1,269 @@
+{
+  "generatedAt": "2026-06-09T12:09:24.753Z",
+  "totals": {
+    "questions": 717,
+    "exactUnique": 717,
+    "templateUnique": 652,
+    "knowledgeUnique": 693,
+    "clusteredVariety": 373,
+    "definitionStyle": 396,
+    "calculationStyle": 95,
+    "subjectBAlgorithm": 78,
+    "subjectBSecurity": 13
+  },
+  "stages": [
+    {
+      "id": "technology",
+      "name": "テクノロジ系",
+      "questions": 175,
+      "exactUnique": 175,
+      "templateUnique": 139,
+      "knowledgeUnique": 164,
+      "clusteredVariety": 88,
+      "tags": 29,
+      "largestTag": "ハードウェア",
+      "largestTagCount": 26,
+      "largestTagShare": 14.9
+    },
+    {
+      "id": "algorithm",
+      "name": "アルゴリズム",
+      "questions": 183,
+      "exactUnique": 183,
+      "templateUnique": 178,
+      "knowledgeUnique": 177,
+      "clusteredVariety": 100,
+      "tags": 29,
+      "largestTag": "データ構造",
+      "largestTagCount": 24,
+      "largestTagShare": 13.1
+    },
+    {
+      "id": "database",
+      "name": "データベース",
+      "questions": 120,
+      "exactUnique": 120,
+      "templateUnique": 112,
+      "knowledgeUnique": 116,
+      "clusteredVariety": 65,
+      "tags": 14,
+      "largestTag": "SQL",
+      "largestTagCount": 24,
+      "largestTagShare": 20
+    },
+    {
+      "id": "management",
+      "name": "マネジメント系",
+      "questions": 118,
+      "exactUnique": 118,
+      "templateUnique": 107,
+      "knowledgeUnique": 116,
+      "clusteredVariety": 62,
+      "tags": 16,
+      "largestTag": "開発",
+      "largestTagCount": 23,
+      "largestTagShare": 19.5
+    },
+    {
+      "id": "strategy",
+      "name": "ストラテジ系",
+      "questions": 121,
+      "exactUnique": 121,
+      "templateUnique": 116,
+      "knowledgeUnique": 120,
+      "clusteredVariety": 58,
+      "tags": 13,
+      "largestTag": "経営戦略",
+      "largestTagCount": 24,
+      "largestTagShare": 19.8
+    }
+  ],
+  "topTags": [
+    [
+      "technology / ハードウェア",
+      26
+    ],
+    [
+      "technology / ネットワーク",
+      25
+    ],
+    [
+      "algorithm / データ構造",
+      24
+    ],
+    [
+      "database / SQL",
+      24
+    ],
+    [
+      "strategy / 経営戦略",
+      24
+    ],
+    [
+      "management / 開発",
+      23
+    ],
+    [
+      "management / サービス管理",
+      22
+    ],
+    [
+      "strategy / 法務",
+      22
+    ],
+    [
+      "technology / セキュリティ",
+      20
+    ],
+    [
+      "algorithm / 探索",
+      20
+    ],
+    [
+      "algorithm / 整列",
+      20
+    ],
+    [
+      "algorithm / 計算量",
+      20
+    ],
+    [
+      "strategy / 会計",
+      20
+    ],
+    [
+      "technology / OS",
+      19
+    ],
+    [
+      "strategy / マーケティング",
+      18
+    ],
+    [
+      "algorithm / 擬似言語",
+      16
+    ],
+    [
+      "database / キー",
+      16
+    ],
+    [
+      "management / プロジェクト",
+      16
+    ],
+    [
+      "algorithm / トレース",
+      15
+    ],
+    [
+      "database / トランザクション",
+      15
+    ],
+    [
+      "management / テスト",
+      15
+    ],
+    [
+      "database / 正規化",
+      13
+    ],
+    [
+      "technology / 頻出計算",
+      12
+    ],
+    [
+      "algorithm / 実戦トレース",
+      12
+    ],
+    [
+      "database / 制約",
+      12
+    ]
+  ],
+  "repeatedAnswers": [
+    [
+      "algorithm / トレース / 2",
+      4
+    ]
+  ],
+  "repeatedTemplates": [
+    [
+      "technology / 基数変換 / #進数#を#進数で表すとどれか",
+      10
+    ],
+    [
+      "technology / ネットワーク / xxxの説明として適切なものはどれか",
+      7
+    ],
+    [
+      "technology / ネットワーク / xxxを見分ける特徴として最も適切なものはどれか",
+      7
+    ],
+    [
+      "technology / 頻出用語 / xxxxについて正しい説明はどれか",
+      5
+    ],
+    [
+      "strategy / システム戦略 / xxxの説明として最も適切なものはどれか",
+      5
+    ],
+    [
+      "technology / セキュリティ / xxxの説明として最も適切なものはどれか",
+      3
+    ],
+    [
+      "technology / 頻出用語 / xxxについて正しい説明はどれか",
+      3
+    ],
+    [
+      "technology / ハードウェア / xxxの説明として適切なものはどれか",
+      3
+    ],
+    [
+      "technology / ハードウェア / xxxを見分ける特徴として最も適切なものはどれか",
+      3
+    ],
+    [
+      "algorithm / ループ / 変数xを#から#まで#ずつ増やす反復処理では本体は何回実行されるか",
+      3
+    ],
+    [
+      "algorithm / トレース / 変数xxxxxを#にしxを#から#まで#ずつ増やしながらxxxxxにxを加える最後のxxxxxはどれか",
+      3
+    ],
+    [
+      "database / 正規化 / 第#正規形の説明として最も適切なものはどれか",
+      3
+    ],
+    [
+      "database / 正規化 / 第#正規形の説明として適切なものはどれか",
+      3
+    ],
+    [
+      "database / 正規化 / 第#正規形を見分ける特徴として最も適切なものはどれか",
+      3
+    ],
+    [
+      "management / プロジェクト / xxxの説明として適切なものはどれか",
+      3
+    ],
+    [
+      "management / プロジェクト / xxxを見分ける特徴として最も適切なものはどれか",
+      3
+    ],
+    [
+      "management / サービス管理 / xxxの説明として適切なものはどれか",
+      3
+    ],
+    [
+      "management / サービス管理 / xxxを見分ける特徴として最も適切なものはどれか",
+      3
+    ]
+  ],
+  "validation": {
+    "invalidAnswerIndex": 0,
+    "wrongChoiceCount": 0,
+    "duplicateChoices": 0,
+    "emptyExplanations": 0
+  }
+}
