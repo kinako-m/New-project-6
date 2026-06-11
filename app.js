@@ -2560,6 +2560,7 @@ const els = {
   earnedFood: document.querySelector("#earnedFood"),
   resultAdvice: document.querySelector("#resultAdvice"),
   scoreRing: document.querySelector("#scoreRing"),
+  reviewWrongAnswers: document.querySelector("#reviewWrongAnswers"),
   startRecommendation: document.querySelector("#startRecommendation"),
   retryStage: document.querySelector("#retryStage"),
   returnStages: document.querySelector("#returnStages"),
@@ -2623,7 +2624,7 @@ gameState.completedMissions = gameState.completedMissions || [];
 let current = null;
 let quizTimer = null;
 let pendingEvolutionChoice = null;
-const ASSET_VERSION = "v25";
+const ASSET_VERSION = "v27";
 
 const creatureLines = {
   idle: [
@@ -3706,6 +3707,34 @@ function startWeakMode() {
   renderQuestion();
 }
 
+function buildWrongReviewQuestions() {
+  const wrongIds = new Set(current.records.filter((record) => !record.correct).map((record) => record.questionId));
+  return uniqueQuestionsByText(current.questions.filter((question) => wrongIds.has(question.id))).map(withQuestionOrder);
+}
+
+function startWrongReview() {
+  const questions = buildWrongReviewQuestions();
+  if (!questions.length) return;
+  const sourceName = current.stage.name;
+  current = {
+    stage: {
+      id: "wrong-review",
+      name: `${sourceName} 誤答復習`
+    },
+    questions,
+    index: 0,
+    score: 0,
+    timeBonus: 0,
+    answered: false,
+    selectedIndex: null,
+    records: [],
+    mode: "wrong-review",
+    reviewSourceName: sourceName
+  };
+  setView("quiz");
+  renderQuestion();
+}
+
 function startRandomMode() {
   current = {
     stage: {
@@ -4061,7 +4090,7 @@ function answerQuestion(shownIndex) {
   current.answered = true;
   current.selectedIndex = shownIndex;
   current.score += isCorrect ? 1 : 0;
-  if (isCorrect && !current.overallDeadline) current.timeBonus += 1;
+  if (isCorrect && !current.overallDeadline && current.mode !== "wrong-review") current.timeBonus += 1;
   current.records.push({
     questionId: question.id,
     stageId: question.stageId || current.stage.id,
@@ -4170,7 +4199,58 @@ function getStageNameById(stageId) {
   return stage ? stage.name : "分野別ステージ";
 }
 
-function buildResultAdvice(percentage) {
+function getExamDomainName(record, subject) {
+  if (subject === "B") {
+    return record.stageId === "technology" ? "情報セキュリティ" : "アルゴリズム・プログラミング";
+  }
+  return getStageNameById(record.stageId);
+}
+
+function buildExamAssessment() {
+  if (!isFullExamMode()) return null;
+
+  const subject = current.mode === "subject-a-exam" ? "A" : "B";
+  const percentage = Math.round((current.score / current.questions.length) * 100);
+  const estimatedScore = percentage * 10;
+  const domains = Object.values(
+    current.records.reduce((summary, record) => {
+      const name = getExamDomainName(record, subject);
+      summary[name] = summary[name] || { name, correct: 0, total: 0 };
+      summary[name].total += 1;
+      summary[name].correct += record.correct ? 1 : 0;
+      return summary;
+    }, {})
+  ).map((domain) => ({
+    ...domain,
+    percentage: Math.round((domain.correct / domain.total) * 100)
+  }));
+  const weakest = [...domains].sort((a, b) => a.percentage - b.percentage || b.total - a.total)[0];
+  const minimumDomainRate = weakest?.percentage ?? 0;
+
+  let level = "review";
+  let label = "要復習";
+  if (!current.examTimedOut && estimatedScore >= 700 && minimumDomainRate >= 50) {
+    level = "high";
+    label = "合格見込み：高";
+  } else if (!current.examTimedOut && estimatedScore >= 600 && minimumDomainRate >= 40) {
+    level = "borderline";
+    label = "合格圏：境界";
+  }
+
+  return {
+    subject,
+    estimatedScore,
+    percentage,
+    level,
+    label,
+    domains,
+    weakestDomain: weakest?.name || "なし",
+    minimumDomainRate,
+    timedOut: Boolean(current.examTimedOut)
+  };
+}
+
+function buildResultAdvice(percentage, examAssessment = current.examAssessment || null) {
   const wrongRecords = current.records.filter((record) => !record.correct);
   const wrongTagEntries = getTopEntries(countRecords(wrongRecords, (record) => normalizeResultTag(record.tag)));
   const wrongStageEntries = getTopEntries(countRecords(wrongRecords, (record) => record.stageId || current.stage.id), 1);
@@ -4226,24 +4306,21 @@ function buildResultAdvice(percentage) {
   }
 
   current.recommendation = recommendation;
-  const examBreakdown = isFullExamMode()
-    ? Object.entries(
-        current.records.reduce((summary, record) => {
-          const key = record.stageId || "other";
-          summary[key] = summary[key] || { correct: 0, total: 0 };
-          summary[key].total += 1;
-          summary[key].correct += record.correct ? 1 : 0;
-          return summary;
-        }, {})
-      )
-        .map(([stageId, score]) => {
-          const rate = Math.round((score.correct / score.total) * 100);
-          return `<span class="weak-chip">${getStageNameById(stageId)} ${score.correct}/${score.total} (${rate}%)</span>`;
-        })
+  const examBreakdown = examAssessment
+    ? examAssessment.domains
+        .map((domain) => `<span class="weak-chip">${domain.name} ${domain.correct}/${domain.total} (${domain.percentage}%)</span>`)
         .join("")
     : "";
   els.resultAdvice.innerHTML = `
-    ${examBreakdown ? `<div class="advice-card"><span>Breakdown</span><strong>科目別内訳</strong><div class="weak-chip-list">${examBreakdown}</div></div>` : ""}
+    ${examAssessment ? `
+      <div class="advice-card exam-assessment ${examAssessment.level}">
+        <span>Estimated Score</span>
+        <strong>推定評価点 ${examAssessment.estimatedScore} / 1000</strong>
+        <p>${examAssessment.label}。600点相当を基準に、分野別の偏りと時間切れも含めて判定しています。</p>
+        <small>本試験はIRT方式の評価点です。この推定値は正解率を基にした学習用の目安で、実際の評価点とは一致しません。</small>
+      </div>
+    ` : ""}
+    ${examBreakdown ? `<div class="advice-card"><span>Breakdown</span><strong>分野別内訳</strong><div class="weak-chip-list">${examBreakdown}</div></div>` : ""}
     <div class="advice-card">
       <span>Weak Point</span>
       <strong>今回の弱点</strong>
@@ -4267,9 +4344,11 @@ function showResult() {
   clearQuizTimer();
   const percentage = Math.round((current.score / current.questions.length) * 100);
   const isFullExam = current.mode === "subject-a-exam" || current.mode === "subject-b-exam";
-  const cleared = isFullExam ? percentage >= 65 : percentage >= 70;
-  const baseFood = calculateFoodReward(current.score, current.questions.length);
-  const timeBonus = current.timeBonus || 0;
+  current.examAssessment = isFullExam ? buildExamAssessment() : null;
+  const cleared = isFullExam ? current.examAssessment.level !== "review" : percentage >= 70;
+  const isWrongReview = current.mode === "wrong-review";
+  const baseFood = isWrongReview ? 0 : calculateFoodReward(current.score, current.questions.length);
+  const timeBonus = isWrongReview ? 0 : current.timeBonus || 0;
   const earnedFood = baseFood + timeBonus;
   if (current.mode === "stage") {
     progress[current.stage.id] = progress[current.stage.id] || cleared;
@@ -4286,6 +4365,7 @@ function showResult() {
     percentage,
     examSubject: current.mode === "subject-a-exam" ? "A" : current.mode === "subject-b-exam" ? "B" : null,
     examTimedOut: Boolean(current.examTimedOut),
+    examAssessment: current.examAssessment,
     timeBonus,
     date: new Date().toISOString(),
     wrongQuestionIds: current.records.filter((record) => !record.correct).map((record) => record.questionId),
@@ -4300,18 +4380,25 @@ function showResult() {
 
   els.progressBar.style.width = "100%";
   els.resultTitle.textContent = isFullExam
-    ? cleared ? "合格見込み" : "要復習"
-    : cleared ? "ステージクリア" : "もう一歩";
+    ? current.examAssessment.label
+    : isWrongReview
+      ? current.score === current.questions.length ? "復習完了" : "もう一度確認"
+      : cleared ? "ステージクリア" : "もう一歩";
   els.resultSummary.textContent =
-    current.mode === "stage"
+    isWrongReview
+      ? `${current.stage.name}: ${current.questions.length}問中 ${current.score}問正解。間違えた問題は、結果画面からもう一度復習できます。`
+      : current.mode === "stage"
       ? `${current.stage.name}: ${current.questions.length}問中 ${current.score}問正解。70%以上でクリアです。`
       : isFullExam
-        ? `${current.stage.name}: ${current.questions.length}問中 ${current.score}問正解 (${percentage}%)。${current.examTimedOut ? "制限時間終了。未回答は不正解として集計しました。" : "65%以上を合格見込みの目安として判定します。"}`
+        ? `${current.stage.name}: ${current.questions.length}問中 ${current.score}問正解 (${percentage}%)、推定評価点 ${current.examAssessment.estimatedScore}/1000。${current.examTimedOut ? "制限時間終了のため、判定は要復習です。" : `最低分野正解率は${current.examAssessment.minimumDomainRate}%です。`}`
         : `${current.stage.name}: ${current.questions.length}問中 ${current.score}問正解。結果は履歴に保存されました。`;
-  els.scoreRing.textContent = `${percentage}%`;
+  els.scoreRing.textContent = isFullExam ? `${current.examAssessment.estimatedScore}点` : `${percentage}%`;
   els.scoreRing.style.setProperty("--score", `${percentage}%`);
-  els.earnedFood.textContent = `進化ポイントを${earnedFood}獲得しました。内訳: 基本${baseFood} + 時間内正解ボーナス${timeBonus}。条件を満たすと自動で成長・進化します。`;
-  buildResultAdvice(percentage);
+  els.earnedFood.textContent = isWrongReview
+    ? "誤答復習では進化ポイントは増えません。正解できるまで繰り返して定着させましょう。"
+    : `進化ポイントを${earnedFood}獲得しました。内訳: 基本${baseFood} + 時間内正解ボーナス${timeBonus}。条件を満たすと自動で成長・進化します。`;
+  buildResultAdvice(percentage, current.examAssessment);
+  els.reviewWrongAnswers.classList.toggle("hidden", current.records.every((record) => record.correct));
   renderEvolutionChoice();
   setView("result");
   renderStages();
@@ -4554,11 +4641,22 @@ function renderStats() {
     ? Math.round(averages.reduce((sum, value) => sum + value, 0) / averages.length)
     : 0;
   const overallBest = averages.length ? Math.max(...averages) : 0;
+  const latestSubjectA = history.find((attempt) => attempt.examSubject === "A" && attempt.examAssessment)?.examAssessment;
+  const latestSubjectB = history.find((attempt) => attempt.examSubject === "B" && attempt.examAssessment)?.examAssessment;
+  const bothExamReady = latestSubjectA?.level !== "review" && latestSubjectB?.level !== "review" && latestSubjectA && latestSubjectB;
+  const combinedExamLabel = !latestSubjectA || !latestSubjectB
+    ? "A・B未受験"
+    : bothExamReady
+      ? latestSubjectA.level === "high" && latestSubjectB.level === "high" ? "合格見込み：高" : "合格圏：境界"
+      : "要復習";
 
   els.statsSummary.innerHTML = `
     <div class="metric"><span>受験回数</span><strong>${totalAttempts}</strong></div>
     <div class="metric"><span>平均点</span><strong>${overallAverage}%</strong></div>
     <div class="metric"><span>最高点</span><strong>${overallBest}%</strong></div>
+    <div class="metric"><span>最新 科目A推定</span><strong>${latestSubjectA ? `${latestSubjectA.estimatedScore}点` : "未受験"}</strong></div>
+    <div class="metric"><span>最新 科目B推定</span><strong>${latestSubjectB ? `${latestSubjectB.estimatedScore}点` : "未受験"}</strong></div>
+    <div class="metric"><span>本番総合判定</span><strong>${combinedExamLabel}</strong></div>
   `;
 
   const rows = getStageStats();
@@ -4591,10 +4689,13 @@ function renderStats() {
             minute: "2-digit"
           });
           const weak = attempt.wrongTags.length ? `弱点: ${[...new Set(attempt.wrongTags)].slice(0, 3).join("、")}` : "全問正解";
+          const examScore = attempt.examAssessment
+            ? ` / 推定${attempt.examAssessment.estimatedScore}点 / ${attempt.examAssessment.label}`
+            : "";
           return `
             <div class="history-item">
               <strong>${attempt.stageName}</strong>
-              <span>${attempt.score}/${attempt.total} (${attempt.percentage}%)</span>
+              <span>${attempt.score}/${attempt.total} (${attempt.percentage}%)${examScore}</span>
               <span>${date} / ${weak}</span>
             </div>
           `;
@@ -4742,6 +4843,7 @@ els.backToStages.addEventListener("click", () => {
 
 els.showAnswer.addEventListener("click", showAnswer);
 els.nextQuestion.addEventListener("click", goNext);
+els.reviewWrongAnswers.addEventListener("click", startWrongReview);
 els.startRecommendation.addEventListener("click", () => {
   const recommendation = current?.recommendation;
   if (!recommendation) return;
@@ -4758,6 +4860,22 @@ els.startRecommendation.addEventListener("click", () => {
   }
 });
 els.retryStage.addEventListener("click", () => {
+  if (current.mode === "wrong-review") {
+    const questions = current.questions.map(withQuestionOrder);
+    current = {
+      ...current,
+      questions,
+      index: 0,
+      score: 0,
+      timeBonus: 0,
+      answered: false,
+      selectedIndex: null,
+      records: []
+    };
+    setView("quiz");
+    renderQuestion();
+    return;
+  }
   if (current.mode === "weakness") {
     startWeakMode();
     return;

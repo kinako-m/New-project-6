@@ -1872,3 +1872,22 @@ h1 {
 #questionText {
   white-space: pre-line;
 }
+
+.exam-assessment {
+  border-left: 4px solid var(--danger);
+}
+
+.exam-assessment.high {
+  border-left-color: var(--ok);
+}
+
+.exam-assessment.borderline {
+  border-left-color: var(--accent);
+}
+
+.exam-assessment small {
+  display: block;
+  margin-top: 10px;
+  color: var(--muted);
+  line-height: 1.7;
+}
