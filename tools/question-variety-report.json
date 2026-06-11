@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-06-09T12:09:24.753Z",
+  "generatedAt": "2026-06-11T15:55:10.171Z",
   "totals": {
-    "questions": 717,
-    "exactUnique": 717,
-    "templateUnique": 652,
-    "knowledgeUnique": 693,
-    "clusteredVariety": 373,
-    "definitionStyle": 396,
-    "calculationStyle": 95,
+    "questions": 741,
+    "exactUnique": 741,
+    "templateUnique": 676,
+    "knowledgeUnique": 717,
+    "clusteredVariety": 397,
+    "definitionStyle": 400,
+    "calculationStyle": 104,
     "subjectBAlgorithm": 78,
     "subjectBSecurity": 13
   },
@@ -15,28 +15,28 @@
     {
       "id": "technology",
       "name": "テクノロジ系",
-      "questions": 175,
-      "exactUnique": 175,
-      "templateUnique": 139,
-      "knowledgeUnique": 164,
-      "clusteredVariety": 88,
-      "tags": 29,
+      "questions": 183,
+      "exactUnique": 183,
+      "templateUnique": 147,
+      "knowledgeUnique": 172,
+      "clusteredVariety": 96,
+      "tags": 30,
       "largestTag": "ハードウェア",
       "largestTagCount": 26,
-      "largestTagShare": 14.9
+      "largestTagShare": 14.2
     },
     {
       "id": "algorithm",
       "name": "アルゴリズム",
-      "questions": 183,
-      "exactUnique": 183,
-      "templateUnique": 178,
-      "knowledgeUnique": 177,
-      "clusteredVariety": 100,
-      "tags": 29,
+      "questions": 199,
+      "exactUnique": 199,
+      "templateUnique": 194,
+      "knowledgeUnique": 193,
+      "clusteredVariety": 116,
+      "tags": 30,
       "largestTag": "データ構造",
       "largestTagCount": 24,
-      "largestTagShare": 13.1
+      "largestTagShare": 12.1
     },
     {
       "id": "database",
@@ -144,6 +144,10 @@
       16
     ],
     [
+      "algorithm / 科目B長文アルゴリズム",
+      16
+    ],
+    [
       "database / キー",
       16
     ],
@@ -174,16 +178,16 @@
     [
       "algorithm / 実戦トレース",
       12
-    ],
-    [
-      "database / 制約",
-      12
     ]
   ],
   "repeatedAnswers": [
     [
       "algorithm / トレース / 2",
       4
+    ],
+    [
+      "algorithm / 科目B長文アルゴリズム / 3",
+      3
     ]
   ],
   "repeatedTemplates": [

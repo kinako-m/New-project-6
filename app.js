@@ -2359,7 +2359,10 @@ finalizeChoiceConsistency();
 addDoubleSizeQuestionPack();
 
 function addImprovementQuestionPack() {
-  const pack = globalThis.IMPROVEMENT_QUESTIONS || {};
+  const packs = [
+    globalThis.IMPROVEMENT_QUESTIONS || {},
+    globalThis.SUBJECT_B_CASE_QUESTIONS || {}
+  ];
   const byId = Object.fromEntries(stages.map((stage) => [stage.id, stage]));
   const seen = new Set(stages.flatMap((stage) => stage.questions.map((question) => `${stage.id}:${question.text}`)));
   const replacementTargets = {
@@ -2381,13 +2384,15 @@ function addImprovementQuestionPack() {
     stage.questions = stage.questions.filter((_, index) => !remove.has(index));
   });
 
-  Object.entries(pack).forEach(([stageId, questions]) => {
-    if (!byId[stageId]) return;
-    questions.forEach(([tag, text, choices, explanation]) => {
-      const key = `${stageId}:${text}`;
-      if (seen.has(key)) return;
-      seen.add(key);
-      byId[stageId].questions.push({ tag, text, choices, answer: 0, explanation });
+  packs.forEach((pack) => {
+    Object.entries(pack).forEach(([stageId, questions]) => {
+      if (!byId[stageId]) return;
+      questions.forEach(([tag, text, choices, explanation]) => {
+        const key = `${stageId}:${text}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        byId[stageId].questions.push({ tag, text, choices, answer: 0, explanation });
+      });
     });
   });
 }
@@ -2534,6 +2539,8 @@ const els = {
   closeStats: document.querySelector("#closeStats"),
   weakMode: document.querySelector("#weakMode"),
   randomMode: document.querySelector("#randomMode"),
+  subjectAExam: document.querySelector("#subjectAExam"),
+  subjectBExam: document.querySelector("#subjectBExam"),
   resetProgress: document.querySelector("#resetProgress"),
   missionBoard: document.querySelector("#missionBoard"),
   badgeBoard: document.querySelector("#badgeBoard"),
@@ -2616,7 +2623,7 @@ gameState.completedMissions = gameState.completedMissions || [];
 let current = null;
 let quizTimer = null;
 let pendingEvolutionChoice = null;
-const ASSET_VERSION = "v23";
+const ASSET_VERSION = "v25";
 
 const creatureLines = {
   idle: [
@@ -3588,7 +3595,13 @@ function getQuestionTimeLimit(question) {
 }
 
 function formatTime(seconds) {
-  return `${Math.max(0, seconds)}秒`;
+  const safe = Math.max(0, seconds);
+  if (current?.overallDeadline) {
+    const minutes = Math.floor(safe / 60);
+    const rest = String(safe % 60).padStart(2, "0");
+    return `${minutes}:${rest}`;
+  }
+  return `${safe}秒`;
 }
 
 function clearQuizTimer() {
@@ -3608,6 +3621,16 @@ function updateTimerDisplay(seconds, limit) {
 
 function startQuestionTimer(question) {
   clearQuizTimer();
+  if (current.overallDeadline) {
+    const updateOverallTimer = () => {
+      const remaining = Math.max(0, Math.ceil((current.overallDeadline - Date.now()) / 1000));
+      updateTimerDisplay(remaining, current.overallLimitSeconds);
+      if (remaining <= 0) finishExamOnTimeout();
+    };
+    updateOverallTimer();
+    quizTimer = setInterval(updateOverallTimer, 250);
+    return;
+  }
   const limit = getQuestionTimeLimit(question);
   current.timeLimit = limit;
   current.questionStartedAt = Date.now();
@@ -3623,6 +3646,25 @@ function startQuestionTimer(question) {
     updateTimerDisplay(remaining, limit);
     if (remaining <= 0) timeOutQuestion();
   }, 250);
+}
+
+function finishExamOnTimeout() {
+  if (!current || !current.overallDeadline) return;
+  clearQuizTimer();
+  const firstUnanswered = current.answered ? current.index + 1 : current.index;
+  for (let index = firstUnanswered; index < current.questions.length; index += 1) {
+    const question = current.questions[index];
+    current.records.push({
+      questionId: question.id,
+      stageId: question.stageId || current.stage.id,
+      tag: question.tag,
+      correct: false,
+      timedOut: true
+    });
+  }
+  current.index = current.questions.length - 1;
+  current.examTimedOut = true;
+  showResult();
 }
 
 function startStage(stageId) {
@@ -3683,6 +3725,71 @@ function startRandomMode() {
   };
   setView("quiz");
   renderQuestion();
+}
+
+function examQuestion(question, stage) {
+  return {
+    ...question,
+    id: questionId(stage.id, question),
+    stageId: stage.id,
+    sourceStageName: stage.name,
+    tag: `${stage.name} / ${question.tag}`
+  };
+}
+
+function takeExamQuestions(stageId, count, filter = () => true) {
+  const stage = stages.find((item) => item.id === stageId);
+  return uniqueQuestionsByText(shuffle(stage.questions.filter(filter).map((question) => examQuestion(question, stage))))
+    .slice(0, count);
+}
+
+function buildSubjectAExam() {
+  const distribution = [
+    ["technology", 18],
+    ["algorithm", 12],
+    ["database", 10],
+    ["management", 10],
+    ["strategy", 10]
+  ];
+  return shuffle(distribution.flatMap(([stageId, count]) => takeExamQuestions(stageId, count))).map(withQuestionOrder);
+}
+
+function buildSubjectBExam() {
+  const algorithmTags = new Set(["科目Bアルゴリズム", "探索トレース", "整列トレース", "再帰トレース", "条件分岐", "データ構造応用", "グラフ問題", "計算量判断", "配列操作", "文字列処理", "状態遷移", "フラグ処理", "境界値", "擬似言語", "トレース", "実戦トレース"]);
+  const questions = [
+    ...takeExamQuestions("algorithm", 12, (question) => question.tag === "科目B長文アルゴリズム"),
+    ...takeExamQuestions("algorithm", 4, (question) => algorithmTags.has(question.tag)),
+    ...takeExamQuestions("technology", 4, (question) => question.tag === "科目B長文セキュリティ")
+  ];
+  return shuffle(questions).map(withQuestionOrder);
+}
+
+function startFullExam(subject) {
+  const isSubjectA = subject === "A";
+  const questions = isSubjectA ? buildSubjectAExam() : buildSubjectBExam();
+  const minutes = isSubjectA ? 90 : 100;
+  current = {
+    stage: {
+      id: isSubjectA ? "subject-a" : "subject-b",
+      name: isSubjectA ? "科目A 本番模試" : "科目B 本番模試"
+    },
+    questions,
+    index: 0,
+    score: 0,
+    timeBonus: 0,
+    answered: false,
+    selectedIndex: null,
+    records: [],
+    mode: isSubjectA ? "subject-a-exam" : "subject-b-exam",
+    overallLimitSeconds: minutes * 60,
+    overallDeadline: Date.now() + minutes * 60 * 1000
+  };
+  setView("quiz");
+  renderQuestion();
+}
+
+function isFullExamMode() {
+  return current?.mode === "subject-a-exam" || current?.mode === "subject-b-exam";
 }
 
 function buildRandomQuestions() {
@@ -3753,6 +3860,7 @@ function renderQuestion() {
   els.questionText.textContent = question.text;
   els.feedback.classList.add("hidden");
   els.feedback.textContent = "";
+  els.showAnswer.classList.toggle("hidden", isFullExamMode());
   els.nextQuestion.disabled = true;
   els.nextQuestion.textContent = current.index === current.questions.length - 1 ? "結果へ" : "次へ";
   els.choiceList.innerHTML = "";
@@ -3949,11 +4057,11 @@ function answerQuestion(shownIndex) {
   const question = current.questions[current.index];
   const selected = question.order[shownIndex];
   const isCorrect = selected.index === question.answer;
-  clearQuizTimer();
+  if (!current.overallDeadline) clearQuizTimer();
   current.answered = true;
   current.selectedIndex = shownIndex;
   current.score += isCorrect ? 1 : 0;
-  if (isCorrect) current.timeBonus += 1;
+  if (isCorrect && !current.overallDeadline) current.timeBonus += 1;
   current.records.push({
     questionId: question.id,
     stageId: question.stageId || current.stage.id,
@@ -3964,6 +4072,14 @@ function answerQuestion(shownIndex) {
       Math.max(0, Math.ceil((Date.now() - current.questionStartedAt) / 1000))
     )
   });
+
+  if (isFullExamMode()) {
+    [...els.choiceList.children].forEach((choiceEl) => {
+      choiceEl.disabled = true;
+    });
+    els.nextQuestion.disabled = false;
+    return;
+  }
 
   [...els.choiceList.children].forEach((choiceEl, index) => {
     choiceEl.disabled = true;
@@ -3982,7 +4098,7 @@ function showAnswer() {
   if (current.answered) return;
 
   const question = current.questions[current.index];
-  clearQuizTimer();
+  if (!current.overallDeadline) clearQuizTimer();
   current.answered = true;
   current.records.push({
     questionId: question.id,
@@ -4005,7 +4121,7 @@ function timeOutQuestion() {
   if (!current || current.answered) return;
 
   const question = current.questions[current.index];
-  clearQuizTimer();
+  if (!current.overallDeadline) clearQuizTimer();
   current.answered = true;
   current.records.push({
     questionId: question.id,
@@ -4110,7 +4226,24 @@ function buildResultAdvice(percentage) {
   }
 
   current.recommendation = recommendation;
+  const examBreakdown = isFullExamMode()
+    ? Object.entries(
+        current.records.reduce((summary, record) => {
+          const key = record.stageId || "other";
+          summary[key] = summary[key] || { correct: 0, total: 0 };
+          summary[key].total += 1;
+          summary[key].correct += record.correct ? 1 : 0;
+          return summary;
+        }, {})
+      )
+        .map(([stageId, score]) => {
+          const rate = Math.round((score.correct / score.total) * 100);
+          return `<span class="weak-chip">${getStageNameById(stageId)} ${score.correct}/${score.total} (${rate}%)</span>`;
+        })
+        .join("")
+    : "";
   els.resultAdvice.innerHTML = `
+    ${examBreakdown ? `<div class="advice-card"><span>Breakdown</span><strong>科目別内訳</strong><div class="weak-chip-list">${examBreakdown}</div></div>` : ""}
     <div class="advice-card">
       <span>Weak Point</span>
       <strong>今回の弱点</strong>
@@ -4133,7 +4266,8 @@ function buildResultAdvice(percentage) {
 function showResult() {
   clearQuizTimer();
   const percentage = Math.round((current.score / current.questions.length) * 100);
-  const cleared = percentage >= 70;
+  const isFullExam = current.mode === "subject-a-exam" || current.mode === "subject-b-exam";
+  const cleared = isFullExam ? percentage >= 65 : percentage >= 70;
   const baseFood = calculateFoodReward(current.score, current.questions.length);
   const timeBonus = current.timeBonus || 0;
   const earnedFood = baseFood + timeBonus;
@@ -4150,6 +4284,8 @@ function showResult() {
     score: current.score,
     total: current.questions.length,
     percentage,
+    examSubject: current.mode === "subject-a-exam" ? "A" : current.mode === "subject-b-exam" ? "B" : null,
+    examTimedOut: Boolean(current.examTimedOut),
     timeBonus,
     date: new Date().toISOString(),
     wrongQuestionIds: current.records.filter((record) => !record.correct).map((record) => record.questionId),
@@ -4163,11 +4299,15 @@ function showResult() {
   syncGameAchievements();
 
   els.progressBar.style.width = "100%";
-  els.resultTitle.textContent = cleared ? "ステージクリア" : "もう一歩";
+  els.resultTitle.textContent = isFullExam
+    ? cleared ? "合格見込み" : "要復習"
+    : cleared ? "ステージクリア" : "もう一歩";
   els.resultSummary.textContent =
     current.mode === "stage"
       ? `${current.stage.name}: ${current.questions.length}問中 ${current.score}問正解。70%以上でクリアです。`
-      : `${current.stage.name}: ${current.questions.length}問中 ${current.score}問正解。結果は履歴に保存されました。`;
+      : isFullExam
+        ? `${current.stage.name}: ${current.questions.length}問中 ${current.score}問正解 (${percentage}%)。${current.examTimedOut ? "制限時間終了。未回答は不正解として集計しました。" : "65%以上を合格見込みの目安として判定します。"}`
+        : `${current.stage.name}: ${current.questions.length}問中 ${current.score}問正解。結果は履歴に保存されました。`;
   els.scoreRing.textContent = `${percentage}%`;
   els.scoreRing.style.setProperty("--score", `${percentage}%`);
   els.earnedFood.textContent = `進化ポイントを${earnedFood}獲得しました。内訳: 基本${baseFood} + 時間内正解ボーナス${timeBonus}。条件を満たすと自動で成長・進化します。`;
@@ -4594,6 +4734,7 @@ function renderAudit(filter = "priority") {
 }
 
 els.backToStages.addEventListener("click", () => {
+  if (isFullExamMode() && !window.confirm("本番模試を終了してステージ一覧へ戻りますか？現在の回答は保存されません。")) return;
   clearQuizTimer();
   setView("stage");
   current = null;
@@ -4619,6 +4760,14 @@ els.startRecommendation.addEventListener("click", () => {
 els.retryStage.addEventListener("click", () => {
   if (current.mode === "weakness") {
     startWeakMode();
+    return;
+  }
+  if (current.mode === "subject-a-exam") {
+    startFullExam("A");
+    return;
+  }
+  if (current.mode === "subject-b-exam") {
+    startFullExam("B");
     return;
   }
   startStage(current.stage.id);
@@ -4661,6 +4810,8 @@ els.showEvolutionDex.addEventListener("click", () => {
 els.closeEvolutionDex.addEventListener("click", () => setView("stage"));
 els.weakMode.addEventListener("click", startWeakMode);
 els.randomMode.addEventListener("click", startRandomMode);
+els.subjectAExam.addEventListener("click", () => startFullExam("A"));
+els.subjectBExam.addEventListener("click", () => startFullExam("B"));
 els.resetProgress.addEventListener("click", () => {
   const confirmed = window.confirm("進捗、成績履歴、進化状態、称号をすべてリセットします。本当に実行しますか？");
   if (!confirmed) return;

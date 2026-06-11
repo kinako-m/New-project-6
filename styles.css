@@ -862,6 +862,45 @@ h1 {
   color: var(--brand-dark);
 }
 
+.exam-mode-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.exam-mode-button {
+  min-height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid #c9d3df;
+  border-radius: 8px;
+  background: #f5f7fa;
+  color: var(--ink);
+  text-align: left;
+}
+
+.exam-mode-button.subject-b {
+  border-color: #cdbedb;
+  background: #f7f3fa;
+}
+
+.exam-mode-button strong,
+.exam-mode-button b {
+  display: block;
+  font-size: 1.02rem;
+}
+
+.exam-mode-button small {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
 .primary-button {
   background: var(--brand);
   color: white;
@@ -1739,6 +1778,10 @@ h1 {
     justify-content: space-between;
   }
 
+  .exam-mode-grid {
+    grid-template-columns: 1fr;
+  }
+
   .creature-card {
     grid-template-columns: 1fr;
   }
@@ -1825,4 +1868,7 @@ h1 {
   .history-item {
     grid-template-columns: 1fr;
   }
+}
+#questionText {
+  white-space: pre-line;
 }

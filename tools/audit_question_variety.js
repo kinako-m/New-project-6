@@ -9,6 +9,7 @@ const context = {
   explainChoice: () => "",
   getExplanationTip: () => "",
   IMPROVEMENT_QUESTIONS: require("../improvement-questions.js"),
+  SUBJECT_B_CASE_QUESTIONS: require("../subject-b-case-questions.js"),
 };
 vm.createContext(context);
 vm.runInContext(dataSource, context);
