@@ -2361,7 +2361,8 @@ addDoubleSizeQuestionPack();
 function addImprovementQuestionPack() {
   const packs = [
     globalThis.IMPROVEMENT_QUESTIONS || {},
-    globalThis.SUBJECT_B_CASE_QUESTIONS || {}
+    globalThis.SUBJECT_B_CASE_QUESTIONS || {},
+    globalThis.SUBJECT_B_CASE_QUESTIONS_2 || {}
   ];
   const byId = Object.fromEntries(stages.map((stage) => [stage.id, stage]));
   const seen = new Set(stages.flatMap((stage) => stage.questions.map((question) => `${stage.id}:${question.text}`)));
@@ -2535,12 +2536,16 @@ const els = {
   clearedCount: document.querySelector("#clearedCount"),
   stageCount: document.querySelector("#stageCount"),
   showStats: document.querySelector("#showStats"),
+  backupData: document.querySelector("#backupData"),
+  restoreData: document.querySelector("#restoreData"),
+  restoreDataFile: document.querySelector("#restoreDataFile"),
   showAudit: document.querySelector("#showAudit"),
   closeStats: document.querySelector("#closeStats"),
   weakMode: document.querySelector("#weakMode"),
   randomMode: document.querySelector("#randomMode"),
   subjectAExam: document.querySelector("#subjectAExam"),
   subjectBExam: document.querySelector("#subjectBExam"),
+  suspendedExamBoard: document.querySelector("#suspendedExamBoard"),
   resetProgress: document.querySelector("#resetProgress"),
   missionBoard: document.querySelector("#missionBoard"),
   badgeBoard: document.querySelector("#badgeBoard"),
@@ -2565,7 +2570,13 @@ const els = {
   retryStage: document.querySelector("#retryStage"),
   returnStages: document.querySelector("#returnStages"),
   statsSummary: document.querySelector("#statsSummary"),
+  accuracyTrendChart: document.querySelector("#accuracyTrendChart"),
+  accuracyTrendEmpty: document.querySelector("#accuracyTrendEmpty"),
+  examScoreTrendChart: document.querySelector("#examScoreTrendChart"),
+  examScoreTrendEmpty: document.querySelector("#examScoreTrendEmpty"),
   statsTable: document.querySelector("#statsTable"),
+  weakQuestionRanking: document.querySelector("#weakQuestionRanking"),
+  reviewTopWeakQuestions: document.querySelector("#reviewTopWeakQuestions"),
   historyList: document.querySelector("#historyList"),
   creatureVisual: document.querySelector("#creatureVisual"),
   creatureName: document.querySelector("#creatureName"),
@@ -2591,6 +2602,8 @@ const els = {
 
 let progress = JSON.parse(localStorage.getItem("fe-stage-progress") || "{}");
 let history = JSON.parse(localStorage.getItem("fe-score-history") || "[]");
+let questionStats = JSON.parse(localStorage.getItem("fe-question-stats") || "{}");
+let suspendedExams = JSON.parse(localStorage.getItem("fe-suspended-exams") || "{}");
 let auditMarks = JSON.parse(localStorage.getItem("fe-question-audit") || "{}");
 let gameState = JSON.parse(localStorage.getItem("fe-game-state") || "null") || {
   unlockedBadges: [],
@@ -2624,7 +2637,7 @@ gameState.completedMissions = gameState.completedMissions || [];
 let current = null;
 let quizTimer = null;
 let pendingEvolutionChoice = null;
-const ASSET_VERSION = "v27";
+const ASSET_VERSION = "v34";
 
 const creatureLines = {
   idle: [
@@ -2943,6 +2956,78 @@ function saveHistory() {
   localStorage.setItem("fe-score-history", JSON.stringify(history));
 }
 
+function saveQuestionStats() {
+  localStorage.setItem("fe-question-stats", JSON.stringify(questionStats));
+}
+
+function saveSuspendedExams() {
+  localStorage.setItem("fe-suspended-exams", JSON.stringify(suspendedExams));
+}
+
+function getExamSubjectFromMode(mode = current?.mode) {
+  return mode === "subject-a-exam" ? "A" : mode === "subject-b-exam" ? "B" : null;
+}
+
+function getExamRemainingSeconds() {
+  if (!current?.overallDeadline) return current?.overallRemainingSeconds || 0;
+  return Math.max(0, Math.ceil((current.overallDeadline - Date.now()) / 1000));
+}
+
+function saveActiveExam() {
+  const subject = getExamSubjectFromMode();
+  if (!subject || !current?.questions?.length || current.examCompleted) return;
+  suspendedExams[subject] = {
+    version: 1,
+    savedAt: new Date().toISOString(),
+    remainingSeconds: getExamRemainingSeconds(),
+    current: {
+      ...current,
+      overallDeadline: null,
+      overallRemainingSeconds: getExamRemainingSeconds()
+    }
+  };
+  saveSuspendedExams();
+  renderSuspendedExamBoard();
+}
+
+function clearSuspendedExam(subject = getExamSubjectFromMode()) {
+  if (!subject || !suspendedExams[subject]) return;
+  delete suspendedExams[subject];
+  saveSuspendedExams();
+  renderSuspendedExamBoard();
+}
+
+function formatPausedExamTime(seconds) {
+  const minutes = Math.floor(Math.max(0, seconds) / 60);
+  const rest = String(Math.max(0, seconds) % 60).padStart(2, "0");
+  return `${minutes}:${rest}`;
+}
+
+function renderSuspendedExamBoard() {
+  const entries = ["A", "B"].map((subject) => [subject, suspendedExams[subject]]).filter(([, exam]) => exam);
+  els.suspendedExamBoard.classList.toggle("hidden", !entries.length);
+  els.suspendedExamBoard.innerHTML = entries.length
+    ? entries
+        .map(([subject, exam]) => {
+          const state = exam.current || {};
+          return `
+            <article class="suspended-exam-card">
+              <div>
+                <span>中断中の模試</span>
+                <strong>科目${subject} 本番模試</strong>
+                <small>${Math.min((state.index || 0) + 1, state.questions?.length || 0)} / ${state.questions?.length || 0}問 ・ 残り ${formatPausedExamTime(exam.remainingSeconds || 0)}</small>
+              </div>
+              <div class="suspended-exam-actions">
+                <button class="primary-button compact" type="button" data-resume-exam="${subject}">科目${subject}を再開</button>
+                <button class="ghost-button compact" type="button" data-discard-exam="${subject}">科目${subject}を破棄</button>
+              </div>
+            </article>
+          `;
+        })
+        .join("")
+    : "";
+}
+
 function saveAuditMarks() {
   localStorage.setItem("fe-question-audit", JSON.stringify(auditMarks));
 }
@@ -2953,6 +3038,89 @@ function saveGameState() {
 
 function saveCreature() {
   localStorage.setItem("fe-creature", JSON.stringify(creature));
+}
+
+const BACKUP_FORMAT = "fe-stage-practice-backup";
+const BACKUP_VERSION = 1;
+const BACKUP_KEYS = {
+  "fe-stage-progress": "object",
+  "fe-score-history": "array",
+  "fe-question-stats": "object",
+  "fe-question-audit": "object",
+  "fe-game-state": "object",
+  "fe-creature": "object",
+  "fe-suspended-exams": "object"
+};
+
+function isPlainObject(value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function getBackupData() {
+  saveActiveExam();
+  return Object.fromEntries(
+    Object.keys(BACKUP_KEYS).map((key) => {
+      const stored = localStorage.getItem(key);
+      return [key, stored === null ? (BACKUP_KEYS[key] === "array" ? [] : {}) : JSON.parse(stored)];
+    })
+  );
+}
+
+function downloadBackup() {
+  const backup = {
+    format: BACKUP_FORMAT,
+    version: BACKUP_VERSION,
+    exportedAt: new Date().toISOString(),
+    data: getBackupData()
+  };
+  const date = backup.exportedAt.slice(0, 10);
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `fe-practice-backup-${date}.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+function validateBackup(backup) {
+  if (!isPlainObject(backup) || backup.format !== BACKUP_FORMAT || backup.version !== BACKUP_VERSION || !isPlainObject(backup.data)) {
+    throw new Error("このアプリで作成した対応形式のバックアップではありません。");
+  }
+  Object.entries(BACKUP_KEYS).forEach(([key, expectedType]) => {
+    const value = backup.data[key];
+    const valid = expectedType === "array" ? Array.isArray(value) : isPlainObject(value);
+    if (!valid) throw new Error(`バックアップ内の「${key}」が壊れています。`);
+  });
+  return backup.data;
+}
+
+function getRestoreSummary(data) {
+  const completedStages = Object.values(data["fe-stage-progress"]).filter((item) => item?.cleared).length;
+  const examCount = data["fe-score-history"].length;
+  const recordedQuestions = Object.keys(data["fe-question-stats"]).length;
+  const suspendedCount = ["A", "B"].filter((subject) => data["fe-suspended-exams"][subject]).length;
+  return `クリア済みステージ: ${completedStages}\n成績履歴: ${examCount}件\n記録済み問題: ${recordedQuestions}問\n中断中の模試: ${suspendedCount}件`;
+}
+
+async function restoreBackup(file) {
+  try {
+    const backup = JSON.parse(await file.text());
+    const data = validateBackup(backup);
+    const confirmed = window.confirm(
+      `次のバックアップで現在の学習データを置き換えます。\n\n${getRestoreSummary(data)}\n\n復元を実行しますか？`
+    );
+    if (!confirmed) return;
+    Object.keys(BACKUP_KEYS).forEach((key) => localStorage.setItem(key, JSON.stringify(data[key])));
+    window.alert("学習データを復元しました。画面を再読み込みします。");
+    window.location.reload();
+  } catch (error) {
+    window.alert(`復元できませんでした。\n${error.message}`);
+  } finally {
+    els.restoreDataFile.value = "";
+  }
 }
 
 function getCreatureSpecies() {
@@ -3405,6 +3573,69 @@ function questionId(stageId, question) {
   return `${stageId}:${question.tag}:${question.text}`;
 }
 
+function getQuestionCatalog() {
+  return new Map(
+    stages.flatMap((stage) =>
+      stage.questions.map((question) => {
+        const id = questionId(stage.id, question);
+        return [
+          id,
+          {
+            ...question,
+            id,
+            stageId: stage.id,
+            stageName: stage.name,
+            sourceStageName: stage.name
+          }
+        ];
+      })
+    )
+  );
+}
+
+function migrateWrongQuestionStats() {
+  if (Object.keys(questionStats).length || !history.length) return;
+  const catalog = getQuestionCatalog();
+  history.forEach((attempt) => {
+    new Set(attempt.wrongQuestionIds || []).forEach((id) => {
+      const question = catalog.get(id);
+      if (!question) return;
+      questionStats[id] = {
+        ...question,
+        attempts: 1,
+        correct: 0,
+        wrong: 1,
+        lastAnsweredAt: attempt.date || null
+      };
+    });
+  });
+  saveQuestionStats();
+}
+
+function updateQuestionStats(records, questions) {
+  const questionById = new Map(questions.map((question) => [question.id, question]));
+  records.forEach((record) => {
+    const question = questionById.get(record.questionId);
+    if (!question) return;
+    const existing = questionStats[record.questionId] || {
+      id: record.questionId,
+      text: question.text,
+      tag: normalizeResultTag(question.tag),
+      stageId: question.stageId || record.stageId,
+      stageName: question.sourceStageName || getStageNameById(record.stageId),
+      attempts: 0,
+      correct: 0,
+      wrong: 0
+    };
+    existing.attempts += 1;
+    existing.correct += record.correct ? 1 : 0;
+    existing.wrong += record.correct ? 0 : 1;
+    existing.lastAnsweredAt = new Date().toISOString();
+    questionStats[record.questionId] = existing;
+  });
+  saveQuestionStats();
+}
+
 function todayKey(date = new Date()) {
   return new Date(date).toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" });
 }
@@ -3555,6 +3786,7 @@ function renderMissionsAndBadges() {
 function renderStages() {
   els.stageCount.textContent = stages.length;
   els.clearedCount.textContent = Object.values(progress).filter(Boolean).length;
+  renderSuspendedExamBoard();
   renderMissionsAndBadges();
   els.stageGrid.innerHTML = "";
 
@@ -3735,6 +3967,43 @@ function startWrongReview() {
   renderQuestion();
 }
 
+function getRankedWeakQuestions(limit = 10) {
+  return Object.values(questionStats)
+    .map((item) => ({
+      ...item,
+      percentage: item.attempts ? Math.round((item.correct / item.attempts) * 100) : 0
+    }))
+    .filter((item) => item.wrong > 0)
+    .sort((a, b) => a.percentage - b.percentage || b.wrong - a.wrong || b.attempts - a.attempts)
+    .slice(0, limit);
+}
+
+function startRankedQuestionReview(questionIds) {
+  const catalog = getQuestionCatalog();
+  const questions = questionIds
+    .map((id) => catalog.get(id))
+    .filter(Boolean)
+    .map(withQuestionOrder);
+  if (!questions.length) return;
+  current = {
+    stage: {
+      id: "wrong-review",
+      name: questions.length === 1 ? "苦手問題 個別復習" : "苦手問題 まとめて復習"
+    },
+    questions,
+    index: 0,
+    score: 0,
+    timeBonus: 0,
+    answered: false,
+    selectedIndex: null,
+    records: [],
+    mode: "wrong-review",
+    reviewSourceName: "苦手問題ランキング"
+  };
+  setView("quiz");
+  renderQuestion();
+}
+
 function startRandomMode() {
   current = {
     stage: {
@@ -3794,6 +4063,10 @@ function buildSubjectBExam() {
 }
 
 function startFullExam(subject) {
+  if (suspendedExams[subject] && !window.confirm(`中断中の科目${subject}模試があります。破棄して新しい模試を開始しますか？`)) {
+    return;
+  }
+  clearSuspendedExam(subject);
   const isSubjectA = subject === "A";
   const questions = isSubjectA ? buildSubjectAExam() : buildSubjectBExam();
   const minutes = isSubjectA ? 90 : 100;
@@ -3815,10 +4088,34 @@ function startFullExam(subject) {
   };
   setView("quiz");
   renderQuestion();
+  saveActiveExam();
 }
 
 function isFullExamMode() {
   return current?.mode === "subject-a-exam" || current?.mode === "subject-b-exam";
+}
+
+function resumeSuspendedExam(subject) {
+  const saved = suspendedExams[subject];
+  if (!saved?.current?.questions?.length) return;
+  current = {
+    ...saved.current,
+    overallRemainingSeconds: saved.remainingSeconds,
+    overallDeadline: Date.now() + Math.max(0, saved.remainingSeconds) * 1000
+  };
+  const wasAnswered = Boolean(current.answered);
+  const selectedIndex = current.selectedIndex;
+  setView("quiz");
+  renderQuestion();
+  if (wasAnswered) {
+    current.answered = true;
+    current.selectedIndex = selectedIndex;
+    [...els.choiceList.children].forEach((choice) => {
+      choice.disabled = true;
+    });
+    els.nextQuestion.disabled = false;
+  }
+  saveActiveExam();
 }
 
 function buildRandomQuestions() {
@@ -3882,6 +4179,7 @@ function renderQuestion() {
   current.answered = false;
   current.selectedIndex = null;
 
+  els.backToStages.textContent = isFullExamMode() ? "← 中断して戻る" : "← ステージ";
   els.activeStageName.textContent = current.stage.name;
   els.questionCounter.textContent = `${current.index + 1} / ${current.questions.length}`;
   els.progressBar.style.width = `${(current.index / current.questions.length) * 100}%`;
@@ -4107,6 +4405,7 @@ function answerQuestion(shownIndex) {
       choiceEl.disabled = true;
     });
     els.nextQuestion.disabled = false;
+    saveActiveExam();
     return;
   }
 
@@ -4173,6 +4472,7 @@ function goNext() {
   if (current.index < current.questions.length - 1) {
     current.index += 1;
     renderQuestion();
+    saveActiveExam();
     return;
   }
   showResult();
@@ -4342,6 +4642,8 @@ function buildResultAdvice(percentage, examAssessment = current.examAssessment |
 
 function showResult() {
   clearQuizTimer();
+  const completedExamSubject = getExamSubjectFromMode();
+  if (completedExamSubject) current.examCompleted = true;
   const percentage = Math.round((current.score / current.questions.length) * 100);
   const isFullExam = current.mode === "subject-a-exam" || current.mode === "subject-b-exam";
   current.examAssessment = isFullExam ? buildExamAssessment() : null;
@@ -4372,6 +4674,7 @@ function showResult() {
     wrongTags: current.records.filter((record) => !record.correct).map((record) => record.tag)
   });
   history = history.slice(0, 100);
+  updateQuestionStats(current.records, current.questions);
   const evolutionMessages = autoAdvanceCreature();
   saveProgress();
   saveHistory();
@@ -4403,6 +4706,7 @@ function showResult() {
   setView("result");
   renderStages();
   renderCreature(evolutionMessages.at(-1) || `進化ポイントを${earnedFood}獲得しました。`, evolutionMessages.length ? "evolving" : "happy");
+  clearSuspendedExam(completedExamSubject);
 }
 
 function getStageStats() {
@@ -4634,6 +4938,138 @@ function renderEvolutionDex() {
   }
 }
 
+function getDailyAccuracyTrend() {
+  const byDate = history.reduce((summary, attempt) => {
+    if (!attempt.date) return summary;
+    const key = todayKey(attempt.date);
+    summary[key] = summary[key] || { date: key, score: 0, total: 0 };
+    summary[key].score += attempt.score || 0;
+    summary[key].total += attempt.total || 0;
+    return summary;
+  }, {});
+  return Object.values(byDate)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(-14)
+    .map((item) => ({
+      label: item.date.slice(5).replace("-", "/"),
+      value: item.total ? Math.round((item.score / item.total) * 100) : 0
+    }));
+}
+
+function getExamScoreTrend() {
+  return history
+    .filter((attempt) => attempt.examAssessment && attempt.date)
+    .slice()
+    .reverse()
+    .slice(-12)
+    .map((attempt) => ({
+      label: new Date(attempt.date).toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" }),
+      value: attempt.examAssessment.estimatedScore,
+      series: `科目${attempt.examSubject}`
+    }));
+}
+
+function drawTrendChart(canvas, series, options = {}) {
+  if (!canvas || !series.some((item) => item.points.length)) return;
+  const width = Math.max(320, Math.floor(canvas.clientWidth));
+  const height = Math.max(220, Math.floor(canvas.clientHeight));
+  const ratio = Math.min(globalThis.devicePixelRatio || 1, 2);
+  canvas.width = width * ratio;
+  canvas.height = height * ratio;
+  const context = canvas.getContext("2d");
+  context.scale(ratio, ratio);
+
+  const padding = { top: 28, right: 18, bottom: 38, left: 44 };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+  const min = options.min ?? 0;
+  const max = options.max ?? 100;
+  const labels = options.labels || [];
+  const x = (index) => padding.left + (labels.length <= 1 ? chartWidth / 2 : (index / (labels.length - 1)) * chartWidth);
+  const y = (value) => padding.top + chartHeight - ((value - min) / (max - min)) * chartHeight;
+
+  context.font = '12px "Yu Gothic", sans-serif';
+  context.lineWidth = 1;
+  context.strokeStyle = "#dbe2dc";
+  context.fillStyle = "#68746f";
+  context.textAlign = "right";
+  for (let step = 0; step <= 4; step += 1) {
+    const value = min + ((max - min) / 4) * step;
+    const lineY = y(value);
+    context.beginPath();
+    context.moveTo(padding.left, lineY);
+    context.lineTo(width - padding.right, lineY);
+    context.stroke();
+    context.fillText(String(Math.round(value)), padding.left - 8, lineY + 4);
+  }
+
+  if (Number.isFinite(options.reference)) {
+    context.save();
+    context.strokeStyle = "#d97706";
+    context.setLineDash([5, 5]);
+    context.beginPath();
+    context.moveTo(padding.left, y(options.reference));
+    context.lineTo(width - padding.right, y(options.reference));
+    context.stroke();
+    context.restore();
+  }
+
+  context.textAlign = "center";
+  const labelStep = Math.max(1, Math.ceil(labels.length / 6));
+  labels.forEach((label, index) => {
+    if (index % labelStep === 0 || index === labels.length - 1) {
+      context.fillText(label, x(index), height - 14);
+    }
+  });
+
+  series.forEach((item) => {
+    if (!item.points.length) return;
+    context.strokeStyle = item.color;
+    context.fillStyle = item.color;
+    context.lineWidth = 3;
+    context.beginPath();
+    item.points.forEach((point, index) => {
+      const px = x(point.index);
+      const py = y(point.value);
+      if (index === 0) context.moveTo(px, py);
+      else context.lineTo(px, py);
+    });
+    context.stroke();
+    item.points.forEach((point) => {
+      context.beginPath();
+      context.arc(x(point.index), y(point.value), 4, 0, Math.PI * 2);
+      context.fill();
+    });
+  });
+}
+
+function renderLearningCharts() {
+  const accuracy = getDailyAccuracyTrend();
+  els.accuracyTrendChart.classList.toggle("hidden", !accuracy.length);
+  els.accuracyTrendEmpty.classList.toggle("hidden", Boolean(accuracy.length));
+  if (accuracy.length) {
+    drawTrendChart(
+      els.accuracyTrendChart,
+      [{ color: "#0f766e", points: accuracy.map((item, index) => ({ index, value: item.value })) }],
+      { labels: accuracy.map((item) => item.label), min: 0, max: 100, reference: 70 }
+    );
+  }
+
+  const exams = getExamScoreTrend();
+  els.examScoreTrendChart.classList.toggle("hidden", !exams.length);
+  els.examScoreTrendEmpty.classList.toggle("hidden", Boolean(exams.length));
+  if (exams.length) {
+    drawTrendChart(
+      els.examScoreTrendChart,
+      [
+        { color: "#0f766e", points: exams.map((item, index) => ({ ...item, index })).filter((item) => item.series === "科目A") },
+        { color: "#b45309", points: exams.map((item, index) => ({ ...item, index })).filter((item) => item.series === "科目B") }
+      ],
+      { labels: exams.map((item) => item.label), min: 0, max: 1000, reference: 600 }
+    );
+  }
+}
+
 function renderStats() {
   const totalAttempts = history.length;
   const averages = history.map((attempt) => attempt.percentage);
@@ -4658,6 +5094,7 @@ function renderStats() {
     <div class="metric"><span>最新 科目B推定</span><strong>${latestSubjectB ? `${latestSubjectB.estimatedScore}点` : "未受験"}</strong></div>
     <div class="metric"><span>本番総合判定</span><strong>${combinedExamLabel}</strong></div>
   `;
+  requestAnimationFrame(renderLearningCharts);
 
   const rows = getStageStats();
   els.statsTable.innerHTML = `
@@ -4677,6 +5114,37 @@ function renderStats() {
       )
       .join("")}
   `;
+
+  const weakQuestions = getRankedWeakQuestions(10);
+  els.reviewTopWeakQuestions.classList.toggle("hidden", !weakQuestions.length);
+
+  els.weakQuestionRanking.innerHTML = weakQuestions.length
+    ? weakQuestions
+        .map(
+          (item, index) => `
+            <article class="weak-question-item">
+              <div class="weak-question-rank">${index + 1}</div>
+              <div class="weak-question-content">
+                <div class="weak-question-meta">
+                  <span>${escapeHtml(item.stageName || getStageNameById(item.stageId))}</span>
+                  <span>${escapeHtml(item.tag || "その他")}</span>
+                </div>
+                <strong>${escapeHtml(item.text)}</strong>
+                <div class="weak-question-progress" aria-label="正答率 ${item.percentage}%">
+                  <span style="width: ${item.percentage}%"></span>
+                </div>
+              </div>
+              <div class="weak-question-score">
+                <strong>${item.percentage}%</strong>
+                <span>${item.correct}/${item.attempts}正解</span>
+                <small>誤答${item.wrong}回</small>
+                <button class="secondary-button compact" type="button" data-review-question="${escapeHtml(item.id)}">この問題を復習</button>
+              </div>
+            </article>
+          `
+        )
+        .join("")
+    : `<div class="feedback">まだ苦手問題の記録がありません。問題へ回答すると正答率が集計されます。</div>`;
 
   els.historyList.innerHTML = history.length
     ? history
@@ -4835,7 +5303,14 @@ function renderAudit(filter = "priority") {
 }
 
 els.backToStages.addEventListener("click", () => {
-  if (isFullExamMode() && !window.confirm("本番模試を終了してステージ一覧へ戻りますか？現在の回答は保存されません。")) return;
+  if (isFullExamMode()) {
+    saveActiveExam();
+    clearQuizTimer();
+    setView("stage");
+    current = null;
+    renderStages();
+    return;
+  }
   clearQuizTimer();
   setView("stage");
   current = null;
@@ -4899,6 +5374,25 @@ els.showStats.addEventListener("click", () => {
   renderStats();
   setView("stats");
 });
+els.backupData.addEventListener("click", () => {
+  try {
+    downloadBackup();
+  } catch (error) {
+    window.alert(`バックアップを作成できませんでした。\n${error.message}`);
+  }
+});
+els.restoreData.addEventListener("click", () => els.restoreDataFile.click());
+els.restoreDataFile.addEventListener("change", () => {
+  const [file] = els.restoreDataFile.files;
+  if (file) restoreBackup(file);
+});
+els.reviewTopWeakQuestions.addEventListener("click", () => {
+  startRankedQuestionReview(getRankedWeakQuestions(10).map((question) => question.id));
+});
+els.weakQuestionRanking.addEventListener("click", (event) => {
+  const questionIdToReview = event.target.dataset.reviewQuestion;
+  if (questionIdToReview) startRankedQuestionReview([questionIdToReview]);
+});
 els.closeStats.addEventListener("click", () => setView("stage"));
 els.showAudit.addEventListener("click", () => {
   clearQuizTimer();
@@ -4930,12 +5424,32 @@ els.weakMode.addEventListener("click", startWeakMode);
 els.randomMode.addEventListener("click", startRandomMode);
 els.subjectAExam.addEventListener("click", () => startFullExam("A"));
 els.subjectBExam.addEventListener("click", () => startFullExam("B"));
+els.suspendedExamBoard.addEventListener("click", (event) => {
+  const resumeSubject = event.target.dataset.resumeExam;
+  if (resumeSubject) {
+    resumeSuspendedExam(resumeSubject);
+    return;
+  }
+  const discardSubject = event.target.dataset.discardExam;
+  if (discardSubject && window.confirm(`中断中の科目${discardSubject}模試を破棄しますか？`)) {
+    clearSuspendedExam(discardSubject);
+  }
+});
+window.addEventListener("resize", () => {
+  if (!els.statsView.classList.contains("hidden")) renderLearningCharts();
+});
+window.addEventListener("pagehide", saveActiveExam);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") saveActiveExam();
+});
 els.resetProgress.addEventListener("click", () => {
   const confirmed = window.confirm("進捗、成績履歴、進化状態、称号をすべてリセットします。本当に実行しますか？");
   if (!confirmed) return;
 
   progress = {};
   history = [];
+  questionStats = {};
+  suspendedExams = {};
   gameState = {
     unlockedBadges: [],
     unlockedEvolutions: [],
@@ -4957,12 +5471,15 @@ els.resetProgress.addEventListener("click", () => {
   };
   saveProgress();
   saveHistory();
+  saveQuestionStats();
+  saveSuspendedExams();
   saveGameState();
   saveCreature();
   renderStages();
   renderCreature("進化の記録をリセットしました。");
 });
 
+migrateWrongQuestionStats();
 recordEvolutionUnlock(creature.branchId);
 syncGameAchievements();
 renderStages();

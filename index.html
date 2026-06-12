@@ -9,7 +9,7 @@
     <title>基本情報 ステージ模試</title>
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v34" />
   </head>
   <body>
     <main class="app-shell">
@@ -21,6 +21,11 @@
         <div class="stats" aria-label="学習状況">
           <span><strong id="clearedCount">0</strong> / <span id="stageCount">0</span> cleared</span>
           <button class="secondary-button compact" id="showStats" type="button">成績</button>
+          <div class="data-actions" aria-label="学習データ管理">
+            <button class="secondary-button compact" id="backupData" type="button">バックアップ</button>
+            <button class="secondary-button compact" id="restoreData" type="button">復元</button>
+            <input class="hidden" id="restoreDataFile" type="file" accept="application/json,.json" />
+          </div>
           <button class="secondary-button compact hidden" id="showAudit" type="button">監査</button>
           <button class="icon-button" id="resetProgress" type="button" title="進捗をリセット" aria-label="進捗をリセット">
             ↺
@@ -59,6 +64,7 @@
           <h2>ステージを選択</h2>
           <p>分野ごとのステージからランダムに出題されます。</p>
         </div>
+        <div id="suspendedExamBoard" class="suspended-exam-board hidden"></div>
         <button id="weakMode" class="weak-mode-button" type="button">
           <span>
             <strong>弱点克服モード</strong>
@@ -161,7 +167,44 @@
             <button class="ghost-button" id="closeStats" type="button">← 戻る</button>
           </div>
           <div id="statsSummary" class="stats-summary"></div>
+          <section class="learning-chart-section">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Learning Trend</p>
+                <h3>学習推移</h3>
+              </div>
+              <span>履歴から自動集計</span>
+            </div>
+            <div class="learning-chart-grid">
+              <article class="learning-chart-card">
+                <div class="chart-title">
+                  <strong>日別正答率</strong>
+                  <span><i class="legend-line accuracy"></i>直近14日 / 目安70%</span>
+                </div>
+                <canvas id="accuracyTrendChart" aria-label="日別正答率の推移グラフ"></canvas>
+                <p id="accuracyTrendEmpty" class="chart-empty hidden">演習結果が保存されると表示されます。</p>
+              </article>
+              <article class="learning-chart-card">
+                <div class="chart-title">
+                  <strong>科目A・B 推定評価点</strong>
+                  <span><i class="legend-line subject-a"></i>科目A <i class="legend-line subject-b"></i>科目B / 目安600点</span>
+                </div>
+                <canvas id="examScoreTrendChart" aria-label="科目Aと科目Bの推定評価点推移グラフ"></canvas>
+                <p id="examScoreTrendEmpty" class="chart-empty hidden">本番模試を受験すると表示されます。</p>
+              </article>
+            </div>
+          </section>
           <div id="statsTable" class="stats-table"></div>
+          <section class="weak-question-section">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Weak Question Ranking</p>
+                <h3>苦手問題ランキング</h3>
+              </div>
+              <button class="secondary-button compact hidden" id="reviewTopWeakQuestions" type="button">上位10問をまとめて復習</button>
+            </div>
+            <div id="weakQuestionRanking" class="weak-question-ranking"></div>
+          </section>
           <div id="historyList" class="history-list"></div>
         </div>
       </section>
@@ -197,8 +240,9 @@
       </section>
     </main>
 
-    <script src="improvement-questions.js"></script>
-    <script src="subject-b-case-questions.js"></script>
-    <script src="app.js"></script>
+    <script src="improvement-questions.js?v34"></script>
+    <script src="subject-b-case-questions.js?v34"></script>
+    <script src="subject-b-case-questions-2.js?v34"></script>
+    <script src="app.js?v34"></script>
   </body>
 </html>

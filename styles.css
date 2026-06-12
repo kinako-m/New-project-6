@@ -84,6 +84,11 @@ h1 {
   font-size: 1.3rem;
 }
 
+.data-actions {
+  display: flex;
+  gap: 8px;
+}
+
 .icon-button {
   width: 42px;
   height: 42px;
@@ -869,6 +874,42 @@ h1 {
   margin-bottom: 14px;
 }
 
+.suspended-exam-board {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.suspended-exam-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid #e3b35d;
+  border-left: 5px solid var(--accent);
+  border-radius: 8px;
+  background: #fffaf0;
+}
+
+.suspended-exam-card span,
+.suspended-exam-card small {
+  display: block;
+  color: var(--muted);
+}
+
+.suspended-exam-card strong {
+  display: block;
+  margin: 3px 0;
+  font-size: 1.1rem;
+}
+
+.suspended-exam-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
 .exam-mode-button {
   min-height: 96px;
   display: flex;
@@ -1268,6 +1309,158 @@ h1 {
 
 .history-item {
   grid-template-columns: 1fr 0.5fr 0.8fr;
+}
+
+.learning-chart-section {
+  margin-top: 26px;
+}
+
+.learning-chart-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.learning-chart-card {
+  position: relative;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+}
+
+.chart-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.chart-title span {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+  justify-content: flex-end;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.legend-line {
+  display: inline-block;
+  width: 18px;
+  height: 3px;
+  background: var(--brand);
+}
+
+.legend-line.subject-b {
+  background: #b45309;
+}
+
+.learning-chart-card canvas {
+  display: block;
+  width: 100%;
+  height: 250px;
+}
+
+.learning-chart-card canvas.hidden {
+  display: none;
+}
+
+.chart-empty {
+  display: grid;
+  min-height: 250px;
+  place-items: center;
+  margin: 0;
+  color: var(--muted);
+  text-align: center;
+}
+
+.weak-question-section {
+  margin-top: 26px;
+}
+
+.weak-question-ranking {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.weak-question-item {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) 100px;
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+}
+
+.weak-question-rank {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ink);
+  color: white;
+  font-weight: 900;
+}
+
+.weak-question-content {
+  min-width: 0;
+}
+
+.weak-question-content strong {
+  display: block;
+  margin-top: 5px;
+  line-height: 1.55;
+}
+
+.weak-question-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.weak-question-progress {
+  height: 6px;
+  margin-top: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e4ebe6;
+}
+
+.weak-question-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--brand);
+}
+
+.weak-question-score {
+  display: grid;
+  gap: 2px;
+  text-align: right;
+}
+
+.weak-question-score strong {
+  font-size: 1.4rem;
+}
+
+.weak-question-score span,
+.weak-question-score small {
+  color: var(--muted);
+}
+
+.weak-question-score button {
+  margin-top: 6px;
+  white-space: nowrap;
 }
 
 .ultimate-progress {
@@ -1778,8 +1971,29 @@ h1 {
     justify-content: space-between;
   }
 
+  .stats {
+    flex-wrap: wrap;
+  }
+
+  .data-actions {
+    flex: 1 1 100%;
+  }
+
+  .data-actions button {
+    flex: 1;
+  }
+
   .exam-mode-grid {
     grid-template-columns: 1fr;
+  }
+
+  .suspended-exam-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .suspended-exam-actions button {
+    flex: 1;
   }
 
   .creature-card {
@@ -1867,6 +2081,37 @@ h1 {
   .stats-row,
   .history-item {
     grid-template-columns: 1fr;
+  }
+
+  .learning-chart-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-title {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .chart-title span {
+    justify-content: flex-start;
+  }
+
+  .weak-question-item {
+    grid-template-columns: 32px minmax(0, 1fr);
+  }
+
+  .weak-question-score {
+    grid-column: 2;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: baseline;
+    text-align: left;
+  }
+
+  .weak-question-score button {
+    width: 100%;
+    margin-top: 2px;
   }
 }
 #questionText {

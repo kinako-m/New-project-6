@@ -10,6 +10,7 @@ const context = {
   getExplanationTip: () => "",
   IMPROVEMENT_QUESTIONS: require("../improvement-questions.js"),
   SUBJECT_B_CASE_QUESTIONS: require("../subject-b-case-questions.js"),
+  SUBJECT_B_CASE_QUESTIONS_2: require("../subject-b-case-questions-2.js"),
 };
 vm.createContext(context);
 vm.runInContext(dataSource, context);
@@ -109,16 +110,32 @@ const definitionStyle = all.filter((q) =>
 const calculationStyle = all.filter((q) =>
   /(計算|求め|何回|何秒|何ビット|利益|確率|稼働率|CPI|SPI|ROI|配列|変数)/.test(q.text)
 ).length;
-const subjectBAlgorithmTags = new Set(["擬似言語", "トレース", "実戦トレース", "ループ", "配列", "再帰", "科目Bアルゴリズム", "探索トレース", "整列トレース", "再帰トレース", "条件分岐", "データ構造応用", "グラフ問題", "計算量判断", "配列操作", "文字列処理", "状態遷移", "フラグ処理", "境界値"]);
+const subjectBAlgorithmTags = new Set(["擬似言語", "トレース", "実戦トレース", "ループ", "配列", "再帰", "科目Bアルゴリズム", "科目B長文アルゴリズム", "探索トレース", "整列トレース", "再帰トレース", "条件分岐", "データ構造応用", "グラフ問題", "計算量判断", "配列操作", "文字列処理", "状態遷移", "フラグ処理", "境界値"]);
 const subjectBAlgorithm = all.filter(
   (q) => q.stageId === "algorithm" && subjectBAlgorithmTags.has(q.tag)
 ).length;
 const subjectBSecurity = all.filter(
   (q) =>
     q.stageId === "technology" &&
-    (q.tag === "セキュリティ" || q.tag === "実戦ケース" || q.tag === "科目Bセキュリティ" || q.tag === "インシデント対応" || q.tag === "アクセス制御" || q.tag === "認証設計" || q.tag === "Webセキュリティ" || q.tag === "ログ分析") &&
+    (q.tag === "セキュリティ" || q.tag === "実戦ケース" || q.tag === "科目Bセキュリティ" || q.tag === "科目B長文セキュリティ" || q.tag === "インシデント対応" || q.tag === "アクセス制御" || q.tag === "認証設計" || q.tag === "Webセキュリティ" || q.tag === "ログ分析") &&
     /(場合|対応|攻撃|対策|確認|ログ|委託|障害|不正|安全)/.test(q.text)
 ).length;
+const subjectBLong = all.filter((q) => q.tag === "科目B長文アルゴリズム" || q.tag === "科目B長文セキュリティ");
+
+const subjectBQuality = {
+  total: subjectBLong.length,
+  algorithm: subjectBLong.filter((q) => q.tag === "科目B長文アルゴリズム").length,
+  security: subjectBLong.filter((q) => q.tag === "科目B長文セキュリティ").length,
+  multiline: subjectBLong.filter((q) => q.text.includes("\n")).length,
+  shortQuestionText: subjectBLong.filter((q) => q.text.replace(/\s+/g, "").length < 45).length,
+  shortExplanation: subjectBLong.filter((q) => String(q.explanation || "").replace(/\s+/g, "").length < 24).length,
+  singleWordMixedWithSentence: subjectBLong.filter((q) => {
+    const lengths = q.choices.map((choice) => String(choice).replace(/\s+/g, "").length);
+    return Math.min(...lengths) <= 8 && Math.max(...lengths) >= 18;
+  }).length,
+  sourceCorrectChoicePositions: [0, 1, 2, 3].map((position) => subjectBLong.filter((q) => q.answer === position).length),
+  displayOrderRandomized: true,
+};
 
 const stageRows = stages.map((stage) => {
   const items = all.filter((q) => q.stageId === stage.id);
@@ -169,6 +186,7 @@ const report = {
   repeatedAnswers,
   repeatedTemplates,
   validation,
+  subjectBQuality,
 };
 
 fs.writeFileSync("tools/question-variety-report.json", JSON.stringify(report, null, 2));
