@@ -11,6 +11,8 @@ const context = {
   IMPROVEMENT_QUESTIONS: require("../improvement-questions.js"),
   SUBJECT_B_CASE_QUESTIONS: require("../subject-b-case-questions.js"),
   SUBJECT_B_CASE_QUESTIONS_2: require("../subject-b-case-questions-2.js"),
+  SAMPLE_DERIVED_QUESTIONS: require("../sample-derived-questions.js"),
+  QUESTION_CHOICE_SETS: require("../question-choice-sets.js"),
 };
 vm.createContext(context);
 vm.runInContext(dataSource, context);

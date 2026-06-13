@@ -9,7 +9,7 @@
     <title>基本情報 ステージ模試</title>
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
-    <link rel="stylesheet" href="styles.css?v41" />
+    <link rel="stylesheet" href="styles.css?v63" />
   </head>
   <body>
     <main class="app-shell">
@@ -68,7 +68,7 @@
         <button id="weakMode" class="weak-mode-button" type="button">
           <span>
             <strong>弱点克服モード</strong>
-            <small>過去に間違えた問題・平均点が低い分野を優先</small>
+            <small>復習期限・誤答回数・連続正解から出題を自動調整</small>
           </span>
           <b>開始 →</b>
         </button>
@@ -114,6 +114,24 @@
             <div id="progressBar" class="progress-bar"></div>
           </div>
 
+          <div id="examToolbar" class="exam-toolbar hidden">
+            <button class="secondary-button compact" id="toggleExamReview" type="button">見直す</button>
+            <button class="secondary-button compact" id="openExamNavigator" type="button">問題一覧</button>
+            <button class="primary-button compact" id="finishExam" type="button">模試を終了</button>
+          </div>
+
+          <section id="examNavigator" class="exam-navigator hidden" aria-labelledby="examNavigatorTitle">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Question Navigator</p>
+                <h3 id="examNavigatorTitle">問題一覧</h3>
+              </div>
+              <button class="ghost-button compact" id="closeExamNavigator" type="button">閉じる</button>
+            </div>
+            <div id="examNavigatorSummary" class="exam-navigator-summary"></div>
+            <div id="examQuestionGrid" class="exam-question-grid"></div>
+          </section>
+
           <div class="quiz-creature-companion" aria-hidden="true">
             <div id="quizCreatureVisual" class="creature-visual quiz-creature-visual"></div>
             <div id="quizCreatureSpeech" class="quiz-creature-speech"></div>
@@ -148,8 +166,18 @@
           <p id="earnedFood" class="earned-food"></p>
           <div id="resultAdvice" class="result-advice"></div>
           <div class="score-ring" id="scoreRing" aria-label="スコア"></div>
+          <section id="resultReview" class="result-review hidden" aria-labelledby="resultReviewTitle">
+            <div class="result-review-header">
+              <div>
+                <p class="eyebrow">Review</p>
+                <h3 id="resultReviewTitle">間違えた問題の確認</h3>
+              </div>
+              <span id="resultReviewCount" class="review-count"></span>
+            </div>
+            <div id="resultReviewList" class="result-review-list"></div>
+          </section>
           <div class="result-actions">
-            <button class="secondary-button hidden" id="reviewWrongAnswers" type="button">間違えた問題を復習</button>
+            <button class="secondary-button hidden" id="reviewWrongAnswers" type="button">誤答だけを弱点復習</button>
             <button class="secondary-button hidden" id="startRecommendation" type="button">おすすめを開始</button>
             <button class="secondary-button" id="retryStage" type="button">もう一度</button>
             <button class="primary-button" id="returnStages" type="button">ステージ一覧へ</button>
@@ -206,6 +234,20 @@
             <div id="weakQuestionRanking" class="weak-question-ranking"></div>
           </section>
           <div id="historyList" class="history-list"></div>
+          <section id="historyDetail" class="history-detail hidden" aria-labelledby="historyDetailTitle">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Attempt Detail</p>
+                <h3 id="historyDetailTitle">受験結果の詳細</h3>
+              </div>
+              <div class="history-detail-actions">
+                <button class="secondary-button compact hidden" id="reviewHistoryWrong" type="button">誤答だけを復習</button>
+                <button class="ghost-button compact" id="closeHistoryDetail" type="button">閉じる</button>
+              </div>
+            </div>
+            <div id="historyDetailSummary" class="stats-summary"></div>
+            <div id="historyDetailList" class="history-detail-list"></div>
+          </section>
         </div>
       </section>
 
@@ -240,9 +282,11 @@
       </section>
     </main>
 
-    <script src="improvement-questions.js?v41"></script>
-    <script src="subject-b-case-questions.js?v41"></script>
-    <script src="subject-b-case-questions-2.js?v41"></script>
-    <script src="app.js?v41"></script>
+    <script src="improvement-questions.js?v63"></script>
+    <script src="subject-b-case-questions.js?v63"></script>
+    <script src="subject-b-case-questions-2.js?v63"></script>
+    <script src="sample-derived-questions.js?v63"></script>
+    <script src="question-choice-sets.js?v63"></script>
+    <script src="app.js?v63"></script>
   </body>
 </html>

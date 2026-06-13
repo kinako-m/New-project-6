@@ -2381,7 +2381,8 @@ function addImprovementQuestionPack() {
   const packs = [
     globalThis.IMPROVEMENT_QUESTIONS || {},
     globalThis.SUBJECT_B_CASE_QUESTIONS || {},
-    globalThis.SUBJECT_B_CASE_QUESTIONS_2 || {}
+    globalThis.SUBJECT_B_CASE_QUESTIONS_2 || {},
+    globalThis.SAMPLE_DERIVED_QUESTIONS || {}
   ];
   const byId = Object.fromEntries(stages.map((stage) => [stage.id, stage]));
   const seen = new Set(stages.flatMap((stage) => stage.questions.map((question) => `${stage.id}:${question.text}`)));
@@ -2637,6 +2638,256 @@ function finalizeDistractorQuality() {
 
 finalizeDistractorQuality();
 
+function refineHighPriorityQuestionQuality() {
+  const fixes = new Map([
+    ["文字コード UTF-8 の特徴として適切なものはどれか。", {
+      choices: ["Unicodeを1〜4バイトの可変長で表現できる", "全ての文字を固定2バイトで表現する", "ASCII文字も必ず4バイトで表現する", "文字ごとに異なる画像データとして表現する"],
+      explanation: "UTF-8はUnicodeの文字を1〜4バイトの可変長で表現します。ASCIIと同じ文字は1バイトになるため、既存のASCIIデータとも互換性があります。"
+    }],
+    ["ログイン失敗が短時間に大量発生した。疑うべき攻撃として適切なものはどれか。", {
+      choices: ["多数のパスワードを試すブルートフォース攻撃", "入力欄からSQL文を実行させるSQLインジェクション", "画面へ不正スクリプトを埋め込むXSS", "利用者に意図しない要求を送らせるCSRF"],
+      explanation: "短時間に大量のログイン失敗が続く場合、多数のパスワード候補を試すブルートフォース攻撃が疑われます。送信元、対象ID、試行頻度を確認し、制限や多要素認証を検討します。"
+    }],
+    ["パスワードをサーバに保存する方法として適切なものはどれか。", {
+      choices: ["利用者ごとのソルトを付けて安全なハッシュ関数で保存する", "ソルトを付けず高速なハッシュ関数だけで保存する", "復号できる共通鍵暗号で全利用者分を保存する", "全利用者で同じ固定ソルトを使って保存する"],
+      explanation: "利用者ごとのランダムなソルトと、パスワード保存向けの計算コストが高いハッシュ関数を使います。これにより同一パスワードの判別や総当たり解析を難しくできます。"
+    }],
+    ["検索欄へ入力した文字列がそのままHTMLとして表示される。優先すべき対策はどれか。", {
+      choices: ["出力時にHTMLの文脈に応じてエスケープする", "入力値をSQLのプレースホルダへ渡す", "CSRFトークンを要求ごとに検証する", "通信経路をTLSで暗号化する"],
+      explanation: "入力文字列がHTMLとして解釈される問題はXSSにつながります。画面へ出力する時点で、HTML属性や本文などの文脈に応じてエスケープすることが基本対策です。"
+    }],
+    ["SQL文を文字列連結で組み立てている処理を安全にする方法はどれか。", {
+      choices: ["プレースホルダを使ったパラメータ化クエリに変更する", "入力値から空白文字だけを削除して連結する", "SQLエラーを利用者へ詳細表示する", "DB接続をTLS化したまま文字列連結を続ける"],
+      explanation: "パラメータ化クエリではSQL命令と入力値を分離できるため、入力値をSQL命令として解釈させません。通信暗号化や文字削除だけではSQLインジェクションを防げません。"
+    }],
+    ["ログイン済み利用者の意図しない送金要求を防ぐ対策として適切なものはどれか。", {
+      choices: ["推測困難なCSRFトークンをサーバ側で検証する", "送金内容をHTMLエスケープして表示する", "送金SQLをパラメータ化クエリにする", "ログイン画面だけをTLSで暗号化する"],
+      explanation: "ログイン済み利用者へ意図しない要求を送らせる攻撃には、要求元を確認できるCSRFトークンの検証が有効です。XSS対策やSQLインジェクション対策とは目的が異なります。"
+    }],
+    ["ランサムウェア感染が疑われるPCを発見した。被害拡大防止のため最初に行うことはどれか。", {
+      choices: ["感染が疑われるPCをネットワークから隔離する", "直ちにバックアップを感染PCへ復元する", "調査前に感染PCを初期化する", "感染PC上のログを全て削除する"],
+      explanation: "最初にネットワークから隔離して、共有領域や他端末への感染拡大を止めます。証拠保全と影響調査の前に初期化、復元、ログ削除を行うべきではありません。"
+    }],
+    ["正規化の主な目的はどれか。", {
+      choices: ["データの重複と更新時の不整合を減らす", "検索速度を必ず最大化する", "全ての表を一つの表へ統合する", "全ての列へインデックスを作成する"],
+      explanation: "正規化はデータの重複を抑え、追加・更新・削除時の不整合を減らすために表を適切に分割します。検索性能は結合増加によって下がる場合もあります。"
+    }],
+    ["UNIQUE制約の目的はどれか。", {
+      choices: ["指定した列または列の組合せの値の重複を防ぐ", "列へのNULL入力を必ず禁止する", "別表に存在しない値の入力を防ぐ", "条件に合わない値の入力を防ぐ"],
+      explanation: "UNIQUE制約は指定列の値の重複を防ぎます。NOT NULLはNULL禁止、外部キーは参照整合性、CHECKは値の条件を検証する制約です。"
+    }],
+    ["注文表と顧客表から、注文がない顧客も含めて一覧表示したい。適切な結合はどれか。", {
+      choices: ["顧客表を左側にしたLEFT OUTER JOIN", "注文がある顧客だけを残すINNER JOIN", "全ての顧客と注文を総当たりにするCROSS JOIN", "注文表を左側にしたLEFT OUTER JOIN"],
+      explanation: "顧客表を左側にしたLEFT OUTER JOINなら、対応する注文がない顧客も結果へ残せます。INNER JOINでは注文がない顧客が除外されます。"
+    }],
+    ["顧客表のメールアドレスに重複を許さず、未入力は許可したい。適切な制約はどれか。", {
+      choices: ["メールアドレス列へUNIQUE制約を設定する", "メールアドレス列へNOT NULL制約だけを設定する", "メールアドレス列を外部キーだけにする", "メールアドレス列へ常に真となるCHECK制約を設定する"],
+      explanation: "重複を防ぎ、NULLは許可したい場合はUNIQUE制約を使います。NOT NULLは未入力を禁止するため要件に合いません。"
+    }],
+    ["信頼性の説明として最も適切なものはどれか。", {
+      choices: ["一定条件・一定期間で故障せず機能を果たす性質", "必要なときにサービスを利用できる性質", "不正な情報開示を防ぐ性質", "別の環境へ移行しやすい性質"],
+      explanation: "信頼性は、定められた条件と期間で故障せず機能を果たす性質です。利用可能性は可用性、不正開示の防止は機密性、環境移行のしやすさは移植性です。"
+    }],
+    ["移植性の説明として最も適切なものはどれか。", {
+      choices: ["異なるOSや実行環境へ移行しやすい性質", "障害が発生しても機能を継続しやすい性質", "利用者が目的を達成しやすい性質", "変更時に影響範囲を特定しやすい性質"],
+      explanation: "移植性は、異なるOS、ハードウェア、実行環境へソフトウェアを移しやすい性質です。他の選択肢は信頼性、使用性、保守性に関する説明です。"
+    }],
+    ["レビューで設計書の欠陥を早期発見する主な効果はどれか。", {
+      choices: ["後工程で発覚する欠陥と手戻りを減らす", "テスト工程を行わなくても品質を保証できる", "レビュー参加者を増やすほど欠陥を必ずゼロにできる", "設計書の欠陥を実行時に自動修復できる"],
+      explanation: "上流工程のレビューで欠陥を見つけると、実装やテスト後に修正するより手戻りと修正コストを抑えられます。レビューだけでテストが不要になるわけではありません。"
+    }],
+    ["動的計画法を見分ける特徴として最も適切なものはどれか。", {
+      choices: ["部分問題の計算結果を保存して再利用する", "各段階でその時点の最良候補だけを選ぶ", "問題を独立した小問題へ分割して結果を統合する", "候補を試し、条件に合わなければ直前の状態へ戻る"],
+      explanation: "動的計画法は、重複する部分問題の計算結果を表などへ保存して再利用します。他の選択肢は、貪欲法、分割統治法、バックトラッキングの特徴です。"
+    }],
+    ["第3正規形を見分ける特徴として最も適切なものはどれか。", {
+      choices: ["非キー属性間の推移的関数従属を除く", "繰返し項目をなくして各項目を単一値にする", "複合キーの一部への部分関数従属を除く", "全ての決定項が候補キーになるようにする"],
+      explanation: "第3正規形では、非キー属性を経由して別の非キー属性が決まる推移的関数従属を除きます。他は第1正規形、第2正規形、BCNFの特徴です。"
+    }],
+    ["COMMITを見分ける特徴として最も適切なものはどれか。", {
+      choices: ["トランザクションの更新内容を確定する", "トランザクションの未確定更新を取り消す", "処理途中に復帰可能な位置を設定する", "他の処理からの更新を一時的に制限する"],
+      explanation: "COMMITはトランザクション内の更新を確定します。ROLLBACKは取消し、SAVEPOINTは復帰位置の設定、ロックは同時実行を制御します。"
+    }],
+    ["ROLLBACKを見分ける特徴として最も適切なものはどれか。", {
+      choices: ["トランザクションの未確定更新を取り消す", "トランザクションの更新内容を確定する", "処理途中に復帰可能な位置を設定する", "他の処理からの更新を一時的に制限する"],
+      explanation: "ROLLBACKは未確定の更新を取り消して整合性を保ちます。COMMITは確定、SAVEPOINTは復帰位置の設定、ロックは同時実行制御です。"
+    }],
+    ["共有ロックを見分ける特徴として最も適切なものはどれか。", {
+      choices: ["複数処理の参照は許可し、更新を制限する", "一つの処理だけに参照と更新を許可する", "トランザクションの更新内容を確定する", "トランザクションの未確定更新を取り消す"],
+      explanation: "共有ロックは複数処理からの参照を許可しつつ、競合する更新を制限します。排他ロック、COMMIT、ROLLBACKとは役割が異なります。"
+    }],
+    ["インデックスの主な目的はどれか。", {
+      choices: ["検索条件に合う行へ効率よく到達して検索を高速化する", "列の値の重複を必ず禁止する", "表同士の参照整合性を保証する", "トランザクションの未確定更新を取り消す"],
+      explanation: "インデックスは検索対象の行へ効率よく到達するための索引です。更新時の管理コストや容量が増えるため、全列へ無条件に作成するものではありません。"
+    }],
+    ["ソースコードへAPI秘密鍵が書かれている。改善策はどれか。", {
+      choices: ["秘密情報管理機能へ移し、漏えいした可能性のある鍵を更新する", "秘密鍵を難読化して同じソースコード内へ残す", "非公開リポジトリなら安全と判断して鍵を継続利用する", "秘密鍵を環境ごとに分けず開発者全員で共有する"],
+      explanation: "秘密鍵はソースコードから分離して秘密情報管理機能で扱い、漏えいした可能性がある鍵は失効・更新します。難読化や非公開リポジトリだけでは十分ではありません。"
+    }],
+    ["退職者のアカウントで深夜にログイン成功が記録された。最初に行う対応として適切なものはどれか。", {
+      choices: ["該当アカウントを無効化し、操作履歴と影響範囲を保全する", "本人へ確認できるまでアカウントを有効なまま監視する", "該当アカウントのログだけを削除して再発を確認する", "全利用者のアカウントを直ちに削除する"],
+      explanation: "不正利用の拡大を止めるため該当アカウントを無効化し、調査に必要なログと操作履歴を保全します。確認待ちで利用可能なままにしたり、証拠を削除したりしてはいけません。"
+    }],
+    ["従業員PCでランサムウェア感染が疑われ、共有フォルダ内のファイル名が次々に変化している。最初に行う対応として最も適切なものはどれか。", {
+      choices: ["感染が疑われるPCをネットワークから隔離し、証拠と影響範囲を確認する", "共有フォルダを停止せず、直ちに最新バックアップを上書き復元する", "感染PCを初期化してから影響範囲の調査を始める", "感染PCをネットワークへ接続したままウイルススキャンだけを行う"],
+      explanation: "暗号化の拡大を止めるため、まず感染端末をネットワークから隔離します。その後、証拠を保全して影響範囲を確認し、安全を確認したバックアップから復旧します。"
+    }],
+    ["社内無線LANで、退職者が以前共有されていた共通パスワードを使って接続できた。改善策として最も適切なものはどれか。", {
+      choices: ["利用者・端末ごとの認証を導入し、退職時に個別資格情報を失効させる", "共通パスワードを定期変更し、引き続き全社員で共有する", "無線LAN名を非公開にして共通パスワードは変更しない", "接続端末のMACアドレスだけを手作業で登録する"],
+      explanation: "共通パスワードでは退職者だけを個別に失効できません。利用者・端末ごとの認証を導入し、退職時に該当する資格情報を無効化できる運用が適切です。"
+    }],
+    ["公開Webサーバに重大な脆弱性が見つかったが、修正版の適用には数日かかる。暫定対応として最も適切なものはどれか。", {
+      choices: ["不要な機能を停止し、WAFやアクセス制限で攻撃経路を絞り、監視を強化する", "修正版の適用まで現状の公開範囲と監視設定を維持する", "脆弱な機能を残したまま管理者パスワードだけを変更する", "影響調査を省略し、Webサーバのログ記録を停止する"],
+      explanation: "修正版を適用できるまで、不要機能の停止、アクセス制限、WAF、監視強化などの補完的対策で露出と影響を抑えます。"
+    }],
+    ["複数サーバのログ時刻が数分ずつずれており、不正アクセス時の操作順序を追跡できない。改善策として最も適切なものはどれか。", {
+      choices: ["信頼できる時刻源と同期し、ログの時刻形式とタイムゾーンを統一する", "調査時に担当者がログ時刻を目視で補正する", "サーバごとに別の時刻源を設定してずれを記録する", "ログの時刻情報を削除して記録順だけを利用する"],
+      explanation: "複数機器のログを正しく突合するには、信頼できる時刻源との同期と、時刻形式・タイムゾーンの統一が必要です。"
+    }],
+    ["オンライン会議の録画に顧客情報が含まれている。参加者以外へ不用意に公開されることを防ぐ運用はどれか。", {
+      choices: ["閲覧者を必要な人に限定し、保存期間と削除手順を定める", "録画URLを知っている人なら閲覧できる設定にする", "参加者全員が個人ストレージへ複製して保管する", "公開後に問題が起きた場合だけアクセス権を見直す"],
+      explanation: "顧客情報を含む録画は、必要最小限の閲覧権限、保存期間、削除手順を定めて管理します。URLだけに依存した公開や個人領域への複製は避けます。"
+    }],
+    ["システムへログイン後、長時間操作しなくてもセッションが無期限に有効なままである。改善策として最も適切なものはどれか。", {
+      choices: ["一定時間の無操作でセッションを失効させ、重要操作では再認証を求める", "セッションIDを長くして有効期限は設定しない", "ログイン時だけ本人確認し、その後の再認証を行わない", "利用者が明示的にログアウトするまで全端末でセッションを共有する"],
+      explanation: "無操作タイムアウトと重要操作時の再認証により、離席や端末紛失時の不正利用を抑えます。セッションIDの長さだけでは無期限利用のリスクを解消できません。"
+    }],
+    ["システム開発で利用する外部ライブラリに、既知の重大な脆弱性が含まれていることが判明した。適切な対応はどれか。", {
+      choices: ["利用箇所と影響を確認し、安全な版へ更新して回帰試験を行う", "ライブラリのファイル名だけ変更して利用を継続する", "脆弱な機能を利用していないと推測し、影響調査を省略する", "更新による影響を避けるため、脆弱性情報を記録せず現状維持する"],
+      explanation: "利用箇所と影響範囲を確認し、安全な版への更新と回帰試験を行います。更新できない場合は代替策や利用停止も含めてリスクを管理します。"
+    }],
+    ["災害対策拠点へバックアップを保管しているが、復旧手順を一度も試したことがない。最も適切な改善はどれか。", {
+      choices: ["目標復旧時間と復旧時点を確認し、定期的に復元訓練を実施する", "バックアップ処理の成功表示だけを毎日確認する", "災害発生時に初めて復旧担当者と手順を決める", "本番環境へ毎回復元して確認し、事前調整は行わない"],
+      explanation: "バックアップは復元できて初めて有効です。RTOとRPOを確認し、安全な訓練環境で定期的に復元手順を検証して改善します。"
+    }],
+    ["コンプライアンスの説明はどれか。", {
+      choices: ["法令や社会規範を守る考え方", "特定の個人を識別できる情報を適切に扱う考え方", "他人の認証情報を使った不正ログインなどを禁じる法律", "企業が社会的責任を果たす考え方"],
+      explanation: "コンプライアンスは、法令や社会規範を守る考え方です。個人情報保護、不正アクセス禁止法、CSRとは対象や目的が異なります。"
+    }],
+    ["同じ計算を何度も行う再帰を高速化するため、計算済み結果を保存して再利用する考え方はどれか。", {
+      choices: ["計算済み結果を保存して再利用するメモ化", "入出力データを一時保存するスプーリング", "同じデータを複数装置へ複製するミラーリング", "必要な列だけを取り出す射影"],
+      explanation: "計算済み結果を保存して再利用するメモ化が正解です。同じ引数に対する計算結果を保存し、再度必要になったとき再利用して重複計算を減らします。スプーリングは入出力の待ち時間対策、ミラーリングはデータ複製、射影は関係データベースから列を選ぶ操作です。"
+    }],
+    ["1秒あたり2MBのデータを10秒間転送すると、転送量は何MBか。", {
+      choices: ["20MB", "12MB", "200MB", "5MB"],
+      explanation: "転送量は転送速度×時間なので、2MB/秒×10秒=20MBです。12MBは速度と時間を加えた値、200MBは10を余分に掛けた値、5MBは時間を速度で割った値です。"
+    }],
+    ["空のスタックに A, B, C の順にpushし、1回popしたとき取り出されるものはどれか。", {
+      choices: ["C", "A", "B", "何も取り出せない"],
+      explanation: "スタックは後入れ先出し（LIFO）なので、最後にpushしたCが最初に取り出されます。Aはキューなら最初に出る値、Bは中央の値です。要素が三つあるため、何も取り出せない状態ではありません。"
+    }],
+    ["空のキューに A, B, C の順にenqueueし、1回dequeueしたとき取り出されるものはどれか。", {
+      choices: ["A", "C", "B", "何も取り出せない"],
+      explanation: "キューは先入れ先出し（FIFO）なので、最初にenqueueしたAが最初に取り出されます。Cはスタックなら最初に出る値、Bは中央の値です。要素が三つあるため、何も取り出せない状態ではありません。"
+    }],
+    ["n個の配列を先頭から最後まで1回ずつ調べる処理の計算量はどれか。", {
+      choices: ["O(n)", "O(1)", "O(log n)", "O(n²)"],
+      explanation: "全n要素を1回ずつ確認するため、処理回数はnに比例しO(n)です。O(1)は要素数に依存しない処理、O(log n)は探索範囲を半分ずつ狭める処理、O(n²)は全要素を調べる処理を二重に行う場合の代表例です。"
+    }],
+    ["SNMPについて正しい説明はどれか。", {
+      choices: ["ネットワーク機器の状態監視や設定管理に使うプロトコル", "通信相手を認証して通信内容を暗号化するプロトコル", "IPアドレスから対応するMACアドレスを求めるプロトコル", "端末へIPアドレスなどのネットワーク設定を自動配布するプロトコル"],
+      explanation: "SNMPはルータやスイッチなどの状態監視・管理に使うプロトコルです。暗号化通信はTLS、IPアドレスからMACアドレスを求めるのはARP、ネットワーク設定を自動配布するのはDHCPです。"
+    }],
+    ["ICMPについて正しい説明はどれか。", {
+      choices: ["IP通信のエラー通知や到達確認に使うプロトコル", "通信相手を認証して通信内容を暗号化するプロトコル", "IPアドレスから対応するMACアドレスを求めるプロトコル", "端末へIPアドレスなどのネットワーク設定を自動配布するプロトコル"],
+      explanation: "ICMPはIP通信のエラー通知や到達確認に使われ、pingも利用します。暗号化通信はTLS、IPアドレスからMACアドレスを求めるのはARP、ネットワーク設定を自動配布するのはDHCPです。"
+    }],
+    ["TLSの説明として最も適切なものはどれか。", {
+      choices: ["通信相手の認証と通信内容の暗号化を提供するプロトコル", "ドメイン名とIPアドレスを対応付ける仕組み", "端末へIPアドレスなどのネットワーク設定を自動配布する仕組み", "IPアドレスから対応するMACアドレスを求めるプロトコル"],
+      explanation: "TLSは証明書などを用いた通信相手の認証と、通信内容の暗号化・改ざん検知を提供し、HTTPSなどで使われます。他の選択肢は順にDNS、DHCP、ARPの説明です。"
+    }],
+    ["IDSの説明として最も適切なものはどれか。", {
+      choices: ["不正侵入の兆候を検知して管理者へ通知するシステム", "不正な通信を検知して自動的に遮断するシステム", "Webアプリケーションへの攻撃を検知・防御する仕組み", "通信の許可・拒否をルールに基づいて制御する仕組み"],
+      explanation: "IDSは不正侵入の兆候を検知し、通知することが主目的です。自動遮断まで行うのはIPS、Webアプリケーションを保護するのはWAF、通信ルールで制御するのはファイアウォールです。"
+    }],
+    ["IPSの説明として最も適切なものはどれか。", {
+      choices: ["不正な通信を検知して自動的に遮断するシステム", "不正侵入の兆候を検知して管理者へ通知するシステム", "Webアプリケーションへの攻撃を検知・防御する仕組み", "通信の許可・拒否をルールに基づいて制御する仕組み"],
+      explanation: "IPSは不正な通信を検知し、通信経路上で自動遮断することが主目的です。通知中心なのはIDS、Webアプリケーションを保護するのはWAF、通信ルールで制御するのはファイアウォールです。"
+    }],
+    ["第1正規形の説明として最も適切なものはどれか。", {
+      choices: ["繰返し項目をなくし、各項目を単一の値にする形", "複合主キーの一部だけに依存する項目を分離した形", "非キー項目を経由して依存する項目を分離した形", "全ての決定項が候補キーになるようにした形"],
+      explanation: "第1正規形は繰返し項目をなくし、一つの項目に複数の値を入れない形です。部分関数従属の排除は第2正規形、推移的関数従属の排除は第3正規形、全ての決定項を候補キーにするのはBCNFです。"
+    }],
+    ["第2正規形の説明として最も適切なものはどれか。", {
+      choices: ["複合主キーの一部だけに依存する項目を分離した形", "繰返し項目をなくし、各項目を単一の値にする形", "非キー項目を経由して依存する項目を分離した形", "全ての決定項が候補キーになるようにした形"],
+      explanation: "第2正規形は第1正規形を満たした上で、複合主キーの一部だけに依存する部分関数従属を除いた形です。他の選択肢は順に第1正規形、第3正規形、BCNFの特徴です。"
+    }],
+    ["第3正規形の説明として最も適切なものはどれか。", {
+      choices: ["非キー項目を経由して依存する項目を分離した形", "繰返し項目をなくし、各項目を単一の値にする形", "複合主キーの一部だけに依存する項目を分離した形", "全ての決定項が候補キーになるようにした形"],
+      explanation: "第3正規形は第2正規形を満たした上で、非キー項目を経由する推移的関数従属を除いた形です。他の選択肢は順に第1正規形、第2正規形、BCNFの特徴です。"
+    }],
+    ["配列 A = [3, 3, 2, 1] の要素のうち、値が3の個数はどれか。", {
+      choices: ["2個", "1個", "3個", "4個"],
+      explanation: "配列を先頭から確認すると、値が3の要素は1番目と2番目の合計2個です。1個は片方だけ数えた場合、3個は値3そのものとの混同、4個は配列の全要素数です。"
+    }],
+    ["空のスタックに 1, 2 をpushし、popした値を a に入れる。a はどれか。", {
+      choices: ["2", "1", "3", "値を取り出せない"],
+      explanation: "スタックは後入れ先出し（LIFO）なので、最後にpushした2がpopされ、aに入ります。1は先にpushした値、3は要素に存在しません。二つの要素があるため値を取り出せます。"
+    }],
+    ["変数 count を0にし、配列[1, 4, 6, 3]の各要素が4以上ならcountを1増やす。最後のcountはどれか。", {
+      choices: ["2", "1", "3", "4"],
+      explanation: "4以上の要素は4と6の二つなので、countは0から2回増えて2になります。1は片方だけ数えた値、3は4以下の要素数、4は全要素数です。"
+    }],
+    ["配列[8, 2, 5]を先頭から見て、最初に5より小さい値はどれか。", {
+      choices: ["2", "8", "5", "該当する値はない"],
+      explanation: "先頭の8は5より小さくありません。次の2が条件を満たすため、最初に見つかる値は2です。5は5と等しく「より小さい」には含まれず、条件を満たす値は存在します。"
+    }],
+    ["変数 total を0にし、iを1から5まで1ずつ増やしながら total に i を加える。最後の total はどれか。", {
+      choices: ["15", "25", "6", "10"],
+      explanation: "totalには1+2+3+4+5が加算され、合計は15です。25は5×5とした値、6は最後の反復後のiと混同した値、10は最後の5を加え忘れた値です。"
+    }],
+    ["変数 total を0にし、iを1から10まで1ずつ増やしながら total に i を加える。最後の total はどれか。", {
+      choices: ["55", "100", "11", "45"],
+      explanation: "1から10までの和は10×11÷2=55です。100は10×10とした値、11は最後の反復後のiと混同した値、45は最後の10を加え忘れた値です。"
+    }],
+    ["変数 total を0にし、iを1から15まで1ずつ増やしながら total に i を加える。最後の total はどれか。", {
+      choices: ["120", "225", "16", "105"],
+      explanation: "1から15までの和は15×16÷2=120です。225は15×15とした値、16は最後の反復後のiと混同した値、105は最後の15を加え忘れた値です。"
+    }],
+    ["SMTPについて正しい説明はどれか。", {
+      choices: ["電子メールを送信・中継するためのプロトコル", "メールをサーバ上で管理しながら閲覧するプロトコル", "メールを端末へ取得し、通常は端末側で管理するプロトコル", "メールへ電子署名や暗号化を適用する規格"],
+      explanation: "SMTPは電子メールの送信やメールサーバ間の中継に使います。サーバ上でメールを管理しながら読むのはIMAP、端末へ取得するのはPOP3、電子署名や暗号化を適用する規格はS/MIMEです。"
+    }],
+    ["IMAPについて正しい説明はどれか。", {
+      choices: ["メールをサーバ上で管理しながら複数端末から閲覧するプロトコル", "電子メールを送信・中継するためのプロトコル", "メールを端末へ取得し、通常は端末側で管理するプロトコル", "メールへ電子署名や暗号化を適用する規格"],
+      explanation: "IMAPはメールをサーバ上で管理したまま閲覧するため、複数端末で状態を共有しやすいプロトコルです。送信・中継はSMTP、端末への取得はPOP3、署名・暗号化の規格はS/MIMEです。"
+    }]
+  ]);
+
+  stages.forEach((stage) => {
+    stage.questions.forEach((question) => {
+      const fix = fixes.get(question.text);
+      if (!fix) return;
+      question.choices = [...fix.choices];
+      question.answer = 0;
+      question.explanation = fix.explanation;
+    });
+  });
+}
+
+refineHighPriorityQuestionQuality();
+
+function applyExternalQuestionChoiceSets() {
+  const choiceSets = globalThis.QUESTION_CHOICE_SETS || {};
+  stages.forEach((stage) => {
+    stage.questions.forEach((question) => {
+      const definition = choiceSets[question.text];
+      if (!definition) return;
+      const correctChoice = String(definition.correct);
+      const choicePool = [...new Set((definition.distractors || []).map(String))]
+        .filter((choice) => choice !== correctChoice);
+      if (choicePool.length < 3) return;
+      question.correctChoice = correctChoice;
+      question.choicePool = choicePool;
+      question.choiceNotes = definition.choiceNotes || {};
+      question.choices = [correctChoice, ...choicePool.slice(0, 3)];
+      question.answer = 0;
+    });
+  });
+}
+
+applyExternalQuestionChoiceSets();
+
 const els = {
   stageView: document.querySelector("#stageView"),
   quizView: document.querySelector("#quizView"),
@@ -2665,6 +2916,14 @@ const els = {
   activeStageName: document.querySelector("#activeStageName"),
   questionCounter: document.querySelector("#questionCounter"),
   progressBar: document.querySelector("#progressBar"),
+  examToolbar: document.querySelector("#examToolbar"),
+  toggleExamReview: document.querySelector("#toggleExamReview"),
+  openExamNavigator: document.querySelector("#openExamNavigator"),
+  finishExam: document.querySelector("#finishExam"),
+  examNavigator: document.querySelector("#examNavigator"),
+  closeExamNavigator: document.querySelector("#closeExamNavigator"),
+  examNavigatorSummary: document.querySelector("#examNavigatorSummary"),
+  examQuestionGrid: document.querySelector("#examQuestionGrid"),
   questionTag: document.querySelector("#questionTag"),
   timeRemaining: document.querySelector("#timeRemaining"),
   questionText: document.querySelector("#questionText"),
@@ -2677,6 +2936,9 @@ const els = {
   earnedFood: document.querySelector("#earnedFood"),
   resultAdvice: document.querySelector("#resultAdvice"),
   scoreRing: document.querySelector("#scoreRing"),
+  resultReview: document.querySelector("#resultReview"),
+  resultReviewCount: document.querySelector("#resultReviewCount"),
+  resultReviewList: document.querySelector("#resultReviewList"),
   reviewWrongAnswers: document.querySelector("#reviewWrongAnswers"),
   startRecommendation: document.querySelector("#startRecommendation"),
   retryStage: document.querySelector("#retryStage"),
@@ -2690,6 +2952,11 @@ const els = {
   weakQuestionRanking: document.querySelector("#weakQuestionRanking"),
   reviewTopWeakQuestions: document.querySelector("#reviewTopWeakQuestions"),
   historyList: document.querySelector("#historyList"),
+  historyDetail: document.querySelector("#historyDetail"),
+  historyDetailSummary: document.querySelector("#historyDetailSummary"),
+  historyDetailList: document.querySelector("#historyDetailList"),
+  reviewHistoryWrong: document.querySelector("#reviewHistoryWrong"),
+  closeHistoryDetail: document.querySelector("#closeHistoryDetail"),
   creatureVisual: document.querySelector("#creatureVisual"),
   creatureName: document.querySelector("#creatureName"),
   creatureStageLabel: document.querySelector("#creatureStageLabel"),
@@ -2714,6 +2981,7 @@ const els = {
 
 let progress = JSON.parse(localStorage.getItem("fe-stage-progress") || "{}");
 let history = JSON.parse(localStorage.getItem("fe-score-history") || "[]");
+let selectedHistoryAttemptId = null;
 let questionStats = JSON.parse(localStorage.getItem("fe-question-stats") || "{}");
 let suspendedExams = JSON.parse(localStorage.getItem("fe-suspended-exams") || "{}");
 let auditMarks = JSON.parse(localStorage.getItem("fe-question-audit") || "{}");
@@ -2749,7 +3017,7 @@ gameState.completedMissions = gameState.completedMissions || [];
 let current = null;
 let quizTimer = null;
 let pendingEvolutionChoice = null;
-const ASSET_VERSION = "v41";
+const ASSET_VERSION = "v63";
 
 const creatureLines = {
   idle: [
@@ -3662,10 +3930,25 @@ function uniqueQuestionsByText(questions) {
   });
 }
 
-function withQuestionOrder(question) {
+function selectQuestionChoices(question) {
+  const correctChoice = question.correctChoice || question.choices[question.answer];
+  const choicePool = question.choicePool ||
+    question.choices.filter((_, index) => index !== question.answer);
+  const distractors = shuffle([...new Set(choicePool.filter((choice) => choice !== correctChoice))]).slice(0, 3);
   return {
     ...question,
-    order: shuffle(question.choices.map((choice, index) => ({ choice, index })))
+    correctChoice,
+    choicePool: [...choicePool],
+    choices: [correctChoice, ...distractors],
+    answer: 0
+  };
+}
+
+function withQuestionOrder(question) {
+  const selectedQuestion = selectQuestionChoices(question);
+  return {
+    ...selectedQuestion,
+    order: shuffle(selectedQuestion.choices.map((choice, index) => ({ choice, index })))
   };
 }
 
@@ -3717,11 +4000,34 @@ function migrateWrongQuestionStats() {
         attempts: 1,
         correct: 0,
         wrong: 1,
-        lastAnsweredAt: attempt.date || null
+        lastAnsweredAt: attempt.date || null,
+        correctStreak: 0,
+        reviewIntervalDays: 0,
+        nextReviewAt: attempt.date || new Date().toISOString()
       };
     });
   });
   saveQuestionStats();
+}
+
+const REVIEW_INTERVAL_DAYS = [1, 3, 7, 14, 30];
+
+function addDaysIso(date, days) {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result.toISOString();
+}
+
+function getQuestionMastery(item, now = new Date()) {
+  const streak = item.correctStreak || 0;
+  const due = !item.nextReviewAt || new Date(item.nextReviewAt) <= now;
+  if ((item.wrong || 0) > 0 && (streak === 0 || due)) {
+    return { id: "review", label: "要復習", due };
+  }
+  if (streak >= 3) {
+    return { id: "mastered", label: "克服済み", due };
+  }
+  return { id: "learning", label: "定着中", due };
 }
 
 function updateQuestionStats(records, questions) {
@@ -3737,12 +4043,25 @@ function updateQuestionStats(records, questions) {
       stageName: question.sourceStageName || getStageNameById(record.stageId),
       attempts: 0,
       correct: 0,
-      wrong: 0
+      wrong: 0,
+      correctStreak: 0,
+      reviewIntervalDays: 0,
+      nextReviewAt: null
     };
+    const answeredAt = new Date();
     existing.attempts += 1;
     existing.correct += record.correct ? 1 : 0;
     existing.wrong += record.correct ? 0 : 1;
-    existing.lastAnsweredAt = new Date().toISOString();
+    existing.lastAnsweredAt = answeredAt.toISOString();
+    if (record.correct) {
+      existing.correctStreak = (existing.correctStreak || 0) + 1;
+      existing.reviewIntervalDays = REVIEW_INTERVAL_DAYS[Math.min(existing.correctStreak - 1, REVIEW_INTERVAL_DAYS.length - 1)];
+      existing.nextReviewAt = addDaysIso(answeredAt, existing.reviewIntervalDays);
+    } else {
+      existing.correctStreak = 0;
+      existing.reviewIntervalDays = 0;
+      existing.nextReviewAt = answeredAt.toISOString();
+    }
     questionStats[record.questionId] = existing;
   });
   saveQuestionStats();
@@ -3997,9 +4316,9 @@ function finishExamOnTimeout() {
   if (!current || !current.overallDeadline) return;
   clearQuizTimer();
   commitFullExamAnswer();
-  const firstUnanswered = current.answered ? current.index + 1 : current.index;
-  for (let index = firstUnanswered; index < current.questions.length; index += 1) {
-    const question = current.questions[index];
+  const recordedIds = new Set(current.records.map((record) => record.questionId));
+  current.questions.forEach((question) => {
+    if (recordedIds.has(question.id)) return;
     current.records.push({
       questionId: question.id,
       stageId: question.stageId || current.stage.id,
@@ -4007,7 +4326,7 @@ function finishExamOnTimeout() {
       correct: false,
       timedOut: true
     });
-  }
+  });
   current.index = current.questions.length - 1;
   current.examTimedOut = true;
   showResult();
@@ -4084,10 +4403,17 @@ function getRankedWeakQuestions(limit = 10) {
   return Object.values(questionStats)
     .map((item) => ({
       ...item,
-      percentage: item.attempts ? Math.round((item.correct / item.attempts) * 100) : 0
+      percentage: item.attempts ? Math.round((item.correct / item.attempts) * 100) : 0,
+      mastery: getQuestionMastery(item)
     }))
     .filter((item) => item.wrong > 0)
-    .sort((a, b) => a.percentage - b.percentage || b.wrong - a.wrong || b.attempts - a.attempts)
+    .sort(
+      (a, b) =>
+        Number(b.mastery.id === "review") - Number(a.mastery.id === "review") ||
+        a.percentage - b.percentage ||
+        b.wrong - a.wrong ||
+        b.attempts - a.attempts
+    )
     .slice(0, limit);
 }
 
@@ -4195,6 +4521,8 @@ function startFullExam(subject) {
     answered: false,
     selectedIndex: null,
     records: [],
+    examAnswers: {},
+    reviewQuestionIds: [],
     mode: isSubjectA ? "subject-a-exam" : "subject-b-exam",
     overallLimitSeconds: minutes * 60,
     overallDeadline: Date.now() + minutes * 60 * 1000
@@ -4206,6 +4534,86 @@ function startFullExam(subject) {
 
 function isFullExamMode() {
   return current?.mode === "subject-a-exam" || current?.mode === "subject-b-exam";
+}
+
+function getExamSelectedShownIndex(question) {
+  const originalIndex = current.examAnswers?.[question.id];
+  if (!Number.isInteger(originalIndex)) return null;
+  const shownIndex = question.order.findIndex((item) => item.index === originalIndex);
+  return shownIndex >= 0 ? shownIndex : null;
+}
+
+function renderExamNavigator() {
+  if (!isFullExamMode()) return;
+  const answeredCount = Object.keys(current.examAnswers || {}).length;
+  const reviewIds = new Set(current.reviewQuestionIds || []);
+  const unansweredCount = current.questions.length - answeredCount;
+  els.examNavigatorSummary.innerHTML = `
+    <span class="answered">回答済み ${answeredCount}</span>
+    <span class="unanswered">未回答 ${unansweredCount}</span>
+    <span class="review">見直し ${reviewIds.size}</span>
+  `;
+  els.examQuestionGrid.innerHTML = current.questions
+    .map((question, index) => {
+      const answered = Number.isInteger(current.examAnswers?.[question.id]);
+      const review = reviewIds.has(question.id);
+      return `
+        <button class="exam-question-jump ${answered ? "answered" : "unanswered"} ${review ? "review" : ""} ${index === current.index ? "current" : ""}"
+          type="button" data-exam-question-index="${index}" aria-label="問${index + 1}${answered ? " 回答済み" : " 未回答"}${review ? " 見直し対象" : ""}">
+          ${index + 1}${review ? `<span>!</span>` : ""}
+        </button>
+      `;
+    })
+    .join("");
+}
+
+function jumpToExamQuestion(index) {
+  if (!isFullExamMode() || index < 0 || index >= current.questions.length) return;
+  commitFullExamAnswer();
+  current.index = index;
+  renderQuestion();
+  saveActiveExam();
+}
+
+function toggleCurrentExamReview() {
+  if (!isFullExamMode()) return;
+  const questionIdToToggle = current.questions[current.index].id;
+  const reviewIds = new Set(current.reviewQuestionIds || []);
+  if (reviewIds.has(questionIdToToggle)) reviewIds.delete(questionIdToToggle);
+  else reviewIds.add(questionIdToToggle);
+  current.reviewQuestionIds = [...reviewIds];
+  renderExamNavigator();
+  els.toggleExamReview.classList.toggle("active", reviewIds.has(questionIdToToggle));
+  els.toggleExamReview.textContent = reviewIds.has(questionIdToToggle) ? "見直し対象 ✓" : "見直す";
+  saveActiveExam();
+}
+
+function finishFullExam() {
+  if (!isFullExamMode()) return;
+  commitFullExamAnswer();
+  const answeredCount = Object.keys(current.examAnswers || {}).length;
+  const unansweredCount = current.questions.length - answeredCount;
+  const reviewCount = new Set(current.reviewQuestionIds || []).size;
+  const message = unansweredCount || reviewCount
+    ? `未回答が${unansweredCount}問、見直し対象が${reviewCount}問あります。このまま模試を終了しますか？`
+    : "すべて回答済みです。模試を終了しますか？";
+  if (!window.confirm(message)) {
+    renderExamNavigator();
+    els.examNavigator.classList.remove("hidden");
+    return;
+  }
+  const recordedIds = new Set(current.records.map((record) => record.questionId));
+  current.questions.forEach((question) => {
+    if (recordedIds.has(question.id)) return;
+    current.records.push({
+      questionId: question.id,
+      stageId: question.stageId || current.stage.id,
+      tag: question.tag,
+      correct: false,
+      timedOut: false
+    });
+  });
+  showResult();
 }
 
 function markExamSelection(selectedIndex) {
@@ -4238,11 +4646,24 @@ function refreshSuspendedExamState(savedState) {
   const questions = savedState.questions.map((question) => {
     const canonical = canonicalByText.get(question.text);
     if (!canonical) return question;
+    const hasFixedChoices =
+      Array.isArray(question.choices) &&
+      question.choices.length === 4 &&
+      Array.isArray(question.order) &&
+      question.order.length === question.choices.length;
+    if (hasFixedChoices) {
+      return {
+        ...canonical,
+        ...question,
+        explanation: canonical.explanation,
+        correctChoice: canonical.correctChoice,
+        choicePool: canonical.choicePool,
+        choiceNotes: canonical.choiceNotes
+      };
+    }
     return withQuestionOrder({
       ...question,
-      choices: [...canonical.choices],
-      answer: canonical.answer,
-      explanation: canonical.explanation
+      ...canonical
     });
   });
   const refreshedQuestion = questions[savedState.index];
@@ -4252,6 +4673,8 @@ function refreshSuspendedExamState(savedState) {
   return {
     ...savedState,
     questions,
+    examAnswers: savedState.examAnswers || {},
+    reviewQuestionIds: savedState.reviewQuestionIds || [],
     selectedIndex: selectedIndex >= 0 ? selectedIndex : null,
     answered: selectedIndex >= 0 ? savedState.answered : false
   };
@@ -4271,6 +4694,8 @@ function resumeSuspendedExam(subject) {
   renderQuestion();
   if (Number.isInteger(selectedIndex)) {
     current.selectedIndex = selectedIndex;
+    const question = current.questions[current.index];
+    current.examAnswers[question.id] = question.order[selectedIndex].index;
     markExamSelection(selectedIndex);
     els.nextQuestion.disabled = false;
   }
@@ -4308,13 +4733,27 @@ function buildWeakQuestions() {
     }))
   );
 
-  const wrongCounts = history
-    .flatMap((attempt) => attempt.wrongQuestionIds || [])
-    .reduce((counts, id) => ({ ...counts, [id]: (counts[id] || 0) + 1 }), {});
-
-  const sortedWrong = allQuestions
-    .filter((question) => wrongCounts[question.id])
-    .sort((a, b) => wrongCounts[b.id] - wrongCounts[a.id]);
+  const now = new Date();
+  const reviewPriority = allQuestions
+    .filter((question) => {
+      const stats = questionStats[question.id];
+      return stats?.wrong > 0 && getQuestionMastery(stats, now).id === "review";
+    })
+    .map((question) => {
+      const stats = questionStats[question.id];
+      const mastery = getQuestionMastery(stats, now);
+      const daysOverdue = stats.nextReviewAt
+        ? Math.max(0, Math.floor((now - new Date(stats.nextReviewAt)) / 86400000))
+        : 0;
+      const priority =
+        (mastery.id === "review" ? 1000 : mastery.id === "learning" ? 300 : 0) +
+        (stats.wrong || 0) * 30 +
+        daysOverdue * 5 -
+        (stats.correctStreak || 0) * 20;
+      return { question, priority };
+    })
+    .sort((a, b) => b.priority - a.priority)
+    .map((item) => item.question);
 
   const lowStageIds = getStageStats()
     .filter((row) => row.attempts > 0)
@@ -4322,10 +4761,19 @@ function buildWeakQuestions() {
     .slice(0, 2)
     .map((row) => row.stageId);
 
-  const lowStageQuestions = allQuestions.filter((question) => lowStageIds.includes(question.stageId));
-  const pool = [...sortedWrong, ...shuffle(lowStageQuestions), ...shuffle(allQuestions)];
+  const lowStageQuestions = allQuestions.filter(
+    (question) => lowStageIds.includes(question.stageId) && !questionStats[question.id]
+  );
+  const unattemptedQuestions = allQuestions.filter((question) => !questionStats[question.id]);
+  const pool = [
+    ...reviewPriority,
+    ...shuffle(lowStageQuestions).slice(0, 4),
+    ...shuffle(unattemptedQuestions).slice(0, 3),
+    ...shuffle(unattemptedQuestions)
+  ];
   const unique = uniqueQuestionsByText(pool);
-  return unique.slice(0, randomInt(5, 10)).map((question) =>
+  const candidates = unique.length >= 5 ? unique : uniqueQuestionsByText([...unique, ...shuffle(allQuestions)]);
+  return candidates.slice(0, randomInt(5, 10)).map((question) =>
     withQuestionOrder({
       ...question,
       tag: `${question.sourceStageName || "分野"} / ${question.tag}`
@@ -4336,7 +4784,7 @@ function buildWeakQuestions() {
 function renderQuestion() {
   const question = current.questions[current.index];
   current.answered = false;
-  current.selectedIndex = null;
+  current.selectedIndex = isFullExamMode() ? getExamSelectedShownIndex(question) : null;
 
   els.backToStages.textContent = isFullExamMode() ? "← 中断して戻る" : "← ステージ";
   els.activeStageName.textContent = current.stage.name;
@@ -4347,8 +4795,13 @@ function renderQuestion() {
   els.feedback.classList.add("hidden");
   els.feedback.textContent = "";
   els.showAnswer.classList.toggle("hidden", isFullExamMode());
-  els.nextQuestion.disabled = true;
-  els.nextQuestion.textContent = current.index === current.questions.length - 1 ? "結果へ" : "次へ";
+  els.examToolbar.classList.toggle("hidden", !isFullExamMode());
+  els.examNavigator.classList.add("hidden");
+  const isReviewTarget = isFullExamMode() && (current.reviewQuestionIds || []).includes(question.id);
+  els.toggleExamReview.classList.toggle("active", isReviewTarget);
+  els.toggleExamReview.textContent = isReviewTarget ? "見直し対象 ✓" : "見直す";
+  els.nextQuestion.disabled = isFullExamMode() ? false : true;
+  els.nextQuestion.textContent = current.index === current.questions.length - 1 && isFullExamMode() ? "問題一覧へ" : "次へ";
   els.choiceList.innerHTML = "";
 
   question.order.forEach((item, shownIndex) => {
@@ -4364,6 +4817,10 @@ function renderQuestion() {
     els.choiceList.append(choice);
   });
 
+  if (isFullExamMode() && Number.isInteger(current.selectedIndex)) {
+    markExamSelection(current.selectedIndex);
+  }
+  if (isFullExamMode()) renderExamNavigator();
   startQuestionTimer(question);
   speakCreature("quiz", getQuestionCheerLine(question));
 }
@@ -4382,7 +4839,7 @@ function buildWrongChoiceNotes(question) {
     .map((choice, index) => ({ choice, index }))
     .filter((item) => item.index !== question.answer)
     .map((item) => {
-      const note = explainChoice(item.choice);
+      const note = question.choiceNotes?.[item.choice] || explainChoice(item.choice);
       return note ? `「${item.choice}」は${note}` : "";
     })
     .filter(Boolean);
@@ -4541,6 +4998,9 @@ function getExplanationTip(question, correctChoice) {
 function answerQuestion(shownIndex) {
   if (isFullExamMode()) {
     current.selectedIndex = shownIndex;
+    const question = current.questions[current.index];
+    current.examAnswers = current.examAnswers || {};
+    current.examAnswers[question.id] = question.order[shownIndex].index;
     markExamSelection(shownIndex);
     els.nextQuestion.disabled = false;
     saveActiveExam();
@@ -4562,6 +5022,7 @@ function answerQuestion(shownIndex) {
     stageId: question.stageId || current.stage.id,
     tag: question.tag,
     correct: isCorrect,
+    selectedChoiceIndex: selected.index,
     answeredSeconds: Math.min(
       current.timeLimit || 0,
       Math.max(0, Math.ceil((Date.now() - current.questionStartedAt) / 1000))
@@ -4628,22 +5089,32 @@ function timeOutQuestion() {
 }
 
 function commitFullExamAnswer() {
-  if (!isFullExamMode() || current.answered || !Number.isInteger(current.selectedIndex)) return;
+  if (!isFullExamMode()) return;
   const question = current.questions[current.index];
-  const selected = question.order[current.selectedIndex];
-  const isCorrect = selected.index === question.answer;
-  current.answered = true;
-  current.score += isCorrect ? 1 : 0;
-  current.records.push({
+  const selectedChoiceIndex = current.examAnswers?.[question.id];
+  if (!Number.isInteger(selectedChoiceIndex)) return;
+  const isCorrect = selectedChoiceIndex === question.answer;
+  const existingIndex = current.records.findIndex((record) => record.questionId === question.id);
+  if (existingIndex >= 0 && current.records[existingIndex].correct) current.score = Math.max(0, current.score - 1);
+  if (isCorrect) current.score += 1;
+  const record = {
     questionId: question.id,
     stageId: question.stageId || current.stage.id,
     tag: question.tag,
-    correct: isCorrect
-  });
+    correct: isCorrect,
+    selectedChoiceIndex
+  };
+  if (existingIndex >= 0) current.records[existingIndex] = record;
+  else current.records.push(record);
 }
 
 function goNext() {
   commitFullExamAnswer();
+  if (isFullExamMode() && current.index === current.questions.length - 1) {
+    renderExamNavigator();
+    els.examNavigator.classList.remove("hidden");
+    return;
+  }
   if (current.index < current.questions.length - 1) {
     current.index += 1;
     renderQuestion();
@@ -4815,6 +5286,53 @@ function buildResultAdvice(percentage, examAssessment = current.examAssessment |
   els.startRecommendation.classList.remove("hidden");
 }
 
+function renderResultReview() {
+  const questionsById = new Map(current.questions.map((question) => [question.id, question]));
+  const wrongItems = current.records
+    .filter((record) => !record.correct)
+    .map((record) => ({ record, question: questionsById.get(record.questionId) }))
+    .filter((item) => item.question);
+
+  els.resultReview.classList.toggle("hidden", wrongItems.length === 0);
+  els.resultReviewCount.textContent = wrongItems.length ? `${wrongItems.length}問` : "";
+  els.resultReviewList.innerHTML = wrongItems
+    .map(({ record, question }, index) => {
+      const selectedAnswer = Number.isInteger(record.selectedChoiceIndex)
+        ? question.choices[record.selectedChoiceIndex]
+        : record.timedOut
+          ? "時間切れ・未回答"
+          : record.showedAnswer
+            ? "解説を表示・未回答"
+            : "未回答";
+      const correctAnswer = question.choices[question.answer];
+      return `
+        <article class="result-review-item">
+          <div class="result-review-meta">
+            <span>誤答 ${index + 1}</span>
+            <span>${escapeHtml(getStageNameById(record.stageId))}</span>
+            <span>${escapeHtml(normalizeResultTag(record.tag))}</span>
+          </div>
+          <h4>${escapeHtml(question.text)}</h4>
+          <dl class="answer-comparison">
+            <div class="answer-comparison-wrong">
+              <dt>あなたの回答</dt>
+              <dd>${escapeHtml(selectedAnswer)}</dd>
+            </div>
+            <div class="answer-comparison-correct">
+              <dt>正解</dt>
+              <dd>${escapeHtml(correctAnswer)}</dd>
+            </div>
+          </dl>
+          <details>
+            <summary>解説を確認</summary>
+            <p>${escapeHtml(buildExplanation(question, false))}</p>
+          </details>
+        </article>
+      `;
+    })
+    .join("");
+}
+
 function showResult() {
   clearQuizTimer();
   const completedExamSubject = getExamSubjectFromMode();
@@ -4832,6 +5350,7 @@ function showResult() {
   }
   creature.food += earnedFood;
   creature.totalFood += earnedFood;
+  const resultQuestionsById = new Map(current.questions.map((question) => [question.id, question]));
   history.unshift({
     id: globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
     stageId: current.stage.id,
@@ -4846,7 +5365,22 @@ function showResult() {
     timeBonus,
     date: new Date().toISOString(),
     wrongQuestionIds: current.records.filter((record) => !record.correct).map((record) => record.questionId),
-    wrongTags: current.records.filter((record) => !record.correct).map((record) => record.tag)
+    wrongTags: current.records.filter((record) => !record.correct).map((record) => record.tag),
+    answerRecords: current.records.map((record) => {
+      const question = resultQuestionsById.get(record.questionId);
+      return {
+        questionId: record.questionId,
+        stageId: record.stageId,
+        tag: record.tag,
+        questionText: question?.text || "",
+        correct: record.correct,
+        selectedChoiceIndex: Number.isInteger(record.selectedChoiceIndex) ? record.selectedChoiceIndex : null,
+        selectedChoice: Number.isInteger(record.selectedChoiceIndex) ? question?.choices[record.selectedChoiceIndex] || "" : "",
+        correctChoice: question?.choices[question.answer] || "",
+        timedOut: Boolean(record.timedOut),
+        showedAnswer: Boolean(record.showedAnswer)
+      };
+    })
   });
   history = history.slice(0, 100);
   updateQuestionStats(current.records, current.questions);
@@ -4876,6 +5410,7 @@ function showResult() {
     ? "誤答復習では進化ポイントは増えません。正解できるまで繰り返して定着させましょう。"
     : `進化ポイントを${earnedFood}獲得しました。内訳: 基本${baseFood} + 時間内正解ボーナス${timeBonus}。条件を満たすと自動で成長・進化します。`;
   buildResultAdvice(percentage, current.examAssessment);
+  renderResultReview();
   els.reviewWrongAnswers.classList.toggle("hidden", current.records.every((record) => record.correct));
   renderEvolutionChoice();
   setView("result");
@@ -5245,6 +5780,81 @@ function renderLearningCharts() {
   }
 }
 
+function renderHistoryDetail(attemptId) {
+  const attempt = history.find((item) => item.id === attemptId);
+  if (!attempt) return;
+  selectedHistoryAttemptId = attempt.id;
+  els.historyDetail.classList.remove("hidden");
+
+  const records = Array.isArray(attempt.answerRecords) ? attempt.answerRecords : [];
+  const wrongIds = [...new Set(attempt.wrongQuestionIds || [])];
+  const domainRows = attempt.examAssessment?.domains || [];
+  els.historyDetailSummary.innerHTML = `
+    <div class="metric"><span>受験モード</span><strong>${escapeHtml(attempt.stageName)}</strong></div>
+    <div class="metric"><span>得点</span><strong>${attempt.score}/${attempt.total}</strong></div>
+    <div class="metric"><span>正答率</span><strong>${attempt.percentage}%</strong></div>
+    <div class="metric"><span>誤答数</span><strong>${attempt.total - attempt.score}</strong></div>
+    ${domainRows
+      .map((domain) => `<div class="metric"><span>${escapeHtml(domain.name)}</span><strong>${domain.correct}/${domain.total} (${domain.percentage}%)</strong></div>`)
+      .join("")}
+  `;
+  els.reviewHistoryWrong.classList.toggle("hidden", wrongIds.length === 0);
+  els.reviewHistoryWrong.dataset.attemptId = attempt.id;
+
+  if (!records.length) {
+    els.historyDetailList.innerHTML = `
+      <div class="feedback">
+        この受験結果は回答詳細の保存機能を追加する前の履歴です。得点と弱点は確認できますが、自分の回答と解説は保存されていません。
+      </div>
+    `;
+    els.historyDetail.scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+
+  const catalog = getQuestionCatalog();
+  els.historyDetailList.innerHTML = records
+    .map((record, index) => {
+      const question = catalog.get(record.questionId);
+      const selectedAnswer = record.selectedChoice || (Number.isInteger(record.selectedChoiceIndex) && question
+        ? question.choices[record.selectedChoiceIndex]
+        : record.timedOut
+          ? "時間切れ・未回答"
+          : record.showedAnswer
+            ? "解説を表示・未回答"
+            : "未回答");
+      const correctAnswer = record.correctChoice || question?.choices[question.answer] || "現在の問題集では確認できません";
+      const wrongCount = questionStats[record.questionId]?.wrong || 0;
+      return `
+        <article class="history-answer-item ${record.correct ? "correct" : "wrong"}">
+          <div class="result-review-meta">
+            <span>問${index + 1}</span>
+            <span>${record.correct ? "正解" : "誤答"}</span>
+            <span>${escapeHtml(getStageNameById(record.stageId))}</span>
+            <span>${escapeHtml(normalizeResultTag(record.tag))}</span>
+            ${record.correct ? "" : `<span>累計誤答 ${wrongCount}回</span>`}
+          </div>
+          <h4>${escapeHtml(record.questionText || question?.text || "現在の問題集では問題文を確認できません")}</h4>
+          <dl class="answer-comparison">
+            <div class="${record.correct ? "answer-comparison-correct" : "answer-comparison-wrong"}">
+              <dt>あなたの回答</dt>
+              <dd>${escapeHtml(selectedAnswer)}</dd>
+            </div>
+            <div class="answer-comparison-correct">
+              <dt>正解</dt>
+              <dd>${escapeHtml(correctAnswer)}</dd>
+            </div>
+          </dl>
+          <details>
+            <summary>解説を確認</summary>
+            <p>${escapeHtml(question ? buildExplanation(question, record.correct) : "この問題は現在の問題集に存在しないため、解説を表示できません。")}</p>
+          </details>
+        </article>
+      `;
+    })
+    .join("");
+  els.historyDetail.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 function renderStats() {
   const totalAttempts = history.length;
   const averages = history.map((attempt) => attempt.percentage);
@@ -5260,6 +5870,13 @@ function renderStats() {
     : bothExamReady
       ? latestSubjectA.level === "high" && latestSubjectB.level === "high" ? "合格見込み：高" : "合格圏：境界"
       : "要復習";
+  const masteryCounts = Object.values(questionStats).reduce(
+    (counts, item) => {
+      counts[getQuestionMastery(item).id] += 1;
+      return counts;
+    },
+    { review: 0, learning: 0, mastered: 0 }
+  );
 
   els.statsSummary.innerHTML = `
     <div class="metric"><span>受験回数</span><strong>${totalAttempts}</strong></div>
@@ -5268,6 +5885,9 @@ function renderStats() {
     <div class="metric"><span>最新 科目A推定</span><strong>${latestSubjectA ? `${latestSubjectA.estimatedScore}点` : "未受験"}</strong></div>
     <div class="metric"><span>最新 科目B推定</span><strong>${latestSubjectB ? `${latestSubjectB.estimatedScore}点` : "未受験"}</strong></div>
     <div class="metric"><span>本番総合判定</span><strong>${combinedExamLabel}</strong></div>
+    <div class="metric mastery-review"><span>要復習</span><strong>${masteryCounts.review}問</strong></div>
+    <div class="metric mastery-learning"><span>定着中</span><strong>${masteryCounts.learning}問</strong></div>
+    <div class="metric mastery-mastered"><span>克服済み</span><strong>${masteryCounts.mastered}問</strong></div>
   `;
   requestAnimationFrame(renderLearningCharts);
 
@@ -5303,6 +5923,7 @@ function renderStats() {
                 <div class="weak-question-meta">
                   <span>${escapeHtml(item.stageName || getStageNameById(item.stageId))}</span>
                   <span>${escapeHtml(item.tag || "その他")}</span>
+                  <span class="mastery-chip ${item.mastery.id}">${item.mastery.label}</span>
                 </div>
                 <strong>${escapeHtml(item.text)}</strong>
                 <div class="weak-question-progress" aria-label="正答率 ${item.percentage}%">
@@ -5313,6 +5934,7 @@ function renderStats() {
                 <strong>${item.percentage}%</strong>
                 <span>${item.correct}/${item.attempts}正解</span>
                 <small>誤答${item.wrong}回</small>
+                <small>連続正解${item.correctStreak || 0}回</small>
                 <button class="secondary-button compact" type="button" data-review-question="${escapeHtml(item.id)}">この問題を復習</button>
               </div>
             </article>
@@ -5331,7 +5953,8 @@ function renderStats() {
             hour: "2-digit",
             minute: "2-digit"
           });
-          const weak = attempt.wrongTags.length ? `弱点: ${[...new Set(attempt.wrongTags)].slice(0, 3).join("、")}` : "全問正解";
+          const wrongTags = attempt.wrongTags || [];
+          const weak = wrongTags.length ? `弱点: ${[...new Set(wrongTags)].slice(0, 3).join("、")}` : "全問正解";
           const examScore = attempt.examAssessment
             ? ` / 推定${attempt.examAssessment.estimatedScore}点 / ${attempt.examAssessment.label}`
             : "";
@@ -5340,11 +5963,18 @@ function renderStats() {
               <strong>${attempt.stageName}</strong>
               <span>${attempt.score}/${attempt.total} (${attempt.percentage}%)${examScore}</span>
               <span>${date} / ${weak}</span>
+              <button class="secondary-button compact" type="button" data-history-detail="${escapeHtml(attempt.id)}">詳細を見る</button>
             </div>
           `;
         })
         .join("")
     : `<div class="feedback">まだ結果がありません。ステージを1つ解くと、ここに成績が表示されます。</div>`;
+
+  if (selectedHistoryAttemptId && history.some((attempt) => attempt.id === selectedHistoryAttemptId)) {
+    renderHistoryDetail(selectedHistoryAttemptId);
+  } else {
+    els.historyDetail.classList.add("hidden");
+  }
 }
 
 function escapeHtml(value) {
@@ -5493,6 +6123,18 @@ els.backToStages.addEventListener("click", () => {
 
 els.showAnswer.addEventListener("click", showAnswer);
 els.nextQuestion.addEventListener("click", goNext);
+els.toggleExamReview.addEventListener("click", toggleCurrentExamReview);
+els.openExamNavigator.addEventListener("click", () => {
+  commitFullExamAnswer();
+  renderExamNavigator();
+  els.examNavigator.classList.remove("hidden");
+});
+els.closeExamNavigator.addEventListener("click", () => els.examNavigator.classList.add("hidden"));
+els.examQuestionGrid.addEventListener("click", (event) => {
+  const index = Number(event.target.closest("[data-exam-question-index]")?.dataset.examQuestionIndex);
+  if (Number.isInteger(index)) jumpToExamQuestion(index);
+});
+els.finishExam.addEventListener("click", finishFullExam);
 els.reviewWrongAnswers.addEventListener("click", startWrongReview);
 els.startRecommendation.addEventListener("click", () => {
   const recommendation = current?.recommendation;
@@ -5568,6 +6210,18 @@ els.weakQuestionRanking.addEventListener("click", (event) => {
   const questionIdToReview = event.target.dataset.reviewQuestion;
   if (questionIdToReview) startRankedQuestionReview([questionIdToReview]);
 });
+els.historyList.addEventListener("click", (event) => {
+  const attemptId = event.target.dataset.historyDetail;
+  if (attemptId) renderHistoryDetail(attemptId);
+});
+els.reviewHistoryWrong.addEventListener("click", () => {
+  const attempt = history.find((item) => item.id === els.reviewHistoryWrong.dataset.attemptId);
+  if (attempt) startRankedQuestionReview([...new Set(attempt.wrongQuestionIds || [])]);
+});
+els.closeHistoryDetail.addEventListener("click", () => {
+  selectedHistoryAttemptId = null;
+  els.historyDetail.classList.add("hidden");
+});
 els.closeStats.addEventListener("click", () => setView("stage"));
 els.showAudit.addEventListener("click", () => {
   clearQuizTimer();
@@ -5623,6 +6277,7 @@ els.resetProgress.addEventListener("click", () => {
 
   progress = {};
   history = [];
+  selectedHistoryAttemptId = null;
   questionStats = {};
   suspendedExams = {};
   gameState = {

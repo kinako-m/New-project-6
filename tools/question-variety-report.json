@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-06-13T05:54:22.112Z",
+  "generatedAt": "2026-06-13T22:21:50.413Z",
   "totals": {
-    "questions": 777,
-    "exactUnique": 777,
-    "templateUnique": 712,
-    "knowledgeUnique": 739,
-    "clusteredVariety": 433,
-    "definitionStyle": 410,
-    "calculationStyle": 114,
+    "questions": 804,
+    "exactUnique": 804,
+    "templateUnique": 739,
+    "knowledgeUnique": 766,
+    "clusteredVariety": 459,
+    "definitionStyle": 413,
+    "calculationStyle": 116,
     "subjectBAlgorithm": 112,
     "subjectBSecurity": 35
   },
@@ -15,67 +15,67 @@
     {
       "id": "technology",
       "name": "テクノロジ系",
-      "questions": 201,
-      "exactUnique": 201,
-      "templateUnique": 165,
-      "knowledgeUnique": 188,
-      "clusteredVariety": 114,
-      "tags": 30,
+      "questions": 215,
+      "exactUnique": 215,
+      "templateUnique": 179,
+      "knowledgeUnique": 201,
+      "clusteredVariety": 127,
+      "tags": 36,
       "largestTag": "ハードウェア",
       "largestTagCount": 26,
-      "largestTagShare": 12.9
+      "largestTagShare": 12.1
     },
     {
       "id": "algorithm",
       "name": "アルゴリズム",
-      "questions": 217,
-      "exactUnique": 217,
-      "templateUnique": 212,
-      "knowledgeUnique": 206,
-      "clusteredVariety": 134,
-      "tags": 30,
+      "questions": 221,
+      "exactUnique": 221,
+      "templateUnique": 216,
+      "knowledgeUnique": 211,
+      "clusteredVariety": 138,
+      "tags": 31,
       "largestTag": "科目B長文アルゴリズム",
       "largestTagCount": 34,
-      "largestTagShare": 15.7
+      "largestTagShare": 15.4
     },
     {
       "id": "database",
       "name": "データベース",
-      "questions": 120,
-      "exactUnique": 120,
-      "templateUnique": 112,
-      "knowledgeUnique": 116,
-      "clusteredVariety": 65,
-      "tags": 14,
+      "questions": 124,
+      "exactUnique": 124,
+      "templateUnique": 116,
+      "knowledgeUnique": 120,
+      "clusteredVariety": 69,
+      "tags": 17,
       "largestTag": "SQL",
       "largestTagCount": 24,
-      "largestTagShare": 20
+      "largestTagShare": 19.4
     },
     {
       "id": "management",
       "name": "マネジメント系",
-      "questions": 118,
-      "exactUnique": 118,
-      "templateUnique": 107,
-      "knowledgeUnique": 116,
-      "clusteredVariety": 62,
-      "tags": 16,
+      "questions": 121,
+      "exactUnique": 121,
+      "templateUnique": 110,
+      "knowledgeUnique": 119,
+      "clusteredVariety": 65,
+      "tags": 18,
       "largestTag": "開発",
       "largestTagCount": 23,
-      "largestTagShare": 19.5
+      "largestTagShare": 19
     },
     {
       "id": "strategy",
       "name": "ストラテジ系",
-      "questions": 121,
-      "exactUnique": 121,
-      "templateUnique": 116,
-      "knowledgeUnique": 113,
-      "clusteredVariety": 58,
-      "tags": 13,
+      "questions": 123,
+      "exactUnique": 123,
+      "templateUnique": 118,
+      "knowledgeUnique": 115,
+      "clusteredVariety": 60,
+      "tags": 15,
       "largestTag": "経営戦略",
       "largestTagCount": 24,
-      "largestTagShare": 19.8
+      "largestTagShare": 19.5
     }
   ],
   "topTags": [
@@ -182,12 +182,12 @@
   ],
   "repeatedAnswers": [
     [
-      "algorithm / トレース / 2",
+      "algorithm / 科目B長文アルゴリズム / 3",
       4
     ],
     [
-      "algorithm / 科目B長文アルゴリズム / 3",
-      4
+      "algorithm / トレース / 2",
+      3
     ]
   ],
   "repeatedTemplates": [
