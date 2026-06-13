@@ -1111,7 +1111,7 @@ h1 {
   width: 100%;
   min-height: 54px;
   display: grid;
-  grid-template-columns: 32px 1fr;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
   padding: 12px;
@@ -1120,6 +1120,35 @@ h1 {
   background: var(--surface);
   color: var(--ink);
   text-align: left;
+}
+
+.choice:disabled {
+  cursor: default;
+  opacity: 0.72;
+}
+
+.choice.exam-selected,
+.choice.exam-selected:disabled {
+  border-color: var(--brand);
+  background: #e5f5f0;
+  box-shadow: inset 4px 0 0 var(--brand);
+  opacity: 1;
+}
+
+.choice.exam-selected::after {
+  content: "選択済み";
+  padding: 4px 7px;
+  border-radius: 6px;
+  background: var(--brand-dark);
+  color: #fff;
+  font-size: 0.74rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.choice.exam-selected .choice-marker {
+  background: var(--brand-dark);
+  color: #fff;
 }
 
 .choice-marker {

@@ -2637,7 +2637,7 @@ gameState.completedMissions = gameState.completedMissions || [];
 let current = null;
 let quizTimer = null;
 let pendingEvolutionChoice = null;
-const ASSET_VERSION = "v34";
+const ASSET_VERSION = "v36";
 
 const creatureLines = {
   idle: [
@@ -3884,6 +3884,7 @@ function startQuestionTimer(question) {
 function finishExamOnTimeout() {
   if (!current || !current.overallDeadline) return;
   clearQuizTimer();
+  commitFullExamAnswer();
   const firstUnanswered = current.answered ? current.index + 1 : current.index;
   for (let index = firstUnanswered; index < current.questions.length; index += 1) {
     const question = current.questions[index];
@@ -4095,6 +4096,25 @@ function isFullExamMode() {
   return current?.mode === "subject-a-exam" || current?.mode === "subject-b-exam";
 }
 
+function markExamSelection(selectedIndex) {
+  [...els.choiceList.children].forEach((choice, index) => {
+    const selected = index === selectedIndex;
+    choice.classList.toggle("exam-selected", selected);
+    choice.setAttribute("aria-pressed", String(selected));
+  });
+}
+
+function reopenLegacyExamAnswer() {
+  if (!current?.answered || !Number.isInteger(current.selectedIndex)) return;
+  const question = current.questions[current.index];
+  const recordIndex = current.records.findLastIndex((record) => record.questionId === question.id);
+  if (recordIndex >= 0) {
+    const [record] = current.records.splice(recordIndex, 1);
+    if (record.correct) current.score = Math.max(0, current.score - 1);
+  }
+  current.answered = false;
+}
+
 function resumeSuspendedExam(subject) {
   const saved = suspendedExams[subject];
   if (!saved?.current?.questions?.length) return;
@@ -4103,16 +4123,13 @@ function resumeSuspendedExam(subject) {
     overallRemainingSeconds: saved.remainingSeconds,
     overallDeadline: Date.now() + Math.max(0, saved.remainingSeconds) * 1000
   };
-  const wasAnswered = Boolean(current.answered);
+  reopenLegacyExamAnswer();
   const selectedIndex = current.selectedIndex;
   setView("quiz");
   renderQuestion();
-  if (wasAnswered) {
-    current.answered = true;
+  if (Number.isInteger(selectedIndex)) {
     current.selectedIndex = selectedIndex;
-    [...els.choiceList.children].forEach((choice) => {
-      choice.disabled = true;
-    });
+    markExamSelection(selectedIndex);
     els.nextQuestion.disabled = false;
   }
   saveActiveExam();
@@ -4196,6 +4213,7 @@ function renderQuestion() {
     const choice = document.createElement("button");
     choice.className = "choice";
     choice.type = "button";
+    choice.setAttribute("aria-pressed", "false");
     choice.innerHTML = `
       <span class="choice-marker">${String.fromCharCode(65 + shownIndex)}</span>
       <span>${item.choice}</span>
@@ -4379,6 +4397,14 @@ function getExplanationTip(question, correctChoice) {
 }
 
 function answerQuestion(shownIndex) {
+  if (isFullExamMode()) {
+    current.selectedIndex = shownIndex;
+    markExamSelection(shownIndex);
+    els.nextQuestion.disabled = false;
+    saveActiveExam();
+    return;
+  }
+
   if (current.answered) return;
 
   const question = current.questions[current.index];
@@ -4399,15 +4425,6 @@ function answerQuestion(shownIndex) {
       Math.max(0, Math.ceil((Date.now() - current.questionStartedAt) / 1000))
     )
   });
-
-  if (isFullExamMode()) {
-    [...els.choiceList.children].forEach((choiceEl) => {
-      choiceEl.disabled = true;
-    });
-    els.nextQuestion.disabled = false;
-    saveActiveExam();
-    return;
-  }
 
   [...els.choiceList.children].forEach((choiceEl, index) => {
     choiceEl.disabled = true;
@@ -4468,7 +4485,23 @@ function timeOutQuestion() {
   els.nextQuestion.disabled = false;
 }
 
+function commitFullExamAnswer() {
+  if (!isFullExamMode() || current.answered || !Number.isInteger(current.selectedIndex)) return;
+  const question = current.questions[current.index];
+  const selected = question.order[current.selectedIndex];
+  const isCorrect = selected.index === question.answer;
+  current.answered = true;
+  current.score += isCorrect ? 1 : 0;
+  current.records.push({
+    questionId: question.id,
+    stageId: question.stageId || current.stage.id,
+    tag: question.tag,
+    correct: isCorrect
+  });
+}
+
 function goNext() {
+  commitFullExamAnswer();
   if (current.index < current.questions.length - 1) {
     current.index += 1;
     renderQuestion();
