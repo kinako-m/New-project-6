@@ -622,7 +622,7 @@ function expandTrendQuestions() {
     ["空のスタックに A, B, C の順にpushし、1回popしたとき取り出されるものはどれか。", ["C", "A", "B", "空"], "スタックはLIFOなので最後に入れたCが出ます。"],
     ["空のキューに A, B, C の順にenqueueし、1回dequeueしたとき取り出されるものはどれか。", ["A", "C", "B", "空"], "キューはFIFOなので最初に入れたAが出ます。"],
     ["配列[3, 1, 4, 2]を昇順に整列した結果はどれか。", ["[1, 2, 3, 4]", "[4, 3, 2, 1]", "[3, 4, 1, 2]", "[2, 4, 1, 3]"], "昇順は小さい順です。"],
-    ["5個の要素を線形探索し、目的値が最後にある場合、比較回数は最大何回か。", ["5", "1", "3", "10"], "先頭から最後まで調べるため5回です。"],
+    ["5個の要素を線形探索し、目的値が最後にある場合、比較回数は最大何回か。", ["5回", "1回", "3回", "10回"], "先頭から最後まで調べるため5回です。"],
     ["整列済みの16個の要素を二分探索する場合、探索範囲を最大何回程度半分にできるか。", ["4回", "16回", "8回", "2回"], "2^4=16なので約4回です。"],
     ["再帰呼出しで終了条件を書き忘れたときに起こりやすい問題はどれか。", ["呼出しが止まらずスタック領域を使い切る", "必ず処理が高速化する", "通信が暗号化される", "データベースが正規化される"], "終了条件がないと再帰が続き、スタックオーバーフローの原因になります。"],
     ["配列の全要素から最大値を求める基本処理で必要な考え方はどれか。", ["暫定最大値を更新しながら全要素を見る", "必ずハッシュ化してから見る", "最初の要素だけを見る", "要素数を0にする"], "一つずつ比較して最大値を更新します。"],
@@ -1403,6 +1403,7 @@ function improveChoiceRelevance() {
   stages.forEach((stage) => {
     stage.questions.forEach((question) => {
       const correct = question.choices[question.answer];
+      if (/^-?\d/.test(String(correct).trim())) return;
       const pool = pools.find((item) => item.match(question));
       if (!pool) return;
 
@@ -1622,16 +1623,31 @@ function normalizeChoiceStyle() {
       ]
     },
     {
-      id: "law",
-      match: /著作権|特許権|商標権|個人情報|不正アクセス|派遣契約|請負契約|コンプライアンス|CSR|ガバナンス/,
+      id: "intellectual-property",
+      match: /著作権|特許権|商標権|意匠権|知的財産|産業財産権/,
       concepts: [
         ["著作権", "創作的な表現を保護する権利"],
         ["特許権", "発明を保護する産業財産権"],
         ["商標権", "商品やサービスの識別標識を保護する権利"],
-        ["個人情報保護", "特定の個人を識別できる情報を適切に扱う考え方"],
-        ["不正アクセス禁止法", "他人のID・パスワードを使った不正ログインなどを禁じる法律"],
+        ["意匠権", "物品などのデザインを保護する産業財産権"]
+      ]
+    },
+    {
+      id: "contracts",
+      match: /派遣契約|請負契約|準委任契約|売買契約|指揮命令|仕事の完成/,
+      concepts: [
         ["派遣契約", "派遣先が作業者へ指揮命令する契約形態"],
         ["請負契約", "仕事の完成を目的とする契約形態"],
+        ["準委任契約", "業務の遂行を目的とし仕事の完成を必須としない契約形態"],
+        ["売買契約", "財産権の移転と代金の支払いを約束する契約形態"]
+      ]
+    },
+    {
+      id: "compliance",
+      match: /個人情報|不正アクセス|コンプライアンス|CSR|ガバナンス/,
+      concepts: [
+        ["個人情報保護", "特定の個人を識別できる情報を適切に扱う考え方"],
+        ["不正アクセス禁止法", "他人のID・パスワードを使った不正ログインなどを禁じる法律"],
         ["コンプライアンス", "法令や社会規範を守ること"],
         ["CSR", "企業が社会的責任を果たす考え方"],
         ["ガバナンス", "組織を適切に統治・管理する仕組み"]
@@ -1678,18 +1694,21 @@ function normalizeChoiceStyle() {
 
   function questionWantsDescription(question, concept, correct) {
     if (concept && hasTermInQuestion(question, concept.term)) return true;
-    if (/説明|目的|役割|について|とは/.test(question.text)) return true;
+    if (/説明|役割|について|とは|主な目的|目的は|目的として/.test(question.text)) return true;
     return correct.length > 12 && !/^[A-Z0-9 ()^]+$/.test(correct);
   }
 
   stages.forEach((stage) => {
     stage.questions.forEach((question) => {
       const correct = question.choices[question.answer];
-      const pool = conceptPools.find((item) => item.match.test(`${question.text} ${question.tag} ${question.choices.join(" ")}`));
+      const questionContext = `${question.text} ${question.tag}`;
+      const pool =
+        conceptPools.find((item) => item.match.test(questionContext)) ||
+        conceptPools.find((item) => item.match.test(question.choices.join(" ")));
       if (!pool) return;
 
       const exactConcept = pool.concepts.find((item) => item.term === correct || item.description === correct);
-      const fallbackConcept = /説明|目的|役割|について|とは/.test(question.text)
+      const fallbackConcept = /説明|役割|について|とは|主な目的|目的は|目的として/.test(question.text)
         ? pool.concepts.find((item) => hasTermInQuestion(question, item.term))
         : null;
       const concept = exactConcept || fallbackConcept;
@@ -2491,6 +2510,16 @@ function polishQuestionQuality() {
       text: "企業活動の継続能力を高めるための計画はどれか。",
       choices: ["BCP", "RTO", "RPO", "SLA"],
       explanation: "BCPは災害や障害時にも重要業務を継続・早期復旧するための計画です。RTOやRPOは復旧目標を表す指標です。"
+    },
+    {
+      text: "リグレッションテストの目的はどれか。",
+      choices: [
+        "修正による既存機能への影響を確認するテスト",
+        "成果物を人が確認して欠陥を早期発見する活動",
+        "個々の部品や関数が正しく動くか確認するテスト",
+        "複数の部品を組み合わせた動作を確認するテスト"
+      ],
+      explanation: "リグレッションテストは、修正による既存機能への影響や新たな不具合がないかを確認するテストです。"
     }
   ];
 
@@ -2524,6 +2553,89 @@ function polishQuestionQuality() {
 }
 
 polishQuestionQuality();
+
+function finalizeDistractorQuality() {
+  const groups = [
+    [
+      ["著作権", "創作的な表現を保護する権利", "表現を保護する"],
+      ["特許権", "発明を保護する産業財産権", "発明を保護する"],
+      ["商標権", "商品やサービスの識別標識を保護する権利", "ブランド名やロゴを保護する"],
+      ["意匠権", "物品などのデザインを保護する産業財産権", "製品などのデザインを保護する"]
+    ],
+    [
+      ["派遣契約", "派遣先が作業者へ指揮命令する契約形態", "派遣先が指揮命令する"],
+      ["請負契約", "仕事の完成を目的とする契約形態", "仕事の完成に責任を負う"],
+      ["準委任契約", "業務の遂行を目的とし仕事の完成を必須としない契約形態", "業務の遂行を目的とする"],
+      ["売買契約", "財産権の移転と代金の支払いを約束する契約形態", "財産と代金を交換する"]
+    ],
+    [
+      ["個人情報保護", "特定の個人を識別できる情報を適切に扱う考え方", "個人を識別できる情報を守る"],
+      ["不正アクセス禁止法", "他人の認証情報を使った不正ログインなどを禁じる法律", "不正ログインを禁じる"],
+      ["コンプライアンス", "法令や社会規範を守る考え方", "法令や社会規範を守る"],
+      ["CSR", "企業が社会的責任を果たす考え方", "企業の社会的責任を重視する"],
+      ["ガバナンス", "組織を適切に統治・管理する仕組み", "組織を適切に統治する"]
+    ],
+    [
+      ["セグメンテーション", "市場を顧客属性やニーズで細分化すること", "市場を細分化する"],
+      ["ターゲティング", "細分化した市場から狙う市場を選ぶこと", "狙う市場を選ぶ"],
+      ["ポジショニング", "顧客の中で自社製品の位置付けを明確にすること", "差別化位置を決める"],
+      ["4P", "Product・Price・Place・Promotionで施策を整理する考え方", "マーケティング施策を整理する"]
+    ],
+    [
+      ["DNS", "ドメイン名とIPアドレスを対応付ける仕組み", "名前解決を行う"],
+      ["DHCP", "端末へIPアドレスなどを自動配布する仕組み", "IP設定を自動配布する"],
+      ["ARP", "IPアドレスからMACアドレスを求めるプロトコル", "MACアドレスを求める"],
+      ["NAT", "プライベートIPとグローバルIPを変換する仕組み", "アドレス変換を行う"],
+      ["VPN", "公衆網上に仮想的な専用通信路を作る技術", "安全な仮想通信路を作る"],
+      ["TCP", "再送や順序制御を行う信頼性のある通信プロトコル", "再送や順序制御を行う"],
+      ["UDP", "再送制御を省いて低遅延を重視する通信プロトコル", "低遅延を重視する"],
+      ["TLS", "通信相手の認証と暗号化通信を提供するプロトコル", "HTTPSの安全性を支える"]
+    ],
+    [
+      ["CPU", "命令を解釈し、演算や各装置の制御を行う処理装置", "命令の実行と装置の制御を行う"],
+      ["ALU", "加算や論理演算などを実行する演算回路", "算術演算と論理演算を行う"],
+      ["レジスタ", "CPU内部で処理中の値や命令を一時保持する高速記憶領域", "CPU内部で処理中の値を保持する"],
+      ["キャッシュメモリ", "頻繁に使うデータを保持し、主記憶へのアクセスを減らす高速記憶装置", "主記憶へのアクセス時間を短縮する"]
+    ],
+    [
+      ["主記憶装置", "実行中のプログラムやデータをCPUが直接利用できる形で保持する装置", "実行中のプログラムを保持する"],
+      ["SSD", "フラッシュメモリを用いてデータを永続的に保存する補助記憶装置", "半導体メモリへデータを保存する"],
+      ["RAID1", "同じデータを複数のディスクへ書き込み、耐障害性を高める方式", "データを複製して耐障害性を高める"],
+      ["RAID5", "データと分散パリティを複数のディスクへ配置する方式", "分散パリティで障害に備える"]
+    ],
+    [
+      ["仮想記憶", "補助記憶装置の一部を利用して、主記憶より大きな記憶空間を提供する仕組み", "主記憶より大きな記憶空間を提供する"],
+      ["ページフォールト", "必要なページが主記憶に存在せず、補助記憶から読み込む事象", "不足しているページを補助記憶から読み込む"],
+      ["スプーリング", "低速な入出力処理を補助記憶へ一時保存し、CPU処理と並行させる仕組み", "入出力データを一時保存して処理を並行化する"],
+      ["デッドロック", "複数の処理が互いの資源解放を待ち続け、進行できない状態", "処理同士が資源を待ち続ける"]
+    ],
+    [
+      ["スタック", "最後に追加した要素を最初に取り出すLIFO方式のデータ構造", "後入れ先出しで要素を管理する"],
+      ["キュー", "最初に追加した要素を最初に取り出すFIFO方式のデータ構造", "先入れ先出しで要素を管理する"],
+      ["優先度付きキュー", "登録順ではなく、設定された優先度に従って要素を取り出すデータ構造", "優先度の高い要素から取り出す"],
+      ["連結リスト", "各要素が次の要素への参照を持ち、要素をつないで管理するデータ構造", "参照によって要素をつないで管理する"],
+      ["二分木", "各節が最大二つの子を持つ階層型のデータ構造", "各節が最大二つの子を持つ"],
+      ["ヒープ", "親子間の大小関係を保ち、最大値や最小値を効率よく取り出す木構造", "最大値や最小値を効率よく取り出す"]
+    ]
+  ];
+
+  stages.forEach((stage) => {
+    stage.questions.forEach((question) => {
+      const group = groups.find((items) => items.some(([term]) => question.text.includes(term)));
+      if (!group) return;
+      const concept = group.find(([term]) => question.text.includes(term));
+      if (!concept) return;
+      const mode = question.text.includes("見分ける特徴") ? 2 : /説明/.test(question.text) ? 1 : 0;
+      if (!mode) return;
+      const alternatives = group.filter(([term]) => term !== concept[0]).map((item) => item[mode]);
+      if (alternatives.length < 3) return;
+      question.choices = [concept[mode], ...alternatives.slice(0, 3)];
+      question.answer = 0;
+    });
+  });
+}
+
+finalizeDistractorQuality();
 
 const els = {
   stageView: document.querySelector("#stageView"),
@@ -2637,7 +2749,7 @@ gameState.completedMissions = gameState.completedMissions || [];
 let current = null;
 let quizTimer = null;
 let pendingEvolutionChoice = null;
-const ASSET_VERSION = "v36";
+const ASSET_VERSION = "v41";
 
 const creatureLines = {
   idle: [
@@ -4115,11 +4227,41 @@ function reopenLegacyExamAnswer() {
   current.answered = false;
 }
 
+function refreshSuspendedExamState(savedState) {
+  const oldQuestion = savedState.questions?.[savedState.index];
+  const oldSelectedChoice = Number.isInteger(savedState.selectedIndex)
+    ? oldQuestion?.order?.[savedState.selectedIndex]?.choice
+    : null;
+  const canonicalByText = new Map(
+    stages.flatMap((stage) => stage.questions.map((question) => [question.text, question]))
+  );
+  const questions = savedState.questions.map((question) => {
+    const canonical = canonicalByText.get(question.text);
+    if (!canonical) return question;
+    return withQuestionOrder({
+      ...question,
+      choices: [...canonical.choices],
+      answer: canonical.answer,
+      explanation: canonical.explanation
+    });
+  });
+  const refreshedQuestion = questions[savedState.index];
+  const selectedIndex = oldSelectedChoice
+    ? refreshedQuestion.order.findIndex((item) => item.choice === oldSelectedChoice)
+    : -1;
+  return {
+    ...savedState,
+    questions,
+    selectedIndex: selectedIndex >= 0 ? selectedIndex : null,
+    answered: selectedIndex >= 0 ? savedState.answered : false
+  };
+}
+
 function resumeSuspendedExam(subject) {
   const saved = suspendedExams[subject];
   if (!saved?.current?.questions?.length) return;
   current = {
-    ...saved.current,
+    ...refreshSuspendedExamState(saved.current),
     overallRemainingSeconds: saved.remainingSeconds,
     overallDeadline: Date.now() + Math.max(0, saved.remainingSeconds) * 1000
   };

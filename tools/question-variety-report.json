@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-06-12T17:23:21.573Z",
+  "generatedAt": "2026-06-13T05:54:22.112Z",
   "totals": {
     "questions": 777,
     "exactUnique": 777,
     "templateUnique": 712,
-    "knowledgeUnique": 753,
+    "knowledgeUnique": 739,
     "clusteredVariety": 433,
     "definitionStyle": 410,
     "calculationStyle": 114,
@@ -18,7 +18,7 @@
       "questions": 201,
       "exactUnique": 201,
       "templateUnique": 165,
-      "knowledgeUnique": 190,
+      "knowledgeUnique": 188,
       "clusteredVariety": 114,
       "tags": 30,
       "largestTag": "ハードウェア",
@@ -31,7 +31,7 @@
       "questions": 217,
       "exactUnique": 217,
       "templateUnique": 212,
-      "knowledgeUnique": 211,
+      "knowledgeUnique": 206,
       "clusteredVariety": 134,
       "tags": 30,
       "largestTag": "科目B長文アルゴリズム",
@@ -70,7 +70,7 @@
       "questions": 121,
       "exactUnique": 121,
       "templateUnique": 116,
-      "knowledgeUnique": 120,
+      "knowledgeUnique": 113,
       "clusteredVariety": 58,
       "tags": 13,
       "largestTag": "経営戦略",
@@ -268,7 +268,11 @@
     "invalidAnswerIndex": 0,
     "wrongChoiceCount": 0,
     "duplicateChoices": 0,
-    "emptyExplanations": 0
+    "emptyExplanations": 0,
+    "numericQuestionWithNonNumericChoices": 0,
+    "fractionalChoiceForDiscreteCount": 0,
+    "numericChoiceMismatchSamples": [],
+    "fractionalCountSamples": []
   },
   "subjectBQuality": {
     "total": 60,

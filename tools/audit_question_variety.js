@@ -161,11 +161,29 @@ const repeatedAnswers = topCounts(all, (q) => `${q.stageId} / ${q.tag} / ${q.cho
 const repeatedTemplates = topCounts(all, (q) => `${q.stageId} / ${q.tag} / ${template(q.text)}`, 18)
   .filter(([, count]) => count >= 2);
 const tagCounts = topCounts(all, (q) => `${q.stageId} / ${q.tag}`, 25);
+const numericQuestionPattern = /(何回|何個|何秒|何ビット|いくら|何円|何台|何人|何通り|何%|幾つ|最大何|最小何)/;
+const numericChoicePattern = /^-?\d+(?:\.\d+)?(?:回|個|秒|ビット|円|万円|台|人|通り|%|倍|件|文字|バイト|KB|MB|GB)?$/;
+const numericChoiceMismatches = all.filter(
+  (q) => numericQuestionPattern.test(q.text) && q.choices.some((choice) => !numericChoicePattern.test(String(choice).trim()))
+);
+const fractionalCountChoices = all.filter(
+  (q) => /(何回|何個|何台|何人|何通り|何件)/.test(q.text) && q.choices.some((choice) => /^\d+\.\d+/.test(String(choice).trim()))
+);
 const validation = {
   invalidAnswerIndex: all.filter((q) => !Number.isInteger(q.answer) || q.answer < 0 || q.answer >= q.choices.length).length,
   wrongChoiceCount: all.filter((q) => q.choices.length !== 4).length,
   duplicateChoices: all.filter((q) => new Set(q.choices.map(clean)).size !== q.choices.length).length,
   emptyExplanations: all.filter((q) => !String(q.explanation || "").trim()).length,
+  numericQuestionWithNonNumericChoices: numericChoiceMismatches.length,
+  fractionalChoiceForDiscreteCount: fractionalCountChoices.length,
+  numericChoiceMismatchSamples: numericChoiceMismatches.slice(0, 20).map((q) => ({
+    text: q.text,
+    choices: q.choices
+  })),
+  fractionalCountSamples: fractionalCountChoices.slice(0, 20).map((q) => ({
+    text: q.text,
+    choices: q.choices
+  }))
 };
 
 const report = {
