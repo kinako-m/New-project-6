@@ -3017,7 +3017,7 @@ gameState.completedMissions = gameState.completedMissions || [];
 let current = null;
 let quizTimer = null;
 let pendingEvolutionChoice = null;
-const ASSET_VERSION = "v63";
+const ASSET_VERSION = "v65";
 
 const creatureLines = {
   idle: [

@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-06-13T22:25:49.771Z",
+  "generatedAt": "2026-06-14T02:26:50.451Z",
   "summary": {
     "questions": 804,
-    "candidateSetsWithFindings": 225,
-    "findings": 341,
+    "candidateSetsWithFindings": 231,
+    "findings": 347,
     "severityCounts": {
-      "medium": 119,
-      "low": 222
+      "medium": 120,
+      "low": 227
     },
     "counts": {
-      "choice-style-outlier": 100,
-      "foreign-tag-candidate": 232,
+      "choice-style-outlier": 102,
+      "foreign-tag-candidate": 237,
       "near-correct-candidate": 6,
       "mixed-choice-styles": 1,
-      "correct-length-outlier": 2
+      "correct-length-outlier": 1
     }
   },
   "interpretation": {
@@ -4487,32 +4487,6 @@
     },
     {
       "rank": 69,
-      "id": "management-056",
-      "stage": "マネジメント系",
-      "tag": "開発",
-      "text": "「変更を頻繁に統合し自動ビルドやテストを行う取組み」に該当する用語はどれか。",
-      "correct": "CI",
-      "score": 6,
-      "findings": [
-        {
-          "id": "management-056",
-          "stage": "マネジメント系",
-          "stageId": "management",
-          "tag": "開発",
-          "text": "「変更を頻繁に統合し自動ビルドやテストを行う取組み」に該当する用語はどれか。",
-          "correct": "CI",
-          "type": "correct-length-outlier",
-          "severity": "medium",
-          "points": 6,
-          "detail": {
-            "correctLength": 2,
-            "distractorMedian": 8
-          }
-        }
-      ]
-    },
-    {
-      "rank": 70,
       "id": "management-119",
       "stage": "マネジメント系",
       "tag": "サンプル発展・テスト",
@@ -4563,7 +4537,7 @@
       ]
     },
     {
-      "rank": 71,
+      "rank": 70,
       "id": "strategy-005",
       "stage": "ストラテジ系",
       "tag": "知的財産",
@@ -4618,7 +4592,7 @@
       ]
     },
     {
-      "rank": 72,
+      "rank": 71,
       "id": "strategy-018",
       "stage": "ストラテジ系",
       "tag": "マーケティング",
@@ -4669,7 +4643,7 @@
       ]
     },
     {
-      "rank": 73,
+      "rank": 72,
       "id": "strategy-019",
       "stage": "ストラテジ系",
       "tag": "マーケティング",
@@ -4720,7 +4694,7 @@
       ]
     },
     {
-      "rank": 74,
+      "rank": 73,
       "id": "strategy-041",
       "stage": "ストラテジ系",
       "tag": "経営頻出",
@@ -4771,7 +4745,7 @@
       ]
     },
     {
-      "rank": 75,
+      "rank": 74,
       "id": "strategy-044",
       "stage": "ストラテジ系",
       "tag": "経営頻出",
@@ -4822,7 +4796,7 @@
       ]
     },
     {
-      "rank": 76,
+      "rank": 75,
       "id": "strategy-049",
       "stage": "ストラテジ系",
       "tag": "実戦ケース",
@@ -4877,7 +4851,7 @@
       ]
     },
     {
-      "rank": 77,
+      "rank": 76,
       "id": "strategy-059",
       "stage": "ストラテジ系",
       "tag": "経営戦略",
@@ -4903,7 +4877,7 @@
       ]
     },
     {
-      "rank": 78,
+      "rank": 77,
       "id": "strategy-117",
       "stage": "ストラテジ系",
       "tag": "複合ケース",
@@ -4929,7 +4903,7 @@
       ]
     },
     {
-      "rank": 79,
+      "rank": 78,
       "id": "technology-024",
       "stage": "テクノロジ系",
       "tag": "セキュリティ",
@@ -4980,7 +4954,7 @@
       ]
     },
     {
-      "rank": 80,
+      "rank": 79,
       "id": "technology-140",
       "stage": "テクノロジ系",
       "tag": "セキュリティ",
@@ -5031,7 +5005,7 @@
       ]
     },
     {
-      "rank": 81,
+      "rank": 80,
       "id": "technology-211",
       "stage": "テクノロジ系",
       "tag": "サンプル発展・ネットワーク",
@@ -5082,7 +5056,7 @@
       ]
     },
     {
-      "rank": 82,
+      "rank": 81,
       "id": "algorithm-037",
       "stage": "アルゴリズム",
       "tag": "論理",
@@ -5109,7 +5083,7 @@
       ]
     },
     {
-      "rank": 83,
+      "rank": 82,
       "id": "algorithm-062",
       "stage": "アルゴリズム",
       "tag": "トレース",
@@ -5136,7 +5110,7 @@
       ]
     },
     {
-      "rank": 84,
+      "rank": 83,
       "id": "algorithm-065",
       "stage": "アルゴリズム",
       "tag": "トレース",
@@ -5163,7 +5137,7 @@
       ]
     },
     {
-      "rank": 85,
+      "rank": 84,
       "id": "algorithm-074",
       "stage": "アルゴリズム",
       "tag": "実戦トレース",
@@ -5194,7 +5168,7 @@
       ]
     },
     {
-      "rank": 86,
+      "rank": 85,
       "id": "algorithm-078",
       "stage": "アルゴリズム",
       "tag": "実戦トレース",
@@ -5221,7 +5195,7 @@
       ]
     },
     {
-      "rank": 87,
+      "rank": 86,
       "id": "algorithm-081",
       "stage": "アルゴリズム",
       "tag": "実戦トレース",
@@ -5248,7 +5222,7 @@
       ]
     },
     {
-      "rank": 88,
+      "rank": 87,
       "id": "algorithm-096",
       "stage": "アルゴリズム",
       "tag": "データ構造",
@@ -5275,7 +5249,7 @@
       ]
     },
     {
-      "rank": 89,
+      "rank": 88,
       "id": "algorithm-102",
       "stage": "アルゴリズム",
       "tag": "探索",
@@ -5302,7 +5276,7 @@
       ]
     },
     {
-      "rank": 90,
+      "rank": 89,
       "id": "algorithm-105",
       "stage": "アルゴリズム",
       "tag": "探索",
@@ -5329,7 +5303,7 @@
       ]
     },
     {
-      "rank": 91,
+      "rank": 90,
       "id": "algorithm-108",
       "stage": "アルゴリズム",
       "tag": "探索",
@@ -5356,7 +5330,7 @@
       ]
     },
     {
-      "rank": 92,
+      "rank": 91,
       "id": "algorithm-114",
       "stage": "アルゴリズム",
       "tag": "探索",
@@ -5383,7 +5357,7 @@
       ]
     },
     {
-      "rank": 93,
+      "rank": 92,
       "id": "algorithm-117",
       "stage": "アルゴリズム",
       "tag": "整列",
@@ -5410,7 +5384,7 @@
       ]
     },
     {
-      "rank": 94,
+      "rank": 93,
       "id": "algorithm-120",
       "stage": "アルゴリズム",
       "tag": "整列",
@@ -5437,7 +5411,7 @@
       ]
     },
     {
-      "rank": 95,
+      "rank": 94,
       "id": "algorithm-123",
       "stage": "アルゴリズム",
       "tag": "整列",
@@ -5464,7 +5438,7 @@
       ]
     },
     {
-      "rank": 96,
+      "rank": 95,
       "id": "algorithm-126",
       "stage": "アルゴリズム",
       "tag": "整列",
@@ -5491,7 +5465,7 @@
       ]
     },
     {
-      "rank": 97,
+      "rank": 96,
       "id": "algorithm-132",
       "stage": "アルゴリズム",
       "tag": "計算量",
@@ -5518,7 +5492,7 @@
       ]
     },
     {
-      "rank": 98,
+      "rank": 97,
       "id": "algorithm-138",
       "stage": "アルゴリズム",
       "tag": "計算量",
@@ -5545,7 +5519,7 @@
       ]
     },
     {
-      "rank": 99,
+      "rank": 98,
       "id": "algorithm-141",
       "stage": "アルゴリズム",
       "tag": "計算量",
@@ -5572,7 +5546,7 @@
       ]
     },
     {
-      "rank": 100,
+      "rank": 99,
       "id": "algorithm-144",
       "stage": "アルゴリズム",
       "tag": "計算量",
@@ -5599,7 +5573,7 @@
       ]
     },
     {
-      "rank": 101,
+      "rank": 100,
       "id": "algorithm-150",
       "stage": "アルゴリズム",
       "tag": "擬似言語",
@@ -5626,7 +5600,7 @@
       ]
     },
     {
-      "rank": 102,
+      "rank": 101,
       "id": "algorithm-153",
       "stage": "アルゴリズム",
       "tag": "擬似言語",
@@ -5653,7 +5627,7 @@
       ]
     },
     {
-      "rank": 103,
+      "rank": 102,
       "id": "algorithm-177",
       "stage": "アルゴリズム",
       "tag": "計算量判断",
@@ -5680,7 +5654,7 @@
       ]
     },
     {
-      "rank": 104,
+      "rank": 103,
       "id": "algorithm-196",
       "stage": "アルゴリズム",
       "tag": "科目B長文アルゴリズム",
@@ -5713,7 +5687,7 @@
       ]
     },
     {
-      "rank": 105,
+      "rank": 104,
       "id": "algorithm-209",
       "stage": "アルゴリズム",
       "tag": "科目B長文アルゴリズム",
@@ -5740,7 +5714,7 @@
       ]
     },
     {
-      "rank": 106,
+      "rank": 105,
       "id": "algorithm-210",
       "stage": "アルゴリズム",
       "tag": "科目B長文アルゴリズム",
@@ -5767,7 +5741,7 @@
       ]
     },
     {
-      "rank": 107,
+      "rank": 106,
       "id": "algorithm-212",
       "stage": "アルゴリズム",
       "tag": "科目B長文アルゴリズム",
@@ -5794,7 +5768,7 @@
       ]
     },
     {
-      "rank": 108,
+      "rank": 107,
       "id": "algorithm-221",
       "stage": "アルゴリズム",
       "tag": "サンプル発展・アルゴリズム",
@@ -5825,7 +5799,7 @@
       ]
     },
     {
-      "rank": 109,
+      "rank": 108,
       "id": "database-009",
       "stage": "データベース",
       "tag": "バックアップ",
@@ -5852,7 +5826,7 @@
       ]
     },
     {
-      "rank": 110,
+      "rank": 109,
       "id": "database-010",
       "stage": "データベース",
       "tag": "キー",
@@ -5879,7 +5853,7 @@
       ]
     },
     {
-      "rank": 111,
+      "rank": 110,
       "id": "database-011",
       "stage": "データベース",
       "tag": "キー",
@@ -5906,7 +5880,7 @@
       ]
     },
     {
-      "rank": 112,
+      "rank": 111,
       "id": "management-046",
       "stage": "マネジメント系",
       "tag": "開発",
@@ -5921,6 +5895,33 @@
           "tag": "開発",
           "text": "ウォータフォールモデルを見分ける特徴として最も適切なものはどれか。",
           "correct": "工程を順番に進める",
+          "type": "choice-style-outlier",
+          "severity": "medium",
+          "points": 5,
+          "detail": {
+            "candidate": "工程を順番に進める",
+            "candidateKind": "term",
+            "majorityKind": "sentence"
+          }
+        }
+      ]
+    },
+    {
+      "rank": 112,
+      "id": "management-049",
+      "stage": "マネジメント系",
+      "tag": "開発",
+      "text": "アジャイル開発を見分ける特徴として最も適切なものはどれか。",
+      "correct": "短い反復で改善する",
+      "score": 5,
+      "findings": [
+        {
+          "id": "management-049",
+          "stage": "マネジメント系",
+          "stageId": "management",
+          "tag": "開発",
+          "text": "アジャイル開発を見分ける特徴として最も適切なものはどれか。",
+          "correct": "短い反復で改善する",
           "type": "choice-style-outlier",
           "severity": "medium",
           "points": 5,
@@ -6150,6 +6151,33 @@
     },
     {
       "rank": 121,
+      "id": "strategy-007",
+      "stage": "ストラテジ系",
+      "tag": "マーケティング",
+      "text": "4Pに含まれる要素はどれか。",
+      "correct": "Product",
+      "score": 5,
+      "findings": [
+        {
+          "id": "strategy-007",
+          "stage": "ストラテジ系",
+          "stageId": "strategy",
+          "tag": "マーケティング",
+          "text": "4Pに含まれる要素はどれか。",
+          "correct": "Product",
+          "type": "choice-style-outlier",
+          "severity": "medium",
+          "points": 5,
+          "detail": {
+            "candidate": "Physical Evidence",
+            "candidateKind": "sentence",
+            "majorityKind": "term"
+          }
+        }
+      ]
+    },
+    {
+      "rank": 122,
       "id": "strategy-009",
       "stage": "ストラテジ系",
       "tag": "システム企画",
@@ -6180,7 +6208,7 @@
       ]
     },
     {
-      "rank": 122,
+      "rank": 123,
       "id": "strategy-020",
       "stage": "ストラテジ系",
       "tag": "法務",
@@ -6207,7 +6235,7 @@
       ]
     },
     {
-      "rank": 123,
+      "rank": 124,
       "id": "strategy-021",
       "stage": "ストラテジ系",
       "tag": "法務",
@@ -6234,7 +6262,7 @@
       ]
     },
     {
-      "rank": 124,
+      "rank": 125,
       "id": "strategy-022",
       "stage": "ストラテジ系",
       "tag": "法務",
@@ -6261,7 +6289,7 @@
       ]
     },
     {
-      "rank": 125,
+      "rank": 126,
       "id": "strategy-024",
       "stage": "ストラテジ系",
       "tag": "法務",
@@ -6288,7 +6316,7 @@
       ]
     },
     {
-      "rank": 126,
+      "rank": 127,
       "id": "strategy-025",
       "stage": "ストラテジ系",
       "tag": "法務",
@@ -6315,7 +6343,7 @@
       ]
     },
     {
-      "rank": 127,
+      "rank": 128,
       "id": "strategy-055",
       "stage": "ストラテジ系",
       "tag": "経営戦略",
@@ -6342,7 +6370,7 @@
       ]
     },
     {
-      "rank": 128,
+      "rank": 129,
       "id": "strategy-058",
       "stage": "ストラテジ系",
       "tag": "経営戦略",
@@ -6369,7 +6397,7 @@
       ]
     },
     {
-      "rank": 129,
+      "rank": 130,
       "id": "strategy-067",
       "stage": "ストラテジ系",
       "tag": "経営戦略",
@@ -6396,7 +6424,7 @@
       ]
     },
     {
-      "rank": 130,
+      "rank": 131,
       "id": "strategy-070",
       "stage": "ストラテジ系",
       "tag": "経営戦略",
@@ -6423,7 +6451,7 @@
       ]
     },
     {
-      "rank": 131,
+      "rank": 132,
       "id": "strategy-088",
       "stage": "ストラテジ系",
       "tag": "会計",
@@ -6450,7 +6478,7 @@
       ]
     },
     {
-      "rank": 132,
+      "rank": 133,
       "id": "strategy-089",
       "stage": "ストラテジ系",
       "tag": "会計",
@@ -6477,7 +6505,7 @@
       ]
     },
     {
-      "rank": 133,
+      "rank": 134,
       "id": "strategy-092",
       "stage": "ストラテジ系",
       "tag": "会計",
@@ -6504,7 +6532,7 @@
       ]
     },
     {
-      "rank": 134,
+      "rank": 135,
       "id": "strategy-095",
       "stage": "ストラテジ系",
       "tag": "会計",
@@ -6531,7 +6559,7 @@
       ]
     },
     {
-      "rank": 135,
+      "rank": 136,
       "id": "strategy-102",
       "stage": "ストラテジ系",
       "tag": "法務",
@@ -6558,7 +6586,7 @@
       ]
     },
     {
-      "rank": 136,
+      "rank": 137,
       "id": "strategy-103",
       "stage": "ストラテジ系",
       "tag": "法務",
@@ -6585,7 +6613,7 @@
       ]
     },
     {
-      "rank": 137,
+      "rank": 138,
       "id": "strategy-105",
       "stage": "ストラテジ系",
       "tag": "法務",
@@ -6612,7 +6640,7 @@
       ]
     },
     {
-      "rank": 138,
+      "rank": 139,
       "id": "strategy-106",
       "stage": "ストラテジ系",
       "tag": "法務",
@@ -6639,7 +6667,7 @@
       ]
     },
     {
-      "rank": 139,
+      "rank": 140,
       "id": "strategy-108",
       "stage": "ストラテジ系",
       "tag": "法務",
@@ -6666,7 +6694,7 @@
       ]
     },
     {
-      "rank": 140,
+      "rank": 141,
       "id": "strategy-109",
       "stage": "ストラテジ系",
       "tag": "法務",
@@ -6693,7 +6721,7 @@
       ]
     },
     {
-      "rank": 141,
+      "rank": 142,
       "id": "strategy-111",
       "stage": "ストラテジ系",
       "tag": "法務",
@@ -6720,7 +6748,7 @@
       ]
     },
     {
-      "rank": 142,
+      "rank": 143,
       "id": "strategy-115",
       "stage": "ストラテジ系",
       "tag": "法務",
@@ -6747,7 +6775,7 @@
       ]
     },
     {
-      "rank": 143,
+      "rank": 144,
       "id": "strategy-116",
       "stage": "ストラテジ系",
       "tag": "法務",
@@ -6774,7 +6802,7 @@
       ]
     },
     {
-      "rank": 144,
+      "rank": 145,
       "id": "technology-002",
       "stage": "テクノロジ系",
       "tag": "CPU",
@@ -6801,7 +6829,7 @@
       ]
     },
     {
-      "rank": 145,
+      "rank": 146,
       "id": "technology-009",
       "stage": "テクノロジ系",
       "tag": "基礎理論",
@@ -6828,7 +6856,7 @@
       ]
     },
     {
-      "rank": 146,
+      "rank": 147,
       "id": "technology-010",
       "stage": "テクノロジ系",
       "tag": "基礎理論",
@@ -6855,7 +6883,7 @@
       ]
     },
     {
-      "rank": 147,
+      "rank": 148,
       "id": "technology-011",
       "stage": "テクノロジ系",
       "tag": "基礎理論",
@@ -6882,7 +6910,7 @@
       ]
     },
     {
-      "rank": 148,
+      "rank": 149,
       "id": "technology-012",
       "stage": "テクノロジ系",
       "tag": "基礎理論",
@@ -6909,7 +6937,7 @@
       ]
     },
     {
-      "rank": 149,
+      "rank": 150,
       "id": "technology-013",
       "stage": "テクノロジ系",
       "tag": "基礎理論",
@@ -6936,7 +6964,7 @@
       ]
     },
     {
-      "rank": 150,
+      "rank": 151,
       "id": "technology-014",
       "stage": "テクノロジ系",
       "tag": "基礎理論",
@@ -6963,7 +6991,7 @@
       ]
     },
     {
-      "rank": 151,
+      "rank": 152,
       "id": "technology-016",
       "stage": "テクノロジ系",
       "tag": "基礎理論",
@@ -6990,7 +7018,7 @@
       ]
     },
     {
-      "rank": 152,
+      "rank": 153,
       "id": "technology-017",
       "stage": "テクノロジ系",
       "tag": "基礎理論",
@@ -7017,7 +7045,7 @@
       ]
     },
     {
-      "rank": 153,
+      "rank": 154,
       "id": "technology-077",
       "stage": "テクノロジ系",
       "tag": "実戦問題",
@@ -7044,7 +7072,7 @@
       ]
     },
     {
-      "rank": 154,
+      "rank": 155,
       "id": "technology-088",
       "stage": "テクノロジ系",
       "tag": "ハードウェア",
@@ -7071,7 +7099,7 @@
       ]
     },
     {
-      "rank": 155,
+      "rank": 156,
       "id": "technology-091",
       "stage": "テクノロジ系",
       "tag": "ハードウェア",
@@ -7098,7 +7126,7 @@
       ]
     },
     {
-      "rank": 156,
+      "rank": 157,
       "id": "technology-094",
       "stage": "テクノロジ系",
       "tag": "ハードウェア",
@@ -7125,7 +7153,7 @@
       ]
     },
     {
-      "rank": 157,
+      "rank": 158,
       "id": "technology-097",
       "stage": "テクノロジ系",
       "tag": "ハードウェア",
@@ -7152,7 +7180,7 @@
       ]
     },
     {
-      "rank": 158,
+      "rank": 159,
       "id": "technology-106",
       "stage": "テクノロジ系",
       "tag": "OS",
@@ -7179,7 +7207,7 @@
       ]
     },
     {
-      "rank": 159,
+      "rank": 160,
       "id": "technology-109",
       "stage": "テクノロジ系",
       "tag": "OS",
@@ -7206,7 +7234,7 @@
       ]
     },
     {
-      "rank": 160,
+      "rank": 161,
       "id": "technology-112",
       "stage": "テクノロジ系",
       "tag": "OS",
@@ -7233,7 +7261,7 @@
       ]
     },
     {
-      "rank": 161,
+      "rank": 162,
       "id": "technology-115",
       "stage": "テクノロジ系",
       "tag": "OS",
@@ -7260,7 +7288,7 @@
       ]
     },
     {
-      "rank": 162,
+      "rank": 163,
       "id": "technology-118",
       "stage": "テクノロジ系",
       "tag": "ネットワーク",
@@ -7287,7 +7315,7 @@
       ]
     },
     {
-      "rank": 163,
+      "rank": 164,
       "id": "technology-121",
       "stage": "テクノロジ系",
       "tag": "ネットワーク",
@@ -7314,7 +7342,7 @@
       ]
     },
     {
-      "rank": 164,
+      "rank": 165,
       "id": "technology-124",
       "stage": "テクノロジ系",
       "tag": "ネットワーク",
@@ -7341,7 +7369,7 @@
       ]
     },
     {
-      "rank": 165,
+      "rank": 166,
       "id": "technology-127",
       "stage": "テクノロジ系",
       "tag": "ネットワーク",
@@ -7368,7 +7396,7 @@
       ]
     },
     {
-      "rank": 166,
+      "rank": 167,
       "id": "technology-130",
       "stage": "テクノロジ系",
       "tag": "ネットワーク",
@@ -7395,7 +7423,7 @@
       ]
     },
     {
-      "rank": 167,
+      "rank": 168,
       "id": "technology-133",
       "stage": "テクノロジ系",
       "tag": "ネットワーク",
@@ -7422,7 +7450,7 @@
       ]
     },
     {
-      "rank": 168,
+      "rank": 169,
       "id": "technology-136",
       "stage": "テクノロジ系",
       "tag": "ネットワーク",
@@ -7449,7 +7477,7 @@
       ]
     },
     {
-      "rank": 169,
+      "rank": 170,
       "id": "technology-151",
       "stage": "テクノロジ系",
       "tag": "アクセス制御",
@@ -7476,7 +7504,7 @@
       ]
     },
     {
-      "rank": 170,
+      "rank": 171,
       "id": "technology-157",
       "stage": "テクノロジ系",
       "tag": "メールセキュリティ",
@@ -7503,7 +7531,7 @@
       ]
     },
     {
-      "rank": 171,
+      "rank": 172,
       "id": "technology-162",
       "stage": "テクノロジ系",
       "tag": "脆弱性管理",
@@ -7530,7 +7558,7 @@
       ]
     },
     {
-      "rank": 172,
+      "rank": 173,
       "id": "technology-168",
       "stage": "テクノロジ系",
       "tag": "委託先管理",
@@ -7557,7 +7585,7 @@
       ]
     },
     {
-      "rank": 173,
+      "rank": 174,
       "id": "technology-170",
       "stage": "テクノロジ系",
       "tag": "可用性設計",
@@ -7584,7 +7612,7 @@
       ]
     },
     {
-      "rank": 174,
+      "rank": 175,
       "id": "technology-173",
       "stage": "テクノロジ系",
       "tag": "ゼロトラスト",
@@ -7611,7 +7639,7 @@
       ]
     },
     {
-      "rank": 175,
+      "rank": 176,
       "id": "technology-192",
       "stage": "テクノロジ系",
       "tag": "科目B長文セキュリティ",
@@ -7638,7 +7666,7 @@
       ]
     },
     {
-      "rank": 176,
+      "rank": 177,
       "id": "algorithm-017",
       "stage": "アルゴリズム",
       "tag": "探索",
@@ -7669,7 +7697,7 @@
       ]
     },
     {
-      "rank": 177,
+      "rank": 178,
       "id": "algorithm-018",
       "stage": "アルゴリズム",
       "tag": "探索",
@@ -7700,7 +7728,7 @@
       ]
     },
     {
-      "rank": 178,
+      "rank": 179,
       "id": "algorithm-024",
       "stage": "アルゴリズム",
       "tag": "データ構造",
@@ -7731,7 +7759,7 @@
       ]
     },
     {
-      "rank": 179,
+      "rank": 180,
       "id": "algorithm-025",
       "stage": "アルゴリズム",
       "tag": "データ構造",
@@ -7762,7 +7790,7 @@
       ]
     },
     {
-      "rank": 180,
+      "rank": 181,
       "id": "algorithm-028",
       "stage": "アルゴリズム",
       "tag": "データ構造",
@@ -7793,7 +7821,7 @@
       ]
     },
     {
-      "rank": 181,
+      "rank": 182,
       "id": "algorithm-029",
       "stage": "アルゴリズム",
       "tag": "擬似言語",
@@ -7824,7 +7852,7 @@
       ]
     },
     {
-      "rank": 182,
+      "rank": 183,
       "id": "algorithm-030",
       "stage": "アルゴリズム",
       "tag": "擬似言語",
@@ -7855,7 +7883,7 @@
       ]
     },
     {
-      "rank": 183,
+      "rank": 184,
       "id": "algorithm-031",
       "stage": "アルゴリズム",
       "tag": "擬似言語",
@@ -7886,7 +7914,7 @@
       ]
     },
     {
-      "rank": 184,
+      "rank": 185,
       "id": "algorithm-032",
       "stage": "アルゴリズム",
       "tag": "擬似言語",
@@ -7917,7 +7945,7 @@
       ]
     },
     {
-      "rank": 185,
+      "rank": 186,
       "id": "algorithm-034",
       "stage": "アルゴリズム",
       "tag": "擬似言語",
@@ -7948,7 +7976,7 @@
       ]
     },
     {
-      "rank": 186,
+      "rank": 187,
       "id": "algorithm-035",
       "stage": "アルゴリズム",
       "tag": "論理",
@@ -7979,7 +8007,7 @@
       ]
     },
     {
-      "rank": 187,
+      "rank": 188,
       "id": "algorithm-036",
       "stage": "アルゴリズム",
       "tag": "論理",
@@ -8010,7 +8038,7 @@
       ]
     },
     {
-      "rank": 188,
+      "rank": 189,
       "id": "algorithm-038",
       "stage": "アルゴリズム",
       "tag": "アルゴリズム",
@@ -8041,7 +8069,7 @@
       ]
     },
     {
-      "rank": 189,
+      "rank": 190,
       "id": "algorithm-039",
       "stage": "アルゴリズム",
       "tag": "アルゴリズム",
@@ -8072,7 +8100,7 @@
       ]
     },
     {
-      "rank": 190,
+      "rank": 191,
       "id": "algorithm-047",
       "stage": "アルゴリズム",
       "tag": "頻出処理",
@@ -8103,7 +8131,7 @@
       ]
     },
     {
-      "rank": 191,
+      "rank": 192,
       "id": "algorithm-119",
       "stage": "アルゴリズム",
       "tag": "整列",
@@ -8134,7 +8162,7 @@
       ]
     },
     {
-      "rank": 192,
+      "rank": 193,
       "id": "algorithm-145",
       "stage": "アルゴリズム",
       "tag": "擬似言語",
@@ -8173,7 +8201,7 @@
       ]
     },
     {
-      "rank": 193,
+      "rank": 194,
       "id": "algorithm-160",
       "stage": "アルゴリズム",
       "tag": "科目Bアルゴリズム",
@@ -8212,7 +8240,7 @@
       ]
     },
     {
-      "rank": 194,
+      "rank": 195,
       "id": "algorithm-161",
       "stage": "アルゴリズム",
       "tag": "科目Bアルゴリズム",
@@ -8247,7 +8275,7 @@
       ]
     },
     {
-      "rank": 195,
+      "rank": 196,
       "id": "algorithm-162",
       "stage": "アルゴリズム",
       "tag": "科目Bアルゴリズム",
@@ -8282,7 +8310,7 @@
       ]
     },
     {
-      "rank": 196,
+      "rank": 197,
       "id": "algorithm-171",
       "stage": "アルゴリズム",
       "tag": "データ構造応用",
@@ -8313,7 +8341,7 @@
       ]
     },
     {
-      "rank": 197,
+      "rank": 198,
       "id": "algorithm-182",
       "stage": "アルゴリズム",
       "tag": "フラグ処理",
@@ -8344,7 +8372,7 @@
       ]
     },
     {
-      "rank": 198,
+      "rank": 199,
       "id": "algorithm-191",
       "stage": "アルゴリズム",
       "tag": "科目B長文アルゴリズム",
@@ -8375,7 +8403,7 @@
       ]
     },
     {
-      "rank": 199,
+      "rank": 200,
       "id": "algorithm-199",
       "stage": "アルゴリズム",
       "tag": "科目B長文アルゴリズム",
@@ -8406,7 +8434,7 @@
       ]
     },
     {
-      "rank": 200,
+      "rank": 201,
       "id": "algorithm-220",
       "stage": "アルゴリズム",
       "tag": "サンプル発展・アルゴリズム",
@@ -8437,7 +8465,7 @@
       ]
     },
     {
-      "rank": 201,
+      "rank": 202,
       "id": "database-038",
       "stage": "データベース",
       "tag": "DB頻出",
@@ -8468,7 +8496,7 @@
       ]
     },
     {
-      "rank": 202,
+      "rank": 203,
       "id": "database-040",
       "stage": "データベース",
       "tag": "DB頻出",
@@ -8499,7 +8527,7 @@
       ]
     },
     {
-      "rank": 203,
+      "rank": 204,
       "id": "database-041",
       "stage": "データベース",
       "tag": "DB頻出",
@@ -8530,7 +8558,7 @@
       ]
     },
     {
-      "rank": 204,
+      "rank": 205,
       "id": "database-042",
       "stage": "データベース",
       "tag": "DB頻出",
@@ -8561,7 +8589,7 @@
       ]
     },
     {
-      "rank": 205,
+      "rank": 206,
       "id": "database-078",
       "stage": "データベース",
       "tag": "キー",
@@ -8592,7 +8620,7 @@
       ]
     },
     {
-      "rank": 206,
+      "rank": 207,
       "id": "database-081",
       "stage": "データベース",
       "tag": "キー",
@@ -8623,7 +8651,7 @@
       ]
     },
     {
-      "rank": 207,
+      "rank": 208,
       "id": "database-084",
       "stage": "データベース",
       "tag": "キー",
@@ -8654,7 +8682,7 @@
       ]
     },
     {
-      "rank": 208,
+      "rank": 209,
       "id": "database-098",
       "stage": "データベース",
       "tag": "正規化",
@@ -8685,7 +8713,7 @@
       ]
     },
     {
-      "rank": 209,
+      "rank": 210,
       "id": "database-107",
       "stage": "データベース",
       "tag": "トランザクション",
@@ -8716,7 +8744,7 @@
       ]
     },
     {
-      "rank": 210,
+      "rank": 211,
       "id": "database-118",
       "stage": "データベース",
       "tag": "複合ケース",
@@ -8751,7 +8779,7 @@
       ]
     },
     {
-      "rank": 211,
+      "rank": 212,
       "id": "database-121",
       "stage": "データベース",
       "tag": "サンプル発展・SQL",
@@ -8782,7 +8810,7 @@
       ]
     },
     {
-      "rank": 212,
+      "rank": 213,
       "id": "database-122",
       "stage": "データベース",
       "tag": "サンプル発展・SQL",
@@ -8813,7 +8841,7 @@
       ]
     },
     {
-      "rank": 213,
+      "rank": 214,
       "id": "management-001",
       "stage": "マネジメント系",
       "tag": "開発モデル",
@@ -8848,7 +8876,7 @@
       ]
     },
     {
-      "rank": 214,
+      "rank": 215,
       "id": "management-014",
       "stage": "マネジメント系",
       "tag": "開発",
@@ -8879,7 +8907,7 @@
       ]
     },
     {
-      "rank": 215,
+      "rank": 216,
       "id": "management-015",
       "stage": "マネジメント系",
       "tag": "開発",
@@ -8910,7 +8938,7 @@
       ]
     },
     {
-      "rank": 216,
+      "rank": 217,
       "id": "management-023",
       "stage": "マネジメント系",
       "tag": "頻出管理",
@@ -8941,7 +8969,7 @@
       ]
     },
     {
-      "rank": 217,
+      "rank": 218,
       "id": "management-116",
       "stage": "マネジメント系",
       "tag": "複合ケース",
@@ -8976,7 +9004,131 @@
       ]
     },
     {
-      "rank": 218,
+      "rank": 219,
+      "id": "strategy-071",
+      "stage": "ストラテジ系",
+      "tag": "マーケティング",
+      "text": "「市場を顧客属性やニーズで細分化すること」に該当する用語はどれか。",
+      "correct": "セグメンテーション",
+      "score": 3,
+      "findings": [
+        {
+          "id": "strategy-071",
+          "stage": "ストラテジ系",
+          "stageId": "strategy",
+          "tag": "マーケティング",
+          "text": "「市場を顧客属性やニーズで細分化すること」に該当する用語はどれか。",
+          "correct": "セグメンテーション",
+          "type": "foreign-tag-candidate",
+          "severity": "low",
+          "points": 3,
+          "detail": {
+            "candidate": "CRM",
+            "candidateOwners": [
+              {
+                "stageId": "strategy",
+                "tag": "複合ケース"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "rank": 220,
+      "id": "strategy-074",
+      "stage": "ストラテジ系",
+      "tag": "マーケティング",
+      "text": "「細分化した市場から狙う市場を選ぶこと」に該当する用語はどれか。",
+      "correct": "ターゲティング",
+      "score": 3,
+      "findings": [
+        {
+          "id": "strategy-074",
+          "stage": "ストラテジ系",
+          "stageId": "strategy",
+          "tag": "マーケティング",
+          "text": "「細分化した市場から狙う市場を選ぶこと」に該当する用語はどれか。",
+          "correct": "ターゲティング",
+          "type": "foreign-tag-candidate",
+          "severity": "low",
+          "points": 3,
+          "detail": {
+            "candidate": "CRM",
+            "candidateOwners": [
+              {
+                "stageId": "strategy",
+                "tag": "複合ケース"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "rank": 221,
+      "id": "strategy-077",
+      "stage": "ストラテジ系",
+      "tag": "マーケティング",
+      "text": "「顧客の中で自社製品の位置付けを明確にすること」に該当する用語はどれか。",
+      "correct": "ポジショニング",
+      "score": 3,
+      "findings": [
+        {
+          "id": "strategy-077",
+          "stage": "ストラテジ系",
+          "stageId": "strategy",
+          "tag": "マーケティング",
+          "text": "「顧客の中で自社製品の位置付けを明確にすること」に該当する用語はどれか。",
+          "correct": "ポジショニング",
+          "type": "foreign-tag-candidate",
+          "severity": "low",
+          "points": 3,
+          "detail": {
+            "candidate": "CRM",
+            "candidateOwners": [
+              {
+                "stageId": "strategy",
+                "tag": "複合ケース"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "rank": 222,
+      "id": "strategy-080",
+      "stage": "ストラテジ系",
+      "tag": "マーケティング",
+      "text": "「Product・Price・Place・Promotionの組合せ」に該当する用語はどれか。",
+      "correct": "4P",
+      "score": 3,
+      "findings": [
+        {
+          "id": "strategy-080",
+          "stage": "ストラテジ系",
+          "stageId": "strategy",
+          "tag": "マーケティング",
+          "text": "「Product・Price・Place・Promotionの組合せ」に該当する用語はどれか。",
+          "correct": "4P",
+          "type": "foreign-tag-candidate",
+          "severity": "low",
+          "points": 3,
+          "detail": {
+            "candidate": "CRM",
+            "candidateOwners": [
+              {
+                "stageId": "strategy",
+                "tag": "複合ケース"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "rank": 223,
       "id": "strategy-123",
       "stage": "ストラテジ系",
       "tag": "サンプル発展・法務",
@@ -9011,7 +9163,38 @@
       ]
     },
     {
-      "rank": 219,
+      "rank": 224,
+      "id": "technology-004",
+      "stage": "テクノロジ系",
+      "tag": "セキュリティ",
+      "text": "公開鍵暗号方式で、受信者だけが読めるように送信者が使う鍵はどれか。",
+      "correct": "受信者の公開鍵",
+      "score": 3,
+      "findings": [
+        {
+          "id": "technology-004",
+          "stage": "テクノロジ系",
+          "stageId": "technology",
+          "tag": "セキュリティ",
+          "text": "公開鍵暗号方式で、受信者だけが読めるように送信者が使う鍵はどれか。",
+          "correct": "受信者の公開鍵",
+          "type": "foreign-tag-candidate",
+          "severity": "low",
+          "points": 3,
+          "detail": {
+            "candidate": "送信者の公開鍵",
+            "candidateOwners": [
+              {
+                "stageId": "technology",
+                "tag": "暗号利用"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "rank": 225,
       "id": "technology-061",
       "stage": "テクノロジ系",
       "tag": "頻出用語",
@@ -9042,7 +9225,7 @@
       ]
     },
     {
-      "rank": 220,
+      "rank": 226,
       "id": "technology-062",
       "stage": "テクノロジ系",
       "tag": "頻出用語",
@@ -9073,7 +9256,7 @@
       ]
     },
     {
-      "rank": 221,
+      "rank": 227,
       "id": "technology-064",
       "stage": "テクノロジ系",
       "tag": "頻出用語",
@@ -9104,7 +9287,7 @@
       ]
     },
     {
-      "rank": 222,
+      "rank": 228,
       "id": "technology-067",
       "stage": "テクノロジ系",
       "tag": "頻出用語",
@@ -9135,7 +9318,7 @@
       ]
     },
     {
-      "rank": 223,
+      "rank": 229,
       "id": "technology-166",
       "stage": "テクノロジ系",
       "tag": "暗号利用",
@@ -9166,7 +9349,7 @@
       ]
     },
     {
-      "rank": 224,
+      "rank": 230,
       "id": "technology-208",
       "stage": "テクノロジ系",
       "tag": "サンプル発展・ハードウェア",
@@ -9197,7 +9380,7 @@
       ]
     },
     {
-      "rank": 225,
+      "rank": 231,
       "id": "technology-209",
       "stage": "テクノロジ系",
       "tag": "サンプル発展・メモリ",
