@@ -115,7 +115,9 @@ for (const question of questions) {
       if (kinds[index] !== majorityKind) {
         const contextualException =
           /(?:ない|存在しない|該当しない|取り出せない)/.test(choice)
-          || compact(question.text).includes(compact(choice));
+          || compact(question.text).includes(compact(choice))
+          || /該当する用語/.test(question.text);
+        if (contextualException) return;
         const severity = majorityKind === "numeric" && !contextualException ? "high" : "medium";
         add(question, "choice-style-outlier", severity, severity === "high" ? 8 : 5, {
           candidate: choice,
