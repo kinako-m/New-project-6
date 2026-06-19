@@ -3022,7 +3022,7 @@ gameState.completedMissions = gameState.completedMissions || [];
 let current = null;
 let quizTimer = null;
 let pendingEvolutionChoice = null;
-const ASSET_VERSION = "v101";
+const ASSET_VERSION = "v104";
 
 const creatureLines = {
   idle: [
@@ -4691,15 +4691,58 @@ function refreshSuspendedExamState(savedState) {
       ...canonical
     });
   });
-  const refreshedQuestion = questions[savedState.index];
+  const idOccurrences = new Map();
+  const idMappings = questions.map((question, index) => {
+    const baseId = question.id || `exam-question-${index + 1}`;
+    const occurrence = (idOccurrences.get(baseId) || 0) + 1;
+    idOccurrences.set(baseId, occurrence);
+    return {
+      from: baseId,
+      to: occurrence === 1 ? baseId : `${baseId}__${occurrence}`
+    };
+  });
+  const uniqueQuestions = questions.map((question, index) => ({
+    ...question,
+    id: idMappings[index].to
+  }));
+  const oldExamAnswers = savedState.examAnswers || {};
+  const examAnswers = {};
+  idMappings.forEach(({ from, to }) => {
+    if (Object.prototype.hasOwnProperty.call(oldExamAnswers, to)) {
+      examAnswers[to] = oldExamAnswers[to];
+    } else if (Object.prototype.hasOwnProperty.call(oldExamAnswers, from)) {
+      examAnswers[to] = oldExamAnswers[from];
+    }
+  });
+  const mappedIdsByOriginal = idMappings.reduce((result, mapping) => {
+    if (!result.has(mapping.from)) result.set(mapping.from, []);
+    result.get(mapping.from).push(mapping.to);
+    return result;
+  }, new Map());
+  const recordUseCounts = new Map();
+  const records = (savedState.records || []).map((record) => {
+    const candidates = mappedIdsByOriginal.get(record.questionId);
+    if (!candidates?.length) return record;
+    const used = recordUseCounts.get(record.questionId) || 0;
+    recordUseCounts.set(record.questionId, used + 1);
+    return {
+      ...record,
+      questionId: candidates[Math.min(used, candidates.length - 1)]
+    };
+  });
+  const reviewQuestionIds = [...new Set((savedState.reviewQuestionIds || []).flatMap((id) =>
+    mappedIdsByOriginal.get(id) || [id]
+  ))];
+  const refreshedQuestion = uniqueQuestions[savedState.index];
   const selectedIndex = oldSelectedChoice
     ? refreshedQuestion.order.findIndex((item) => item.choice === oldSelectedChoice)
     : -1;
   return {
     ...savedState,
-    questions,
-    examAnswers: savedState.examAnswers || {},
-    reviewQuestionIds: savedState.reviewQuestionIds || [],
+    questions: uniqueQuestions,
+    records,
+    examAnswers,
+    reviewQuestionIds,
     selectedIndex: selectedIndex >= 0 ? selectedIndex : null,
     answered: selectedIndex >= 0 ? savedState.answered : false
   };
@@ -5125,7 +5168,21 @@ function timeOutQuestion() {
 function commitFullExamAnswer() {
   if (!isFullExamMode()) return;
   const question = current.questions[current.index];
-  const selectedChoiceIndex = current.examAnswers?.[question.id];
+  current.examAnswers = current.examAnswers || {};
+  if (!Number.isInteger(current.examAnswers[question.id]) && Number.isInteger(current.selectedIndex)) {
+    current.examAnswers[question.id] = question.order[current.selectedIndex]?.index;
+  }
+  if (!Number.isInteger(current.examAnswers[question.id])) {
+    const selectedShownIndex = [...els.choiceList.children].findIndex((choice) => choice.classList.contains("exam-selected"));
+    if (selectedShownIndex >= 0) current.examAnswers[question.id] = question.order[selectedShownIndex]?.index;
+  }
+  if (!Number.isInteger(current.examAnswers[question.id])) {
+    const selectedChoiceEl = [...els.choiceList.children].find((choice) => choice.classList.contains("exam-selected"));
+    const selectedChoiceText = selectedChoiceEl?.querySelector("span:last-child")?.textContent || "";
+    const originalIndex = question.choices.findIndex((choice) => choice === selectedChoiceText);
+    if (originalIndex >= 0) current.examAnswers[question.id] = originalIndex;
+  }
+  const selectedChoiceIndex = current.examAnswers[question.id];
   if (!Number.isInteger(selectedChoiceIndex)) return;
   const isCorrect = selectedChoiceIndex === question.answer;
   const existingIndex = current.records.findIndex((record) => record.questionId === question.id);

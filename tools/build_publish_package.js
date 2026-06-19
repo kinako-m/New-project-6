@@ -33,7 +33,7 @@ function copyDir(sourceRelative, targetRelative = sourceRelative) {
   const target = path.join(outDir, targetRelative);
   fs.cpSync(source, target, {
     recursive: true,
-    filter: (item) => !item.includes(`${path.sep}original-backgrounds${path.sep}`)
+    filter: (item) => path.basename(item) !== "original-backgrounds" && !item.includes(`${path.sep}original-backgrounds${path.sep}`)
   });
 }
 
