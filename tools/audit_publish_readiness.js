@@ -1,7 +1,8 @@
 const fs = require("fs");
 const path = require("path");
 
-const root = process.cwd();
+const rootArg = process.argv.find((arg) => arg.startsWith("--root="));
+const root = rootArg ? path.resolve(process.cwd(), rootArg.slice("--root=".length)) : process.cwd();
 const checkedFiles = ["index.html", "styles.css", "app.js", "service-worker.js", "manifest.webmanifest"];
 const findings = [];
 const refs = [];
@@ -77,7 +78,7 @@ const report = {
   findings
 };
 
-fs.writeFileSync("tools/publish-readiness-report.json", JSON.stringify(report, null, 2));
+fs.writeFileSync(path.join(process.cwd(), "tools/publish-readiness-report.json"), JSON.stringify(report, null, 2));
 console.log(JSON.stringify({
   referenceCount: report.referenceCount,
   runtimeAssetReferences: report.runtimeAssetReferences,
