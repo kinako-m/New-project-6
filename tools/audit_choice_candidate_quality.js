@@ -69,6 +69,52 @@ function median(values) {
   return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
 }
 
+function inSet(value, values) {
+  return values.has(String(value || "").trim());
+}
+
+function isReusableSameStageCandidate(correct, candidate) {
+  const correctText = String(correct || "").trim();
+  const candidateText = String(candidate || "").trim();
+  const paired = [correctText, candidateText];
+  if (paired.every((text) => /^O\(.+\)$/.test(text))) return true;
+  if (paired.every((text) => /^\[[^\]]*\]$/.test(text))) return true;
+  if (paired.every((text) => /^[A-Z](?:、[A-Z])*$/.test(text))) return true;
+
+  const sqlTerms = new Set(["SELECT", "FROM", "WHERE", "GROUP BY", "HAVING", "ORDER BY", "INSERT", "UPDATE", "DELETE"]);
+  if (paired.every((text) => inSet(text, sqlTerms))) return true;
+
+  const algorithmTerms = new Set([
+    "線形探索", "二分探索", "ハッシュ探索", "幅優先探索", "深さ優先探索",
+    "バブルソート", "選択ソート", "挿入ソート", "クイックソート", "マージソート",
+    "スタック", "キュー", "ヒープ", "連想配列", "二分木", "優先度付きキュー",
+    "隣接行列", "リングバッファ"
+  ]);
+  if (paired.every((text) => inSet(text, algorithmTerms))) return true;
+
+  const databaseTerms = new Set([
+    "主キー", "外部キー", "候補キー", "複合キー", "リレーションシップ",
+    "第1正規形", "第2正規形", "第3正規形", "推移的関数従属",
+    "共有ロック", "専有ロック", "楽観ロック", "ロストアップデート", "更新競合",
+    "ダーティリード", "ファントムリード", "ノンリピータブルリード", "参照整合性違反", "正規化不足"
+  ]);
+  if (paired.every((text) => inSet(text, databaseTerms))) return true;
+
+  const managementTerms = new Set([
+    "ウォータフォールモデル", "アジャイル開発", "DevOps",
+    "EVM", "ガントチャート", "WBS",
+    "問題管理", "インシデント管理", "変更管理", "構成管理", "品質改善"
+  ]);
+  if (paired.every((text) => inSet(text, managementTerms))) return true;
+
+  return false;
+}
+
+function isSameStageCandidateNoise(correct, candidate) {
+  if (isReusableSameStageCandidate(correct, candidate)) return true;
+  return choiceKind(correct) === choiceKind(candidate);
+}
+
 const correctOwners = new Map();
 for (const question of questions) {
   const correct = compact(choiceSets[question.text].correct);
@@ -158,6 +204,8 @@ for (const question of questions) {
     if (numericUnit(candidate) !== null) return;
     const owners = correctOwners.get(compact(candidate)) || [];
     if (!owners.length || owners.some((owner) => owner.stageId === question.stageId && owner.tag === question.tag)) return;
+    if (owners.some((owner) => owner.stageId === question.stageId)
+      && isSameStageCandidateNoise(definition.correct, candidate)) return;
     const differentStage = owners.every((owner) => owner.stageId !== question.stageId);
     add(question, "foreign-tag-candidate", differentStage ? "medium" : "low", differentStage ? 5 : 3, {
       candidate,
@@ -245,7 +293,7 @@ ${markdownRows}
 `;
 
 fs.writeFileSync("tools/choice-candidate-quality-report.json", JSON.stringify(report, null, 2));
-fs.writeFileSync("tools/choice-candidate-quality-report.md", markdown);
+fs.writeFileSync("tools/choice-candidate-quality-report.md", `${markdown.trimEnd()}\n`);
 console.log(JSON.stringify({
   summary: report.summary,
   top10: reviewQueue.slice(0, 10).map(({ rank, score, stage, tag, text, findings: itemFindings }) => ({

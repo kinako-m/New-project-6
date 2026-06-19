@@ -2920,6 +2920,11 @@ const els = {
   toggleExamReview: document.querySelector("#toggleExamReview"),
   openExamNavigator: document.querySelector("#openExamNavigator"),
   finishExam: document.querySelector("#finishExam"),
+  finishExamConfirm: document.querySelector("#finishExamConfirm"),
+  finishExamConfirmTitle: document.querySelector("#finishExamConfirmTitle"),
+  finishExamConfirmMessage: document.querySelector("#finishExamConfirmMessage"),
+  cancelFinishExam: document.querySelector("#cancelFinishExam"),
+  confirmFinishExam: document.querySelector("#confirmFinishExam"),
   examNavigator: document.querySelector("#examNavigator"),
   closeExamNavigator: document.querySelector("#closeExamNavigator"),
   examNavigatorSummary: document.querySelector("#examNavigatorSummary"),
@@ -3017,7 +3022,7 @@ gameState.completedMissions = gameState.completedMissions || [];
 let current = null;
 let quizTimer = null;
 let pendingEvolutionChoice = null;
-const ASSET_VERSION = "v92";
+const ASSET_VERSION = "v101";
 
 const creatureLines = {
   idle: [
@@ -4243,6 +4248,7 @@ function renderStages() {
 }
 
 function setView(view) {
+  document.body.dataset.view = view;
   els.stageView.classList.toggle("hidden", view !== "stage");
   els.quizView.classList.toggle("hidden", view !== "quiz");
   els.resultView.classList.toggle("hidden", view !== "result");
@@ -4588,7 +4594,7 @@ function toggleCurrentExamReview() {
   saveActiveExam();
 }
 
-function finishFullExam() {
+function getFullExamFinishState() {
   if (!isFullExamMode()) return;
   commitFullExamAnswer();
   const answeredCount = Object.keys(current.examAnswers || {}).length;
@@ -4597,11 +4603,30 @@ function finishFullExam() {
   const message = unansweredCount || reviewCount
     ? `未回答が${unansweredCount}問、見直し対象が${reviewCount}問あります。このまま模試を終了しますか？`
     : "すべて回答済みです。模試を終了しますか？";
-  if (!window.confirm(message)) {
+  return { unansweredCount, reviewCount, message };
+}
+
+function requestFinishFullExam() {
+  const state = getFullExamFinishState();
+  if (!state) return;
+  els.finishExamConfirmTitle.textContent = state.unansweredCount || state.reviewCount
+    ? "確認してから終了"
+    : "模試を終了しますか？";
+  els.finishExamConfirmMessage.textContent = state.message;
+  els.finishExamConfirm.classList.remove("hidden");
+  if (state.unansweredCount || state.reviewCount) {
     renderExamNavigator();
     els.examNavigator.classList.remove("hidden");
-    return;
   }
+}
+
+function cancelFinishFullExam() {
+  els.finishExamConfirm.classList.add("hidden");
+}
+
+function finishFullExam() {
+  if (!isFullExamMode()) return;
+  els.finishExamConfirm.classList.add("hidden");
   const recordedIds = new Set(current.records.map((record) => record.questionId));
   current.questions.forEach((question) => {
     if (recordedIds.has(question.id)) return;
@@ -4831,7 +4856,16 @@ function buildExplanation(question, isCorrect) {
   const prefix = isCorrect ? "正解です。" : "不正解です。";
   const extra = getExplanationTip(question, correctChoice);
   const wrongNotes = buildWrongChoiceNotes(question);
-  return `${prefix} 正解は「${correctChoice}」。${base}${extra ? ` ${extra}` : ""}${wrongNotes ? ` ${wrongNotes}` : ""}`;
+  const parts = [base, extra, wrongNotes].filter(Boolean);
+  const uniqueParts = [];
+  const seen = [];
+  parts.forEach((part) => {
+    const key = String(part).normalize("NFKC").replace(/\s+/g, "");
+    if (!key || seen.some((seenKey) => seenKey.includes(key) || key.includes(seenKey))) return;
+    seen.push(key);
+    uniqueParts.push(part);
+  });
+  return `${prefix} 正解は「${correctChoice}」。${uniqueParts.join(" ")}`;
 }
 
 function buildWrongChoiceNotes(question) {
@@ -4955,7 +4989,7 @@ function explainChoice(choice) {
 
   if (dictionary[choice]) return dictionary[choice];
   if (choice.includes("通信")) return "通信方式やネットワーク上の役割を表す説明です";
-  if (choice.includes("集計") || choice.includes("表")) return "データベース操作やSQLの役割に関する説明です";
+  if (/(SQL|集計|行|列|主キー|外部キー|トランザクション|正規化|データベース)/.test(choice)) return "データベース操作やSQLの役割に関する説明です";
   if (choice.includes("作業") || choice.includes("進捗")) return "プロジェクト管理で使う考え方です";
   if (choice.includes("利益") || choice.includes("費用")) return "会計・財務で使う指標や考え方です";
   if (choice.includes("サービス")) return "ITサービスやシステム戦略で使う考え方です";
@@ -5302,7 +5336,7 @@ function renderResultReview() {
         : record.timedOut
           ? "時間切れ・未回答"
           : record.showedAnswer
-            ? "解説を表示・未回答"
+            ? "未回答（解説表示）"
             : "未回答";
       const correctAnswer = question.choices[question.answer];
       return `
@@ -5820,7 +5854,7 @@ function renderHistoryDetail(attemptId) {
         : record.timedOut
           ? "時間切れ・未回答"
           : record.showedAnswer
-            ? "解説を表示・未回答"
+            ? "未回答（解説表示）"
             : "未回答");
       const correctAnswer = record.correctChoice || question?.choices[question.answer] || "現在の問題集では確認できません";
       const wrongCount = questionStats[record.questionId]?.wrong || 0;
@@ -5865,8 +5899,12 @@ function renderStats() {
   const latestSubjectA = history.find((attempt) => attempt.examSubject === "A" && attempt.examAssessment)?.examAssessment;
   const latestSubjectB = history.find((attempt) => attempt.examSubject === "B" && attempt.examAssessment)?.examAssessment;
   const bothExamReady = latestSubjectA?.level !== "review" && latestSubjectB?.level !== "review" && latestSubjectA && latestSubjectB;
-  const combinedExamLabel = !latestSubjectA || !latestSubjectB
-    ? "A・B未受験"
+  const missingSubjects = [
+    latestSubjectA ? "" : "科目A",
+    latestSubjectB ? "" : "科目B"
+  ].filter(Boolean);
+  const combinedExamLabel = missingSubjects.length
+    ? `${missingSubjects.join("・")}未受験`
     : bothExamReady
       ? latestSubjectA.level === "high" && latestSubjectB.level === "high" ? "合格見込み：高" : "合格圏：境界"
       : "要復習";
@@ -6134,7 +6172,9 @@ els.examQuestionGrid.addEventListener("click", (event) => {
   const index = Number(event.target.closest("[data-exam-question-index]")?.dataset.examQuestionIndex);
   if (Number.isInteger(index)) jumpToExamQuestion(index);
 });
-els.finishExam.addEventListener("click", finishFullExam);
+els.finishExam.addEventListener("click", requestFinishFullExam);
+els.cancelFinishExam.addEventListener("click", cancelFinishFullExam);
+els.confirmFinishExam.addEventListener("click", finishFullExam);
 els.reviewWrongAnswers.addEventListener("click", startWrongReview);
 els.startRecommendation.addEventListener("click", () => {
   const recommendation = current?.recommendation;

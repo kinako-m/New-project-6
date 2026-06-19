@@ -654,8 +654,8 @@ globalThis.QUESTION_CHOICE_SETS = {
     "distractors": [
       "MTTR",
       "稼働率",
-      "RTO",
-      "RPO",
+      "MTTF",
+      "保全性",
       "可用性",
       "故障率"
     ]
@@ -667,8 +667,8 @@ globalThis.QUESTION_CHOICE_SETS = {
     "distractors": [
       "MTBF",
       "稼働率",
-      "RTO",
-      "RPO",
+      "MTTF",
+      "保全性",
       "可用性",
       "故障率"
     ]
@@ -3760,7 +3760,7 @@ globalThis.QUESTION_CHOICE_SETS = {
     "correct": "[2, 4]",
     "distractors": [
       "[1, 3, 5]",
-      "[4, 5]",
+      "[2, 5]",
       "[1, 2]",
       "[2, 3, 4]",
       "[1, 4]",
@@ -5675,7 +5675,7 @@ globalThis.QUESTION_CHOICE_SETS = {
       "ハッシュ値だけ",
       "優先度なしの集合",
       "データベース表",
-      "キャッシュメモリ"
+      "隣接行列"
     ]
   },
   "表から条件に合う行を取り出すSQLの句はどれか。": {
@@ -7140,7 +7140,7 @@ globalThis.QUESTION_CHOICE_SETS = {
     "correct": "共有ロック",
     "distractors": [
       "専有ロック",
-      "デッドロック",
+      "楽観ロック",
       "ダーティリード",
       "COMMIT",
       "ROLLBACK",
@@ -7217,7 +7217,7 @@ globalThis.QUESTION_CHOICE_SETS = {
     "tag": "複合ケース",
     "correct": "ロストアップデート",
     "distractors": [
-      "デッドロック",
+      "更新競合",
       "ダーティリード",
       "ファントムリード",
       "ノンリピータブルリード",

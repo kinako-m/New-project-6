@@ -1,0 +1,15 @@
+{
+  "generatedAt": "2026-06-19T14:38:53.452Z",
+  "checkedFiles": [
+    "index.html",
+    "styles.css",
+    "app.js",
+    "service-worker.js",
+    "manifest.webmanifest"
+  ],
+  "referenceCount": 14,
+  "runtimeAssetReferences": 6,
+  "runtimeAssetsNotPrecached": [],
+  "findingCount": 0,
+  "findings": []
+}

@@ -1,0 +1,18 @@
+{
+  "summary": {
+    "generatedAt": "2026-06-19T14:38:53.403Z",
+    "iterations": 100,
+    "subjectAQuestionCounts": [
+      60
+    ],
+    "subjectBQuestionCounts": [
+      20
+    ],
+    "subjectAUniqueQuestionsSeen": 798,
+    "subjectBUniqueQuestionsSeen": 132,
+    "findingCount": 0,
+    "counts": {},
+    "samples": []
+  },
+  "findings": []
+}

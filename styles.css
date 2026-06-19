@@ -764,6 +764,76 @@ h1 {
   min-height: 620px;
 }
 
+body[data-view="quiz"] .app-shell {
+  padding-top: 16px;
+}
+
+body[data-view="quiz"] .topbar {
+  padding: 8px 0 12px;
+}
+
+body[data-view="quiz"] .topbar h1 {
+  font-size: clamp(1.5rem, 3vw, 2.6rem);
+}
+
+body[data-view="quiz"] .creature-panel {
+  margin-bottom: 10px;
+}
+
+body[data-view="quiz"] .creature-card {
+  grid-template-columns: 112px 1fr;
+  gap: 12px;
+  padding: 10px 12px;
+}
+
+body[data-view="quiz"] .creature-stage {
+  width: 112px;
+  min-height: 92px;
+}
+
+body[data-view="quiz"] .creature-visual {
+  width: 96px;
+  height: 86px;
+  min-height: 86px;
+}
+
+body[data-view="quiz"] .creature-visual img {
+  height: 78px;
+  max-width: 98px;
+  bottom: 4px;
+}
+
+body[data-view="quiz"] .creature-info .eyebrow,
+body[data-view="quiz"] .creature-info p,
+body[data-view="quiz"] .food-meter,
+body[data-view="quiz"] .growth-track,
+body[data-view="quiz"] .creature-actions {
+  display: none;
+}
+
+body[data-view="quiz"] .creature-info h2 {
+  margin-bottom: 0;
+  font-size: 1.05rem;
+}
+
+body[data-view="quiz"] .creature-speech {
+  left: 72px;
+  top: 0;
+  min-width: 160px;
+  max-width: min(320px, 58vw);
+  padding: 8px 10px;
+  font-size: 0.82rem;
+}
+
+body[data-view="quiz"] .quiz-view {
+  align-items: start;
+  min-height: auto;
+}
+
+body[data-view="quiz"] .quiz-panel {
+  padding: 12px;
+}
+
 .quiz-panel,
 .result-panel,
 .stats-panel {
@@ -817,6 +887,36 @@ h1 {
   border-color: #b45309;
   background: #fff5df;
   color: #8a4b08;
+}
+
+.exam-confirm {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 0 12px;
+  padding: 12px;
+  border: 1px solid rgba(180, 83, 9, 0.28);
+  border-radius: 8px;
+  background: #fff8eb;
+}
+
+.exam-confirm strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.exam-confirm p {
+  margin: 0;
+  color: #704008;
+  font-weight: 700;
+}
+
+.exam-confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
 }
 
 .exam-navigator {
@@ -1141,6 +1241,64 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fbfcfa;
+}
+
+body[data-view="quiz"] .quiz-header {
+  gap: 8px;
+}
+
+body[data-view="quiz"] .progress-track {
+  margin: 8px 0;
+}
+
+body[data-view="quiz"] .exam-toolbar {
+  margin: 8px 0;
+}
+
+body[data-view="quiz"] .quiz-creature-companion {
+  grid-template-columns: 68px minmax(0, 1fr);
+  gap: 10px;
+  margin: 8px 0;
+  padding: 8px 10px;
+}
+
+body[data-view="quiz"] .quiz-creature-visual {
+  width: 66px;
+  height: 62px;
+  min-height: 62px;
+}
+
+body[data-view="quiz"] .quiz-creature-visual img {
+  height: 58px;
+  max-width: 72px;
+}
+
+body[data-view="quiz"] .quiz-creature-speech {
+  min-height: 38px;
+  padding: 8px 10px;
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
+body[data-view="quiz"] .question-card {
+  min-height: auto;
+  padding: 18px;
+}
+
+body[data-view="quiz"] .question-card h2 {
+  min-height: 0;
+  margin-bottom: 14px;
+  font-size: clamp(1.15rem, 2.2vw, 1.55rem);
+  line-height: 1.38;
+}
+
+body[data-view="quiz"] .choice-list {
+  gap: 8px;
+}
+
+body[data-view="quiz"] .choice {
+  min-height: 48px;
+  padding: 9px 10px;
 }
 
 .question-topline {
@@ -2299,6 +2457,15 @@ h1 {
 
   .exam-toolbar button {
     width: 100%;
+  }
+
+  .exam-confirm {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .exam-confirm-actions button {
+    flex: 1;
   }
 
   .exam-question-grid {
