@@ -31,6 +31,32 @@ function inspectExam(subject, questions, iteration) {
   const findings = [];
   const seenTexts = new Set();
 
+  if (subject === "B") {
+    const algorithmCount = questions.filter((question) => /アルゴリズム|擬似言語|トレース|探索|整列|計算量|配列|文字列|状態遷移|フラグ|境界値/.test(question.tag)).length;
+    const securityCount = questions.filter((question) => /セキュリティ/.test(question.tag)).length;
+    const difficultyCounts = questions.reduce((counts, question) => {
+      counts[question.difficulty || "(missing)"] = (counts[question.difficulty || "(missing)"] || 0) + 1;
+      return counts;
+    }, {});
+    if (algorithmCount !== 14 || securityCount !== 6) {
+      findings.push({
+        type: "subject-b-distribution-mismatch",
+        subject,
+        iteration,
+        algorithmCount,
+        securityCount
+      });
+    }
+    if (difficultyCounts.basic !== 4 || difficultyCounts.standard !== 10 || difficultyCounts.advanced !== 6) {
+      findings.push({
+        type: "subject-b-difficulty-distribution-mismatch",
+        subject,
+        iteration,
+        difficultyCounts
+      });
+    }
+  }
+
   questions.forEach((question, index) => {
     const textKey = compact(question.text);
     if (seenTexts.has(textKey)) {
@@ -180,6 +206,31 @@ function takeExamQuestions(stageId, count, filter = () => true) {
     .slice(0, count);
 }
 
+function takeExamQuestionsByDifficulty(stageId, quotas, filter = () => true) {
+  const stage = stages.find((item) => item.id === stageId);
+  const candidates = uniqueQuestionsByText(stage.questions.filter(filter).map((question) => examQuestion(question, stage)));
+  const selected = [];
+  const used = new Set();
+  Object.entries(quotas).forEach(([difficulty, count]) => {
+    shuffle(candidates.filter((question) => question.difficulty === difficulty && !used.has(question.id)))
+      .slice(0, count)
+      .forEach((question) => {
+        selected.push(question);
+        used.add(question.id);
+      });
+  });
+  const expectedCount = Object.values(quotas).reduce((sum, count) => sum + count, 0);
+  if (selected.length < expectedCount) {
+    shuffle(candidates.filter((question) => !used.has(question.id)))
+      .slice(0, expectedCount - selected.length)
+      .forEach((question) => {
+        selected.push(question);
+        used.add(question.id);
+      });
+  }
+  return selected;
+}
+
 function buildSubjectAExam() {
   const distribution = [
     ["technology", 18],
@@ -198,9 +249,9 @@ function buildSubjectBExam() {
     && /科目Bアルゴリズム|探索トレース|整列トレース|再帰トレース|条件分岐|データ構造応用|グラフ問題|計算量判断|配列操作|文字列処理|状態遷移|フラグ処理|境界値|擬似言語|トレース|実戦トレース/.test(question.tag);
   const isSubjectBLongSecurity = (question) => /科目B長文セキュリティ/.test(question.tag);
   const questions = [
-    ...takeExamQuestions("algorithm", 12, isSubjectBLongAlgorithm),
-    ...takeExamQuestions("algorithm", 4, isSubjectBAlgorithm),
-    ...takeExamQuestions("technology", 4, isSubjectBLongSecurity)
+    ...takeExamQuestionsByDifficulty("algorithm", { basic: 2, standard: 5, advanced: 3 }, isSubjectBLongAlgorithm),
+    ...takeExamQuestionsByDifficulty("algorithm", { basic: 1, standard: 2, advanced: 1 }, isSubjectBAlgorithm),
+    ...takeExamQuestionsByDifficulty("technology", { basic: 1, standard: 3, advanced: 2 }, isSubjectBLongSecurity)
   ];
   return shuffle(questions).map(withQuestionOrder);
 }

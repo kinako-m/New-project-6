@@ -1,0 +1,49 @@
+{
+  "generatedAt": "2026-06-20T01:41:00.798Z",
+  "iterations": 100,
+  "summary": {
+    "subjectBPool": 151,
+    "difficultyCounts": {
+      "advanced": 50,
+      "basic": 29,
+      "standard": 72
+    },
+    "examAverageDifficultyCounts": {
+      "basic": 4,
+      "standard": 10,
+      "advanced": 6
+    },
+    "findingCount": 0
+  },
+  "byTag": {
+    "テクノロジ系 / 科目B長文セキュリティ / advanced": 19,
+    "テクノロジ系 / 科目B長文セキュリティ / basic": 8,
+    "テクノロジ系 / 科目B長文セキュリティ / standard": 7,
+    "アルゴリズム / 擬似言語 / basic": 11,
+    "アルゴリズム / 擬似言語 / standard": 3,
+    "アルゴリズム / トレース / standard": 12,
+    "アルゴリズム / トレース / advanced": 3,
+    "アルゴリズム / 実戦トレース / standard": 9,
+    "アルゴリズム / 実戦トレース / advanced": 3,
+    "アルゴリズム / 擬似言語 / advanced": 2,
+    "アルゴリズム / 科目Bアルゴリズム / standard": 7,
+    "アルゴリズム / 科目Bアルゴリズム / basic": 2,
+    "アルゴリズム / 探索トレース / advanced": 1,
+    "アルゴリズム / 探索トレース / standard": 1,
+    "アルゴリズム / 整列トレース / standard": 2,
+    "アルゴリズム / 再帰トレース / advanced": 2,
+    "アルゴリズム / 条件分岐 / standard": 2,
+    "アルゴリズム / データ構造応用 / basic": 2,
+    "アルゴリズム / グラフ問題 / advanced": 2,
+    "アルゴリズム / 計算量判断 / advanced": 3,
+    "アルゴリズム / 配列操作 / standard": 2,
+    "アルゴリズム / 文字列処理 / standard": 1,
+    "アルゴリズム / 状態遷移 / advanced": 1,
+    "アルゴリズム / フラグ処理 / advanced": 1,
+    "アルゴリズム / 境界値 / advanced": 1,
+    "アルゴリズム / 科目B長文アルゴリズム / standard": 26,
+    "アルゴリズム / 科目B長文アルゴリズム / advanced": 12,
+    "アルゴリズム / 科目B長文アルゴリズム / basic": 6
+  },
+  "findings": []
+}

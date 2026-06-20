@@ -68,6 +68,13 @@ check(
   `A counts ${exam.subjectAQuestionCounts.join("/")}, B counts ${exam.subjectBQuestionCounts.join("/")}, findings ${exam.findingCount}`
 );
 
+const subjectBDifficulty = runJson("subject B difficulty", ["tools/audit_subject_b_difficulty.js", "--iterations=100"]);
+check(
+  "subject B difficulty",
+  subjectBDifficulty.findingCount === 0,
+  `${subjectBDifficulty.subjectBPool} candidates, basic ${subjectBDifficulty.difficultyCounts.basic || 0}, standard ${subjectBDifficulty.difficultyCounts.standard || 0}, advanced ${subjectBDifficulty.difficultyCounts.advanced || 0}`
+);
+
 check(
   "full exam size",
   exam.subjectAQuestionCounts.length === 1

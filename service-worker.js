@@ -1,14 +1,14 @@
-const CACHE_NAME = "fe-stage-practice-v104";
+const CACHE_NAME = "fe-stage-practice-v110";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v104",
-  "./improvement-questions.js?v104",
-  "./subject-b-case-questions.js?v104",
-  "./subject-b-case-questions-2.js?v104",
-  "./question-choice-sets.js?v104",
-  "./sample-derived-questions.js?v104",
-  "./app.js?v104",
+  "./styles.css?v110",
+  "./improvement-questions.js?v110",
+  "./subject-b-case-questions.js?v110",
+  "./subject-b-case-questions-2.js?v110",
+  "./question-choice-sets.js?v110",
+  "./sample-derived-questions.js?v110",
+  "./app.js?v110",
   "./manifest.webmanifest",
   "./assets/branch-evolution-sheet.png",
   "./assets/creature-amphibian.png",

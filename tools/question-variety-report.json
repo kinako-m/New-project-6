@@ -1,42 +1,42 @@
 {
-  "generatedAt": "2026-06-14T02:23:07.197Z",
+  "generatedAt": "2026-06-19T23:15:33.501Z",
   "totals": {
-    "questions": 804,
-    "exactUnique": 804,
-    "templateUnique": 739,
-    "knowledgeUnique": 766,
-    "clusteredVariety": 459,
-    "definitionStyle": 413,
-    "calculationStyle": 116,
-    "subjectBAlgorithm": 112,
-    "subjectBSecurity": 35
+    "questions": 822,
+    "exactUnique": 822,
+    "templateUnique": 757,
+    "knowledgeUnique": 784,
+    "clusteredVariety": 476,
+    "definitionStyle": 419,
+    "calculationStyle": 120,
+    "subjectBAlgorithm": 122,
+    "subjectBSecurity": 39
   },
   "stages": [
     {
       "id": "technology",
       "name": "テクノロジ系",
-      "questions": 215,
-      "exactUnique": 215,
-      "templateUnique": 179,
-      "knowledgeUnique": 201,
-      "clusteredVariety": 127,
+      "questions": 223,
+      "exactUnique": 223,
+      "templateUnique": 187,
+      "knowledgeUnique": 209,
+      "clusteredVariety": 135,
       "tags": 36,
-      "largestTag": "ハードウェア",
-      "largestTagCount": 26,
-      "largestTagShare": 12.1
+      "largestTag": "科目B長文セキュリティ",
+      "largestTagCount": 34,
+      "largestTagShare": 15.2
     },
     {
       "id": "algorithm",
       "name": "アルゴリズム",
-      "questions": 221,
-      "exactUnique": 221,
-      "templateUnique": 216,
-      "knowledgeUnique": 211,
-      "clusteredVariety": 138,
+      "questions": 231,
+      "exactUnique": 231,
+      "templateUnique": 226,
+      "knowledgeUnique": 221,
+      "clusteredVariety": 147,
       "tags": 31,
       "largestTag": "科目B長文アルゴリズム",
-      "largestTagCount": 34,
-      "largestTagShare": 15.4
+      "largestTagCount": 44,
+      "largestTagShare": 19
     },
     {
       "id": "database",
@@ -81,14 +81,14 @@
   "topTags": [
     [
       "algorithm / 科目B長文アルゴリズム",
+      44
+    ],
+    [
+      "technology / 科目B長文セキュリティ",
       34
     ],
     [
       "technology / ハードウェア",
-      26
-    ],
-    [
-      "technology / 科目B長文セキュリティ",
       26
     ],
     [
@@ -183,7 +183,7 @@
   "repeatedAnswers": [
     [
       "algorithm / 科目B長文アルゴリズム / 3",
-      4
+      5
     ],
     [
       "algorithm / トレース / 2",
@@ -275,15 +275,15 @@
     "fractionalCountSamples": []
   },
   "subjectBQuality": {
-    "total": 60,
-    "algorithm": 34,
-    "security": 26,
-    "multiline": 34,
+    "total": 78,
+    "algorithm": 44,
+    "security": 34,
+    "multiline": 44,
     "shortQuestionText": 0,
     "shortExplanation": 0,
     "singleWordMixedWithSentence": 0,
     "sourceCorrectChoicePositions": [
-      60,
+      78,
       0,
       0,
       0

@@ -2420,6 +2420,37 @@ function addImprovementQuestionPack() {
 
 addImprovementQuestionPack();
 
+function getSubjectBDifficulty(question, stageId) {
+  const text = `${question.text} ${question.tag}`;
+  if (stageId === "technology" && question.tag === "科目B長文セキュリティ") {
+    if (/ログ|インシデント|証拠|鍵管理|DLP|API|管理画面|バックアップ|DNS|脆弱性|ランサムウェア/.test(text)) return "advanced";
+    if (/CSRF|SQL|パスワード|権限|委託|クラウド|共有|多要素|無線LAN|APIキー/.test(text)) return "standard";
+    return "basic";
+  }
+  if (stageId === "algorithm" && question.tag === "科目B長文アルゴリズム") {
+    if (/再帰|二分探索|幅優先|深さ優先|木構造|状態遷移|併合|二次元|最大値と2番目|入出庫/.test(text)) return "advanced";
+    if (/スタック|キュー|ソート|循環|集計|文字列|条件|配列|合計|個数|探索/.test(text)) return "standard";
+    return "basic";
+  }
+  if (stageId === "algorithm" && /科目B|探索トレース|整列トレース|再帰トレース|条件分岐|データ構造応用|グラフ問題|計算量判断|配列操作|文字列処理|状態遷移|フラグ処理|境界値|擬似言語|トレース|実戦トレース/.test(question.tag)) {
+    if (/再帰|二分探索|計算量|境界|グラフ|状態|フラグ|木/.test(text)) return "advanced";
+    if (/スタック|キュー|配列|文字列|条件|トレース|整列|探索/.test(text)) return "standard";
+    return "basic";
+  }
+  return null;
+}
+
+function applySubjectBDifficultyLabels() {
+  stages.forEach((stage) => {
+    stage.questions.forEach((question) => {
+      const difficulty = getSubjectBDifficulty(question, stage.id);
+      if (difficulty) question.difficulty = difficulty;
+    });
+  });
+}
+
+applySubjectBDifficultyLabels();
+
 function polishQuestionQuality() {
   const fixes = [
     {
@@ -3022,7 +3053,21 @@ gameState.completedMissions = gameState.completedMissions || [];
 let current = null;
 let quizTimer = null;
 let pendingEvolutionChoice = null;
-const ASSET_VERSION = "v104";
+const ASSET_VERSION = "v110";
+
+const DIFFICULTY_LABELS = {
+  basic: "基礎",
+  standard: "標準",
+  advanced: "応用"
+};
+
+function getDifficultyLabel(difficulty) {
+  return DIFFICULTY_LABELS[difficulty] || "";
+}
+
+function getDifficultyClass(difficulty) {
+  return DIFFICULTY_LABELS[difficulty] ? difficulty : "none";
+}
 
 const creatureLines = {
   idle: [
@@ -4486,6 +4531,31 @@ function takeExamQuestions(stageId, count, filter = () => true) {
     .slice(0, count);
 }
 
+function takeExamQuestionsByDifficulty(stageId, quotas, filter = () => true) {
+  const stage = stages.find((item) => item.id === stageId);
+  const candidates = uniqueQuestionsByText(stage.questions.filter(filter).map((question) => examQuestion(question, stage)));
+  const selected = [];
+  const used = new Set();
+  Object.entries(quotas).forEach(([difficulty, count]) => {
+    shuffle(candidates.filter((question) => question.difficulty === difficulty && !used.has(question.id)))
+      .slice(0, count)
+      .forEach((question) => {
+        selected.push(question);
+        used.add(question.id);
+      });
+  });
+  const expectedCount = Object.values(quotas).reduce((sum, count) => sum + count, 0);
+  if (selected.length < expectedCount) {
+    shuffle(candidates.filter((question) => !used.has(question.id)))
+      .slice(0, expectedCount - selected.length)
+      .forEach((question) => {
+        selected.push(question);
+        used.add(question.id);
+      });
+  }
+  return selected;
+}
+
 function buildSubjectAExam() {
   const distribution = [
     ["technology", 18],
@@ -4500,9 +4570,9 @@ function buildSubjectAExam() {
 function buildSubjectBExam() {
   const algorithmTags = new Set(["科目Bアルゴリズム", "探索トレース", "整列トレース", "再帰トレース", "条件分岐", "データ構造応用", "グラフ問題", "計算量判断", "配列操作", "文字列処理", "状態遷移", "フラグ処理", "境界値", "擬似言語", "トレース", "実戦トレース"]);
   const questions = [
-    ...takeExamQuestions("algorithm", 12, (question) => question.tag === "科目B長文アルゴリズム"),
-    ...takeExamQuestions("algorithm", 4, (question) => algorithmTags.has(question.tag)),
-    ...takeExamQuestions("technology", 4, (question) => question.tag === "科目B長文セキュリティ")
+    ...takeExamQuestionsByDifficulty("algorithm", { basic: 2, standard: 5, advanced: 3 }, (question) => question.tag === "科目B長文アルゴリズム"),
+    ...takeExamQuestionsByDifficulty("algorithm", { basic: 1, standard: 2, advanced: 1 }, (question) => algorithmTags.has(question.tag)),
+    ...takeExamQuestionsByDifficulty("technology", { basic: 1, standard: 3, advanced: 2 }, (question) => question.tag === "科目B長文セキュリティ")
   ];
   return shuffle(questions).map(withQuestionOrder);
 }
@@ -4858,7 +4928,17 @@ function renderQuestion() {
   els.activeStageName.textContent = current.stage.name;
   els.questionCounter.textContent = `${current.index + 1} / ${current.questions.length}`;
   els.progressBar.style.width = `${(current.index / current.questions.length) * 100}%`;
-  els.questionTag.textContent = question.tag;
+  els.questionTag.textContent = "";
+  const questionTagLabel = document.createElement("span");
+  questionTagLabel.textContent = question.tag;
+  els.questionTag.append(questionTagLabel);
+  const difficultyLabel = getDifficultyLabel(question.difficulty);
+  if (difficultyLabel) {
+    const difficultyBadge = document.createElement("span");
+    difficultyBadge.className = `difficulty-badge ${getDifficultyClass(question.difficulty)}`;
+    difficultyBadge.textContent = difficultyLabel;
+    els.questionTag.append(difficultyBadge);
+  }
   els.questionText.textContent = question.text;
   els.feedback.classList.add("hidden");
   els.feedback.textContent = "";
@@ -5098,6 +5178,7 @@ function answerQuestion(shownIndex) {
     questionId: question.id,
     stageId: question.stageId || current.stage.id,
     tag: question.tag,
+    difficulty: question.difficulty || null,
     correct: isCorrect,
     selectedChoiceIndex: selected.index,
     answeredSeconds: Math.min(
@@ -5129,6 +5210,7 @@ function showAnswer() {
     questionId: question.id,
     stageId: question.stageId || current.stage.id,
     tag: question.tag,
+    difficulty: question.difficulty || null,
     correct: false,
     showedAnswer: true
   });
@@ -5152,6 +5234,7 @@ function timeOutQuestion() {
     questionId: question.id,
     stageId: question.stageId || current.stage.id,
     tag: question.tag,
+    difficulty: question.difficulty || null,
     correct: false,
     timedOut: true
   });
@@ -5192,6 +5275,7 @@ function commitFullExamAnswer() {
     questionId: question.id,
     stageId: question.stageId || current.stage.id,
     tag: question.tag,
+    difficulty: question.difficulty || null,
     correct: isCorrect,
     selectedChoiceIndex
   };
@@ -5261,6 +5345,26 @@ function buildExamAssessment() {
     ...domain,
     percentage: Math.round((domain.correct / domain.total) * 100)
   }));
+  const difficulties = Object.values(
+    current.records.reduce((summary, record) => {
+      const name = getDifficultyLabel(record.difficulty);
+      if (!name) return summary;
+      summary[record.difficulty] = summary[record.difficulty] || {
+        key: record.difficulty,
+        name,
+        correct: 0,
+        total: 0
+      };
+      summary[record.difficulty].total += 1;
+      summary[record.difficulty].correct += record.correct ? 1 : 0;
+      return summary;
+    }, {})
+  )
+    .map((difficulty) => ({
+      ...difficulty,
+      percentage: Math.round((difficulty.correct / difficulty.total) * 100)
+    }))
+    .sort((a, b) => ["basic", "standard", "advanced"].indexOf(a.key) - ["basic", "standard", "advanced"].indexOf(b.key));
   const weakest = [...domains].sort((a, b) => a.percentage - b.percentage || b.total - a.total)[0];
   const minimumDomainRate = weakest?.percentage ?? 0;
 
@@ -5281,6 +5385,7 @@ function buildExamAssessment() {
     level,
     label,
     domains,
+    difficulties,
     weakestDomain: weakest?.name || "なし",
     minimumDomainRate,
     timedOut: Boolean(current.examTimedOut)
@@ -5348,6 +5453,11 @@ function buildResultAdvice(percentage, examAssessment = current.examAssessment |
         .map((domain) => `<span class="weak-chip">${domain.name} ${domain.correct}/${domain.total} (${domain.percentage}%)</span>`)
         .join("")
     : "";
+  const difficultyBreakdown = examAssessment?.difficulties?.length
+    ? examAssessment.difficulties
+        .map((difficulty) => `<span class="weak-chip difficulty-chip ${difficulty.key}">${difficulty.name} ${difficulty.correct}/${difficulty.total} (${difficulty.percentage}%)</span>`)
+        .join("")
+    : "";
   els.resultAdvice.innerHTML = `
     ${examAssessment ? `
       <div class="advice-card exam-assessment ${examAssessment.level}">
@@ -5358,6 +5468,7 @@ function buildResultAdvice(percentage, examAssessment = current.examAssessment |
       </div>
     ` : ""}
     ${examBreakdown ? `<div class="advice-card"><span>Breakdown</span><strong>分野別内訳</strong><div class="weak-chip-list">${examBreakdown}</div></div>` : ""}
+    ${difficultyBreakdown ? `<div class="advice-card"><span>Difficulty</span><strong>難易度別内訳</strong><div class="weak-chip-list">${difficultyBreakdown}</div></div>` : ""}
     <div class="advice-card">
       <span>Weak Point</span>
       <strong>今回の弱点</strong>
@@ -5396,12 +5507,15 @@ function renderResultReview() {
             ? "未回答（解説表示）"
             : "未回答";
       const correctAnswer = question.choices[question.answer];
+      const difficultyLabel = getDifficultyLabel(record.difficulty || question.difficulty);
+      const difficultyClass = getDifficultyClass(record.difficulty || question.difficulty);
       return `
         <article class="result-review-item">
           <div class="result-review-meta">
             <span>誤答 ${index + 1}</span>
             <span>${escapeHtml(getStageNameById(record.stageId))}</span>
             <span>${escapeHtml(normalizeResultTag(record.tag))}</span>
+            ${difficultyLabel ? `<span class="difficulty-badge ${difficultyClass}">${difficultyLabel}</span>` : ""}
           </div>
           <h4>${escapeHtml(question.text)}</h4>
           <dl class="answer-comparison">
@@ -5463,6 +5577,7 @@ function showResult() {
         questionId: record.questionId,
         stageId: record.stageId,
         tag: record.tag,
+        difficulty: record.difficulty || question?.difficulty || null,
         questionText: question?.text || "",
         correct: record.correct,
         selectedChoiceIndex: Number.isInteger(record.selectedChoiceIndex) ? record.selectedChoiceIndex : null,
