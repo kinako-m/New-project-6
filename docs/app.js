@@ -3145,6 +3145,147 @@ function improveStrategyExplanations() {
 
 improveStrategyExplanations();
 
+function improveDatabaseExplanations() {
+  const databaseStage = stages.find((stage) => stage.id === "database");
+  if (!databaseStage) return;
+
+  function normalizeText(value) {
+    return String(value || "").normalize("NFKC").replace(/\s+/g, "");
+  }
+
+  function appendUniqueParts(question, parts) {
+    const existing = normalizeText(question.explanation);
+    const additions = parts
+      .filter(Boolean)
+      .filter((part) => {
+        const key = normalizeText(part).slice(0, 24);
+        return key && !existing.includes(key);
+      });
+    if (!additions.length) return;
+    question.explanation = [question.explanation, ...additions].filter(Boolean).join(" ");
+  }
+
+  function isNumericChoice(value) {
+    return /^[-+]?\d+(?:\.\d+)?(?:%|行|列|件|個|回|秒|分|時間)?$/.test(String(value || "").trim());
+  }
+
+  function databaseReason(question, correctChoice) {
+    const text = `${question.tag} ${question.text} ${correctChoice}`;
+    if (/SELECT|WHERE|GROUP BY|HAVING|ORDER BY|JOIN|INSERT|UPDATE|DELETE|SQL/.test(text)) {
+      return "SQL問題では、行を絞る、列を選ぶ、表を結合する、集計する、並べ替える、追加・更新・削除する、のどの操作かを先に分けます。正解は、問題文の操作対象とSQL句または命令の役割が一致するものです。";
+    }
+    if (/主キー|外部キー|候補キー|複合キー|UNIQUE|NOT NULL|CHECK|参照整合性|キー/.test(text)) {
+      return "キーと制約の問題では、一意に識別するのか、他表を参照するのか、重複やNULLを防ぐのかを区別します。正解は、表内の行を識別する役割と、表同士の関連を保つ役割を取り違えないものです。";
+    }
+    if (/正規形|正規化|部分関数従属|推移的関数従属|BCNF|繰返し項目/.test(text)) {
+      return "正規化問題では、第1正規形は繰返し項目の排除、第2正規形は部分関数従属の排除、第3正規形は推移的関数従属の排除という順序で確認します。どの従属性を取り除く段階かが判断点です。";
+    }
+    if (/ACID|Atomicity|Consistency|Isolation|Durability|トランザクション|コミット|ロールバック|ロック|排他|デッドロック|共有ロック|専有ロック/.test(text)) {
+      return "トランザクション問題では、全部実行か全部取消し、整合条件の維持、同時実行の独立、確定更新の永続化を分けます。COMMITは確定、ROLLBACKは取消し、ロックは同時更新の衝突防止に使います。";
+    }
+    if (/ER図|E-R|エンティティ|実体|関連|カーディナリティ|概念データモデル|設計/.test(text)) {
+      return "データベース設計問題では、実体、属性、関連、対応数を分けて読みます。ER図は業務上のデータ構造を整理する図で、カーディナリティは1対多、多対多などの対応数を表します。";
+    }
+    if (/ログ|バックアップ|差分|増分|リカバリ|復旧|障害|運用|アーカイブ/.test(text)) {
+      return "DB運用問題では、障害前に備えるバックアップ、更新履歴を残すログ、障害後に戻すリカバリを区別します。復旧に必要なものが、フルバックアップ、差分、増分、ログのどれかを確認します。";
+    }
+    if (/インデックス|検索|ビュー|ストアド|アクセス権|権限/.test(text)) {
+      return "性能・利用管理の問題では、検索を速くする仕組み、実表を見せずに参照させる仕組み、処理をDB側にまとめる仕組み、権限で操作を制限する仕組みを区別します。";
+    }
+    return "データベース系は、SQL操作、キーと制約、正規化、トランザクション、設計、運用のどれを問う問題かを先に分類します。正解は、データの整合性や操作目的に最も合う説明です。";
+  }
+
+  function distractorReason(question) {
+    if (!Array.isArray(question.choices) || question.choices.length < 4) return "";
+    if (question.choices.every(isNumericChoice)) {
+      return "数値の誤答は、抽出前後の行数、集計後のグループ数、重複の扱い、条件を適用する順番の取り違えで出やすいです。SQLの実行結果を表として小さく追うと安定します。";
+    }
+    return "他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。";
+  }
+
+  databaseStage.questions.forEach((question) => {
+    const correctChoice = question.choices?.[question.answer] || "";
+    const explanationLength = normalizeText(question.explanation).length;
+    const isSubjectBLike = question.difficulty === "advanced" || /科目B|長文|ケース|SQL/.test(String(question.tag || ""));
+    if (explanationLength >= (isSubjectBLike ? 78 : 50)) return;
+    appendUniqueParts(question, [
+      databaseReason(question, correctChoice),
+      isSubjectBLike ? distractorReason(question) : ""
+    ]);
+  });
+}
+
+improveDatabaseExplanations();
+
+function improveManagementExplanations() {
+  const managementStage = stages.find((stage) => stage.id === "management");
+  if (!managementStage) return;
+
+  function normalizeText(value) {
+    return String(value || "").normalize("NFKC").replace(/\s+/g, "");
+  }
+
+  function appendUniqueParts(question, parts) {
+    const existing = normalizeText(question.explanation);
+    const additions = parts
+      .filter(Boolean)
+      .filter((part) => {
+        const key = normalizeText(part).slice(0, 24);
+        return key && !existing.includes(key);
+      });
+    if (!additions.length) return;
+    question.explanation = [question.explanation, ...additions].filter(Boolean).join(" ");
+  }
+
+  function isNumericChoice(value) {
+    return /^[-+]?\d+(?:\.\d+)?(?:%|円|人日|日|時間|件|個|回)?$/.test(String(value || "").trim());
+  }
+
+  function managementReason(question, correctChoice) {
+    const text = `${question.tag} ${question.text} ${correctChoice}`;
+    if (/アジャイル|スクラム|スプリント|プロトタイピング|スパイラル|ウォータフォール|DevOps|CI|CD|開発手法|開発モデル|要求|要件|制約|要求定義|要件定義/.test(text)) {
+      return "開発手法の問題では、段階的に進めるのか、短い反復で改善するのか、試作品で要求を確認するのか、開発と運用を連携するのかを分けます。正解は、要求変更への対応方法と進め方が問題文に合うものです。";
+    }
+    if (/レビュー|単体テスト|結合テスト|システムテスト|受入テスト|回帰テスト|テスト|品質改善|品質管理|不具合|欠陥/.test(text)) {
+      return "品質・テスト問題では、人が成果物を確認する活動、部品単位の確認、部品間の確認、利用者要求の確認、修正後の影響確認を区別します。正解は、欠陥を見つける段階と目的が一致するものです。";
+    }
+    if (/WBS|ワークパッケージ|ガントチャート|クリティカルパス|EVM|EV|PV|AC|CPI|SPI|プロジェクト|進捗|コスト|リスク|軽減|回避|受容|転嫁/.test(text)) {
+      return "プロジェクト管理問題では、作業を分解する、日程を可視化する、遅延に直結する経路を見る、出来高で進捗とコストを測る、リスク対応を選ぶ、のどれかを整理します。CPIはコスト効率、SPIはスケジュール効率です。";
+    }
+    if (/SLA|SLM|インシデント|問題管理|変更管理|構成管理|サービスデスク|ITIL|可用性管理|サービス管理|運用/.test(text)) {
+      return "ITサービス管理問題では、早期復旧、根本原因分析、変更の承認、構成情報の管理、サービス水準の合意を区別します。正解は、利用者へのサービスを安定して提供するための活動に合うものです。";
+    }
+    if (/監査|監査証跡|内部統制|職務分掌|アクセス権|承認|証跡|統制|不正|法令順守/.test(text)) {
+      return "監査・統制問題では、処理記録を追跡できること、業務ルールで誤りを防ぐこと、担当や権限を分けることを区別します。正解は、不正や誤りを防ぐ統制目的と手段が一致するものです。";
+    }
+    if (/保守性|使用性|信頼性|移植性|効率性|品質特性|ISO|SQuaRE/.test(text)) {
+      return "ソフトウェア品質特性では、壊れにくさ、使いやすさ、修正しやすさ、別環境へ移しやすさ、資源効率などを分けます。正解は、品質を評価する観点が問題文の説明と一致するものです。";
+    }
+    return "マネジメント系は、開発手法、品質・テスト、プロジェクト管理、ITサービス管理、監査・統制のどの活動かを先に分類します。正解は、活動の目的と実施する段階が問題文に合う説明です。";
+  }
+
+  function distractorReason(question) {
+    if (!Array.isArray(question.choices) || question.choices.length < 4) return "";
+    if (question.choices.every(isNumericChoice)) {
+      return "数値の誤答は、EV、PV、ACの取り違え、工数と期間の混同、割合の分母、クリティカルパス上の作業だけを見るかどうかで出やすいです。式に入れる値の意味を先に確認します。";
+    }
+    return "他の選択肢も管理系の用語としては正しい場合がありますが、計画、品質確認、障害復旧、再発防止、変更承認、監査証跡のどの目的かが問題文と違うものは除外します。";
+  }
+
+  managementStage.questions.forEach((question) => {
+    const correctChoice = question.choices?.[question.answer] || "";
+    const explanationLength = normalizeText(question.explanation).length;
+    const isSubjectBLike = question.difficulty === "advanced" || /科目B|長文|ケース|プロジェクト|監査/.test(String(question.tag || ""));
+    if (explanationLength >= (isSubjectBLike ? 78 : 50)) return;
+    appendUniqueParts(question, [
+      managementReason(question, correctChoice),
+      isSubjectBLike ? distractorReason(question) : ""
+    ]);
+  });
+}
+
+improveManagementExplanations();
+
 const els = {
   stageView: document.querySelector("#stageView"),
   quizView: document.querySelector("#quizView"),
@@ -3280,7 +3421,7 @@ gameState.completedMissions = gameState.completedMissions || [];
 let current = null;
 let quizTimer = null;
 let pendingEvolutionChoice = null;
-const ASSET_VERSION = "v130";
+const ASSET_VERSION = "v135";
 
 const DIFFICULTY_LABELS = {
   basic: "基礎",
@@ -5868,6 +6009,11 @@ function explainChoice(choice) {
   };
 
   if (dictionary[choice]) return dictionary[choice];
+  if (/成果物.*確認|レビュー/.test(choice)) return "レビューの説明です。成果物を人が確認して、テスト前に欠陥を早期発見する活動です";
+  if (/単体テスト|結合テスト|受入テスト|システムテスト|回帰テスト|確認するテスト|テストです|テスト結果|欠陥|不具合/.test(choice)) return "品質管理やテスト工程に関する説明です";
+  if (/要求|要件|制約|必要とする機能/.test(choice)) return "要求定義や要件定義に関する説明です";
+  if (/リリース|配備|デプロイ/.test(choice)) return "リリース管理や配備作業に関する説明です";
+  if (/障害|復旧|インシデント|本番障害/.test(choice)) return "インシデント管理や障害復旧に関する説明です";
   if (/商品やサービスの識別標識|ブランド名|ロゴ/.test(choice)) return "商標権の説明です。商品名、サービス名、ロゴなどを他社の商品・サービスと区別する標識を保護します";
   if (/物品.*デザイン|デザインを保護/.test(choice)) return "意匠権の説明です。物品などの形状、模様、色彩といったデザインを保護します";
   if (/発明を保護|技術的思想/.test(choice)) return "特許権の説明です。技術的な発明を保護する産業財産権です";

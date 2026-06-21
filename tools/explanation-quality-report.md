@@ -1,27 +1,25 @@
 # Explanation Quality Report
 
-Generated: 2026-06-21T10:23:55.925Z
+Generated: 2026-06-21T11:02:49.093Z
 Questions: 822
-Findings: 301
+Findings: 159
 High: 0
-Medium: 165
+Medium: 23
 Low: 136
 
 ## Top Finding Types
 
 - possible-acronym-duplication: 98
-- weak-correct-reason: 70
-- short-definition-explanation: 60
 - weak-distractor-explanation: 38
 - generic-explanation: 19
-- short-subject-b-explanation: 16
+- weak-correct-reason: 4
 
 ## Findings By Stage
 
-- database: 102
-- management: 88
 - technology: 66
 - strategy: 33
+- database: 28
+- management: 20
 - algorithm: 12
 
 ## LOW possible-acronym-duplication
@@ -819,36 +817,6 @@ array = [4, 9, 15, 22]
 - Explanation: C追加で[A,B,C]、1個取り出して[B,C]、D追加で[B,C,D]、2個取り出すとDだけが残ります。 キューは先に入れた値を先に取り出す構造です。受付順の処理、印刷待ち、幅優先探索の待ち行列のように、順番を保つ場面で使います。 他の選択肢（C、B, D、空）は、似た用語でも前提条件や処理手順が異なります。問題文が求める取り出し順、探索条件、計算量と一致するかで切り分けます。
 - Detail: `{"reason":"誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"}`
 
-## MEDIUM weak-correct-reason
-
-- ID: database-001
-- Stage: データベース
-- Tag: SQL
-- Question: 表から条件に合う行を取り出すSQLの句はどれか。
-- Correct: WHERE
-- Explanation: WHERE句は行を抽出する条件を指定します。
-- Detail: `{"explanationLength":21,"reason":"正解名だけ、または汎用文だけで理由が不足している可能性があります。"}`
-
-## MEDIUM short-definition-explanation
-
-- ID: database-001
-- Stage: データベース
-- Tag: SQL
-- Question: 表から条件に合う行を取り出すSQLの句はどれか。
-- Correct: WHERE
-- Explanation: WHERE句は行を抽出する条件を指定します。
-- Detail: `{"explanationLength":21,"minimum":32}`
-
-## MEDIUM short-definition-explanation
-
-- ID: database-002
-- Stage: データベース
-- Tag: キー
-- Question: 表の各行を一意に識別するための項目はどれか。
-- Correct: 主キー
-- Explanation: 主キーは表内の各レコードを一意に識別する項目です。
-- Detail: `{"explanationLength":24,"minimum":32}`
-
 ## LOW possible-acronym-duplication
 
 - ID: database-004
@@ -856,88 +824,8 @@ array = [4, 9, 15, 22]
 - Tag: トランザクション
 - Question: ACID特性の A が表すものはどれか。
 - Correct: Atomicity
-- Explanation: ACIDのAはAtomicity、処理がすべて成功するか、すべて取り消される性質です。
+- Explanation: ACIDのAはAtomicity、処理がすべて成功するか、すべて取り消される性質です。 トランザクション問題では、全部実行か全部取消し、整合条件の維持、同時実行の独立、確定更新の永続化を分けます。COMMITは確定、ROLLBACKは取消し、ロックは同時更新の衝突防止に使います。
 - Detail: `{"reason":"略語補足と既存解説の内容が重複する可能性があります。"}`
-
-## MEDIUM weak-correct-reason
-
-- ID: database-007
-- Stage: データベース
-- Tag: SQL
-- Question: 表に新しい行を追加するSQL命令はどれか。
-- Correct: INSERT
-- Explanation: INSERT文は表へ新しい行を追加します。
-- Detail: `{"explanationLength":20,"reason":"正解名だけ、または汎用文だけで理由が不足している可能性があります。"}`
-
-## MEDIUM short-definition-explanation
-
-- ID: database-007
-- Stage: データベース
-- Tag: SQL
-- Question: 表に新しい行を追加するSQL命令はどれか。
-- Correct: INSERT
-- Explanation: INSERT文は表へ新しい行を追加します。
-- Detail: `{"explanationLength":20,"minimum":32}`
-
-## MEDIUM weak-correct-reason
-
-- ID: database-010
-- Stage: データベース
-- Tag: キー
-- Question: 外部キーの説明として最も適切なものはどれか。
-- Correct: 他の表の主キーなどを参照して関連を表す項目
-- Explanation: 参照整合性の維持に使われます。
-- Detail: `{"explanationLength":14,"reason":"正解名だけ、または汎用文だけで理由が不足している可能性があります。"}`
-
-## MEDIUM short-definition-explanation
-
-- ID: database-010
-- Stage: データベース
-- Tag: キー
-- Question: 外部キーの説明として最も適切なものはどれか。
-- Correct: 他の表の主キーなどを参照して関連を表す項目
-- Explanation: 参照整合性の維持に使われます。
-- Detail: `{"explanationLength":14,"minimum":32}`
-
-## MEDIUM weak-correct-reason
-
-- ID: database-011
-- Stage: データベース
-- Tag: キー
-- Question: 候補キーの説明として最も適切なものはどれか。
-- Correct: 行を一意に識別できる属性または属性の組
-- Explanation: 主キーに選ばれ得るキーです。
-- Detail: `{"explanationLength":13,"reason":"正解名だけ、または汎用文だけで理由が不足している可能性があります。"}`
-
-## MEDIUM short-definition-explanation
-
-- ID: database-011
-- Stage: データベース
-- Tag: キー
-- Question: 候補キーの説明として最も適切なものはどれか。
-- Correct: 行を一意に識別できる属性または属性の組
-- Explanation: 主キーに選ばれ得るキーです。
-- Detail: `{"explanationLength":13,"minimum":32}`
-
-## MEDIUM weak-correct-reason
-
-- ID: database-012
-- Stage: データベース
-- Tag: キー
-- Question: 複合キーの説明として最も適切なものはどれか。
-- Correct: 複数列の組合せで行を一意に識別するキー
-- Explanation: 単独列では一意にならない場合に使います。
-- Detail: `{"explanationLength":19,"reason":"正解名だけ、または汎用文だけで理由が不足している可能性があります。"}`
-
-## MEDIUM short-definition-explanation
-
-- ID: database-012
-- Stage: データベース
-- Tag: キー
-- Question: 複合キーの説明として最も適切なものはどれか。
-- Correct: 複数列の組合せで行を一意に識別するキー
-- Explanation: 単独列では一意にならない場合に使います。
-- Detail: `{"explanationLength":19,"minimum":32}`
 
 ## LOW possible-acronym-duplication
 
@@ -949,286 +837,6 @@ array = [4, 9, 15, 22]
 - Explanation: 第1正規形は繰返し項目をなくし、一つの項目に複数の値を入れない形です。部分関数従属の排除は第2正規形、推移的関数従属の排除は第3正規形、全ての決定項を候補キーにするのはBCNFです。
 - Detail: `{"reason":"略語補足と既存解説の内容が重複する可能性があります。"}`
 
-## MEDIUM weak-correct-reason
-
-- ID: database-016
-- Stage: データベース
-- Tag: トランザクション
-- Question: コミットの説明として最も適切なものはどれか。
-- Correct: トランザクションの更新を確定する処理
-- Explanation: 確定後は更新が反映されます。
-- Detail: `{"explanationLength":13,"reason":"正解名だけ、または汎用文だけで理由が不足している可能性があります。"}`
-
-## MEDIUM short-definition-explanation
-
-- ID: database-016
-- Stage: データベース
-- Tag: トランザクション
-- Question: コミットの説明として最も適切なものはどれか。
-- Correct: トランザクションの更新を確定する処理
-- Explanation: 確定後は更新が反映されます。
-- Detail: `{"explanationLength":13,"minimum":32}`
-
-## MEDIUM weak-correct-reason
-
-- ID: database-017
-- Stage: データベース
-- Tag: トランザクション
-- Question: ロールバックの説明として最も適切なものはどれか。
-- Correct: トランザクション中の更新を取り消す処理
-- Explanation: 障害時などに整合性を保ちます。
-- Detail: `{"explanationLength":14,"reason":"正解名だけ、または汎用文だけで理由が不足している可能性があります。"}`
-
-## MEDIUM short-definition-explanation
-
-- ID: database-017
-- Stage: データベース
-- Tag: トランザクション
-- Question: ロールバックの説明として最も適切なものはどれか。
-- Correct: トランザクション中の更新を取り消す処理
-- Explanation: 障害時などに整合性を保ちます。
-- Detail: `{"explanationLength":14,"minimum":32}`
-
-## MEDIUM weak-correct-reason
-
-- ID: database-018
-- Stage: データベース
-- Tag: トランザクション
-- Question: 一貫性の説明として最も適切なものはどれか。
-- Correct: 処理の前後でデータベースの整合条件が守られる性質
-- Explanation: ACIDのCです。
-- Detail: `{"explanationLength":8,"reason":"正解名だけ、または汎用文だけで理由が不足している可能性があります。"}`
-
-## MEDIUM short-definition-explanation
-
-- ID: database-018
-- Stage: データベース
-- Tag: トランザクション
-- Question: 一貫性の説明として最も適切なものはどれか。
-- Correct: 処理の前後でデータベースの整合条件が守られる性質
-- Explanation: ACIDのCです。
-- Detail: `{"explanationLength":8,"minimum":32}`
-
-## MEDIUM weak-correct-reason
-
-- ID: database-019
-- Stage: データベース
-- Tag: トランザクション
-- Question: 独立性の説明として最も適切なものはどれか。
-- Correct: 同時実行する処理が互いに不当に影響しない性質
-- Explanation: ACIDのIです。
-- Detail: `{"explanationLength":8,"reason":"正解名だけ、または汎用文だけで理由が不足している可能性があります。"}`
-
-## MEDIUM short-definition-explanation
-
-- ID: database-019
-- Stage: データベース
-- Tag: トランザクション
-- Question: 独立性の説明として最も適切なものはどれか。
-- Correct: 同時実行する処理が互いに不当に影響しない性質
-- Explanation: ACIDのIです。
-- Detail: `{"explanationLength":8,"minimum":32}`
-
-## MEDIUM weak-correct-reason
-
-- ID: database-020
-- Stage: データベース
-- Tag: トランザクション
-- Question: 耐久性の説明として最も適切なものはどれか。
-- Correct: 確定した更新が障害後も失われない性質
-- Explanation: ACIDのDです。
-- Detail: `{"explanationLength":8,"reason":"正解名だけ、または汎用文だけで理由が不足している可能性があります。"}`
-
-## MEDIUM short-definition-explanation
-
-- ID: database-020
-- Stage: データベース
-- Tag: トランザクション
-- Question: 耐久性の説明として最も適切なものはどれか。
-- Correct: 確定した更新が障害後も失われない性質
-- Explanation: ACIDのDです。
-- Detail: `{"explanationLength":8,"minimum":32}`
-
-## MEDIUM weak-correct-reason
-
-- ID: database-021
-- Stage: データベース
-- Tag: 設計
-- Question: ER図の説明として最も適切なものはどれか。
-- Correct: 実体と関連を表してデータ構造を設計する図
-- Explanation: 概念データモデルを表します。
-- Detail: `{"explanationLength":13,"reason":"正解名だけ、または汎用文だけで理由が不足している可能性があります。"}`
-
-## MEDIUM short-definition-explanation
-
-- ID: database-021
-- Stage: データベース
-- Tag: 設計
-- Question: ER図の説明として最も適切なものはどれか。
-- Correct: 実体と関連を表してデータ構造を設計する図
-- Explanation: 概念データモデルを表します。
-- Detail: `{"explanationLength":13,"minimum":32}`
-
-## MEDIUM weak-correct-reason
-
-- ID: database-022
-- Stage: データベース
-- Tag: 設計
-- Question: カーディナリティの説明として最も適切なものはどれか。
-- Correct: エンティティ間の対応数を表すもの
-- Explanation: 1対多、多対多などを示します。
-- Detail: `{"explanationLength":13,"reason":"正解名だけ、または汎用文だけで理由が不足している可能性があります。"}`
-
-## MEDIUM short-definition-explanation
-
-- ID: database-022
-- Stage: データベース
-- Tag: 設計
-- Question: カーディナリティの説明として最も適切なものはどれか。
-- Correct: エンティティ間の対応数を表すもの
-- Explanation: 1対多、多対多などを示します。
-- Detail: `{"explanationLength":13,"minimum":32}`
-
-## MEDIUM weak-correct-reason
-
-- ID: database-023
-- Stage: データベース
-- Tag: 運用
-- Question: ログの説明として最も適切なものはどれか。
-- Correct: 更新履歴や操作履歴を記録したもの
-- Explanation: 障害解析や復旧に利用されます。
-- Detail: `{"explanationLength":14,"reason":"正解名だけ、または汎用文だけで理由が不足している可能性があります。"}`
-
-## MEDIUM short-definition-explanation
-
-- ID: database-023
-- Stage: データベース
-- Tag: 運用
-- Question: ログの説明として最も適切なものはどれか。
-- Correct: 更新履歴や操作履歴を記録したもの
-- Explanation: 障害解析や復旧に利用されます。
-- Detail: `{"explanationLength":14,"minimum":32}`
-
-## MEDIUM weak-correct-reason
-
-- ID: database-024
-- Stage: データベース
-- Tag: 運用
-- Question: 差分バックアップの説明として最も適切なものはどれか。
-- Correct: 前回のフルバックアップ以降の変更分を保存する方式
-- Explanation: 復旧にはフルバックアップと最新差分が必要です。
-- Detail: `{"explanationLength":22,"reason":"正解名だけ、または汎用文だけで理由が不足している可能性があります。"}`
-
-## MEDIUM short-definition-explanation
-
-- ID: database-024
-- Stage: データベース
-- Tag: 運用
-- Question: 差分バックアップの説明として最も適切なものはどれか。
-- Correct: 前回のフルバックアップ以降の変更分を保存する方式
-- Explanation: 復旧にはフルバックアップと最新差分が必要です。
-- Detail: `{"explanationLength":22,"minimum":32}`
-
-## MEDIUM weak-correct-reason
-
-- ID: database-025
-- Stage: データベース
-- Tag: 運用
-- Question: 増分バックアップの説明として最も適切なものはどれか。
-- Correct: 前回バックアップ以降の変更分だけを保存する方式
-- Explanation: 保存量は少ないが復旧時に複数バックアップが必要な場合があります。
-- Detail: `{"explanationLength":31,"reason":"正解名だけ、または汎用文だけで理由が不足している可能性があります。"}`
-
-## MEDIUM short-definition-explanation
-
-- ID: database-025
-- Stage: データベース
-- Tag: 運用
-- Question: 増分バックアップの説明として最も適切なものはどれか。
-- Correct: 前回バックアップ以降の変更分だけを保存する方式
-- Explanation: 保存量は少ないが復旧時に複数バックアップが必要な場合があります。
-- Detail: `{"explanationLength":31,"minimum":32}`
-
-## MEDIUM weak-correct-reason
-
-- ID: database-026
-- Stage: データベース
-- Tag: 排他制御
-- Question: 共有ロックの説明として最も適切なものはどれか。
-- Correct: 他トランザクションの参照は許すが更新を制限するロック
-- Explanation: 読み取り時の整合性確保に使います。
-- Detail: `{"explanationLength":16,"reason":"正解名だけ、または汎用文だけで理由が不足している可能性があります。"}`
-
-## MEDIUM short-definition-explanation
-
-- ID: database-026
-- Stage: データベース
-- Tag: 排他制御
-- Question: 共有ロックの説明として最も適切なものはどれか。
-- Correct: 他トランザクションの参照は許すが更新を制限するロック
-- Explanation: 読み取り時の整合性確保に使います。
-- Detail: `{"explanationLength":16,"minimum":32}`
-
-## MEDIUM weak-correct-reason
-
-- ID: database-027
-- Stage: データベース
-- Tag: 排他制御
-- Question: 専有ロックの説明として最も適切なものはどれか。
-- Correct: 他トランザクションの参照や更新を制限するロック
-- Explanation: 更新時の競合防止に使います。
-- Detail: `{"explanationLength":13,"reason":"正解名だけ、または汎用文だけで理由が不足している可能性があります。"}`
-
-## MEDIUM short-definition-explanation
-
-- ID: database-027
-- Stage: データベース
-- Tag: 排他制御
-- Question: 専有ロックの説明として最も適切なものはどれか。
-- Correct: 他トランザクションの参照や更新を制限するロック
-- Explanation: 更新時の競合防止に使います。
-- Detail: `{"explanationLength":13,"minimum":32}`
-
-## MEDIUM weak-correct-reason
-
-- ID: database-028
-- Stage: データベース
-- Tag: 排他制御
-- Question: デッドロックの説明として最も適切なものはどれか。
-- Correct: 複数の処理が互いの資源解放を待ち続け、進行できない状態
-- Explanation: DBでも発生し得ます。
-- Detail: `{"explanationLength":10,"reason":"正解名だけ、または汎用文だけで理由が不足している可能性があります。"}`
-
-## MEDIUM short-definition-explanation
-
-- ID: database-028
-- Stage: データベース
-- Tag: 排他制御
-- Question: デッドロックの説明として最も適切なものはどれか。
-- Correct: 複数の処理が互いの資源解放を待ち続け、進行できない状態
-- Explanation: DBでも発生し得ます。
-- Detail: `{"explanationLength":10,"minimum":32}`
-
-## MEDIUM weak-correct-reason
-
-- ID: database-029
-- Stage: データベース
-- Tag: 頻出SQL
-- Question: 社員表から部署が'営業'の行だけを取り出す条件指定に使う句はどれか。
-- Correct: WHERE
-- Explanation: 行の抽出条件はWHERE句で指定します。
-- Detail: `{"explanationLength":19,"reason":"正解名だけ、または汎用文だけで理由が不足している可能性があります。"}`
-
-## MEDIUM short-definition-explanation
-
-- ID: database-029
-- Stage: データベース
-- Tag: 頻出SQL
-- Question: 社員表から部署が'営業'の行だけを取り出す条件指定に使う句はどれか。
-- Correct: WHERE
-- Explanation: 行の抽出条件はWHERE句で指定します。
-- Detail: `{"explanationLength":19,"minimum":32}`
-
 ## LOW possible-acronym-duplication
 
 - ID: database-029
@@ -1236,5 +844,395 @@ array = [4, 9, 15, 22]
 - Tag: 頻出SQL
 - Question: 社員表から部署が'営業'の行だけを取り出す条件指定に使う句はどれか。
 - Correct: WHERE
-- Explanation: 行の抽出条件はWHERE句で指定します。
+- Explanation: 行の抽出条件はWHERE句で指定します。 SQL問題では、行を絞る、列を選ぶ、表を結合する、集計する、並べ替える、追加・更新・削除する、のどの操作かを先に分けます。正解は、問題文の操作対象とSQL句または命令の役割が一致するものです。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。
 - Detail: `{"reason":"略語補足と既存解説の内容が重複する可能性があります。"}`
+
+## LOW possible-acronym-duplication
+
+- ID: database-031
+- Stage: データベース
+- Tag: 頻出SQL
+- Question: 主キーに設定できない値はどれか。
+- Correct: NULL
+- Explanation: 主キーはNULLを許しません。 SQL問題では、行を絞る、列を選ぶ、表を結合する、集計する、並べ替える、追加・更新・削除する、のどの操作かを先に分けます。正解は、問題文の操作対象とSQL句または命令の役割が一致するものです。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。
+- Detail: `{"reason":"略語補足と既存解説の内容が重複する可能性があります。"}`
+
+## MEDIUM generic-explanation
+
+- ID: database-034
+- Stage: データベース
+- Tag: DB頻出
+- Question: 顧客表から氏名列だけを取り出す操作はどれか。
+- Correct: 射影
+- Explanation: 正解は「射影」です。データベース分野の定番論点です。 データベース系は、SQL操作、キーと制約、正規化、トランザクション、設計、運用のどれを問う問題かを先に分類します。正解は、データの整合性や操作目的に最も合う説明です。
+- Detail: `{"reason":"分野の定番という説明だけでは、なぜ正解かが残りにくい可能性があります。"}`
+
+## MEDIUM generic-explanation
+
+- ID: database-035
+- Stage: データベース
+- Tag: DB頻出
+- Question: 顧客表から東京都の行だけを取り出す操作はどれか。
+- Correct: 選択
+- Explanation: 正解は「選択」です。データベース分野の定番論点です。 データベース系は、SQL操作、キーと制約、正規化、トランザクション、設計、運用のどれを問う問題かを先に分類します。正解は、データの整合性や操作目的に最も合う説明です。
+- Detail: `{"reason":"分野の定番という説明だけでは、なぜ正解かが残りにくい可能性があります。"}`
+
+## MEDIUM generic-explanation
+
+- ID: database-036
+- Stage: データベース
+- Tag: DB頻出
+- Question: 二つの表を共通列で対応付ける操作はどれか。
+- Correct: 結合
+- Explanation: 正解は「結合」です。データベース分野の定番論点です。 データベース系は、SQL操作、キーと制約、正規化、トランザクション、設計、運用のどれを問う問題かを先に分類します。正解は、データの整合性や操作目的に最も合う説明です。
+- Detail: `{"reason":"分野の定番という説明だけでは、なぜ正解かが残りにくい可能性があります。"}`
+
+## MEDIUM generic-explanation
+
+- ID: database-037
+- Stage: データベース
+- Tag: DB頻出
+- Question: 表から重複行を取り除く集合演算はどれか。
+- Correct: 重複排除
+- Explanation: 正解は「和集合ではなく重複排除」です。データベース分野の定番論点です。 データベース系は、SQL操作、キーと制約、正規化、トランザクション、設計、運用のどれを問う問題かを先に分類します。正解は、データの整合性や操作目的に最も合う説明です。
+- Detail: `{"reason":"分野の定番という説明だけでは、なぜ正解かが残りにくい可能性があります。"}`
+
+## MEDIUM generic-explanation
+
+- ID: database-038
+- Stage: データベース
+- Tag: DB頻出
+- Question: NULL値の説明として適切なものはどれか。
+- Correct: 値が存在しない、または不明であることを表す
+- Explanation: 正解は「値が存在しない、または不明であることを表す」です。データベース分野の定番論点です。 データベース系は、SQL操作、キーと制約、正規化、トランザクション、設計、運用のどれを問う問題かを先に分類します。正解は、データの整合性や操作目的に最も合う説明です。
+- Detail: `{"reason":"分野の定番という説明だけでは、なぜ正解かが残りにくい可能性があります。"}`
+
+## LOW possible-acronym-duplication
+
+- ID: database-038
+- Stage: データベース
+- Tag: DB頻出
+- Question: NULL値の説明として適切なものはどれか。
+- Correct: 値が存在しない、または不明であることを表す
+- Explanation: 正解は「値が存在しない、または不明であることを表す」です。データベース分野の定番論点です。 データベース系は、SQL操作、キーと制約、正規化、トランザクション、設計、運用のどれを問う問題かを先に分類します。正解は、データの整合性や操作目的に最も合う説明です。
+- Detail: `{"reason":"略語補足と既存解説の内容が重複する可能性があります。"}`
+
+## LOW possible-acronym-duplication
+
+- ID: database-039
+- Stage: データベース
+- Tag: DB頻出
+- Question: UNIQUE制約の目的はどれか。
+- Correct: 指定した列または列の組合せの値の重複を防ぐ
+- Explanation: UNIQUE制約は指定列の値の重複を防ぎます。NOT NULLはNULL禁止、外部キーは参照整合性、CHECKは値の条件を検証する制約です。
+- Detail: `{"reason":"略語補足と既存解説の内容が重複する可能性があります。"}`
+
+## MEDIUM weak-correct-reason
+
+- ID: database-040
+- Stage: データベース
+- Tag: DB頻出
+- Question: NOT NULL制約の目的はどれか。
+- Correct: 列にNULLを入れられないようにする制約
+- Explanation: 正解は「列にNULLを入れられないようにする」です。データベース分野の定番論点です。 キーと制約の問題では、一意に識別するのか、他表を参照するのか、重複やNULLを防ぐのかを区別します。正解は、表内の行を識別する役割と、表同士の関連を保つ役割を取り違えないものです。
+- Detail: `{"explanationLength":121,"reason":"正解名だけ、または汎用文だけで理由が不足している可能性があります。"}`
+
+## MEDIUM generic-explanation
+
+- ID: database-040
+- Stage: データベース
+- Tag: DB頻出
+- Question: NOT NULL制約の目的はどれか。
+- Correct: 列にNULLを入れられないようにする制約
+- Explanation: 正解は「列にNULLを入れられないようにする」です。データベース分野の定番論点です。 キーと制約の問題では、一意に識別するのか、他表を参照するのか、重複やNULLを防ぐのかを区別します。正解は、表内の行を識別する役割と、表同士の関連を保つ役割を取り違えないものです。
+- Detail: `{"reason":"分野の定番という説明だけでは、なぜ正解かが残りにくい可能性があります。"}`
+
+## MEDIUM weak-correct-reason
+
+- ID: database-041
+- Stage: データベース
+- Tag: DB頻出
+- Question: CHECK制約の目的はどれか。
+- Correct: 列の値が条件を満たすように制限する制約
+- Explanation: 正解は「列の値が条件を満たすように制限する」です。データベース分野の定番論点です。 キーと制約の問題では、一意に識別するのか、他表を参照するのか、重複やNULLを防ぐのかを区別します。正解は、表内の行を識別する役割と、表同士の関連を保つ役割を取り違えないものです。
+- Detail: `{"explanationLength":120,"reason":"正解名だけ、または汎用文だけで理由が不足している可能性があります。"}`
+
+## MEDIUM generic-explanation
+
+- ID: database-041
+- Stage: データベース
+- Tag: DB頻出
+- Question: CHECK制約の目的はどれか。
+- Correct: 列の値が条件を満たすように制限する制約
+- Explanation: 正解は「列の値が条件を満たすように制限する」です。データベース分野の定番論点です。 キーと制約の問題では、一意に識別するのか、他表を参照するのか、重複やNULLを防ぐのかを区別します。正解は、表内の行を識別する役割と、表同士の関連を保つ役割を取り違えないものです。
+- Detail: `{"reason":"分野の定番という説明だけでは、なぜ正解かが残りにくい可能性があります。"}`
+
+## LOW possible-acronym-duplication
+
+- ID: database-044
+- Stage: データベース
+- Tag: SQL読解
+- Question: 売上表から商品ごとの売上合計を求めるSQLで必要な指定はどれか。
+- Correct: GROUP BY 商品
+- Explanation: 商品ごとに集計するにはGROUP BYを使います。 SQL問題では、行を絞る、列を選ぶ、表を結合する、集計する、並べ替える、追加・更新・削除する、のどの操作かを先に分けます。正解は、問題文の操作対象とSQL句または命令の役割が一致するものです。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。
+- Detail: `{"reason":"略語補足と既存解説の内容が重複する可能性があります。"}`
+
+## LOW possible-acronym-duplication
+
+- ID: database-051
+- Stage: データベース
+- Tag: SQL読解
+- Question: 誤って更新した直後、まだCOMMITしていない。更新を取り消す操作はどれか。
+- Correct: ROLLBACK
+- Explanation: 未確定の更新はROLLBACKで取り消せます。 SQL問題では、行を絞る、列を選ぶ、表を結合する、集計する、並べ替える、追加・更新・削除する、のどの操作かを先に分けます。正解は、問題文の操作対象とSQL句または命令の役割が一致するものです。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。
+- Detail: `{"reason":"略語補足と既存解説の内容が重複する可能性があります。"}`
+
+## LOW possible-acronym-duplication
+
+- ID: database-071
+- Stage: データベース
+- Tag: SQL
+- Question: 「左表の行を残し右表の一致行を結合する操作」に該当する用語はどれか。
+- Correct: LEFT OUTER JOIN
+- Explanation: LEFT OUTER JOINは、左表の行を残し右表の一致行を結合する操作です。 一致しない右表側はNULLになります。 SQL問題では、行を絞る、列を選ぶ、表を結合する、集計する、並べ替える、追加・更新・削除する、のどの操作かを先に分けます。正解は、問題文の操作対象とSQL句または命令の役割が一致するものです。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。
+- Detail: `{"reason":"略語補足と既存解説の内容が重複する可能性があります。"}`
+
+## LOW possible-acronym-duplication
+
+- ID: database-072
+- Stage: データベース
+- Tag: SQL
+- Question: LEFT OUTER JOINの説明として適切なものはどれか。
+- Correct: 左表の行を残し右表の一致行を結合する操作です。
+- Explanation: LEFT OUTER JOINは、左表の行を残し右表の一致行を結合する操作です。 一致しない右表側はNULLになります。 SQL問題では、行を絞る、列を選ぶ、表を結合する、集計する、並べ替える、追加・更新・削除する、のどの操作かを先に分けます。正解は、問題文の操作対象とSQL句または命令の役割が一致するものです。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。
+- Detail: `{"reason":"略語補足と既存解説の内容が重複する可能性があります。"}`
+
+## LOW possible-acronym-duplication
+
+- ID: database-073
+- Stage: データベース
+- Tag: SQL
+- Question: LEFT OUTER JOINを見分ける特徴として最も適切なものはどれか。
+- Correct: 左表を残す
+- Explanation: LEFT OUTER JOINでは「左表を残す」が重要です。一致しない右表側はNULLになります。 SQL問題では、行を絞る、列を選ぶ、表を結合する、集計する、並べ替える、追加・更新・削除する、のどの操作かを先に分けます。正解は、問題文の操作対象とSQL句または命令の役割が一致するものです。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。
+- Detail: `{"reason":"略語補足と既存解説の内容が重複する可能性があります。"}`
+
+## LOW possible-acronym-duplication
+
+- ID: database-115
+- Stage: データベース
+- Tag: トランザクション
+- Question: 共有ロックを見分ける特徴として最も適切なものはどれか。
+- Correct: 複数処理の参照は許可し、更新を制限する
+- Explanation: 共有ロックは複数処理からの参照を許可しつつ、競合する更新を制限します。排他ロック、COMMIT、ROLLBACKとは役割が異なります。
+- Detail: `{"reason":"略語補足と既存解説の内容が重複する可能性があります。"}`
+
+## LOW weak-distractor-explanation
+
+- ID: database-116
+- Stage: データベース
+- Tag: 複合ケース
+- Question: 注文表と顧客表から、注文がない顧客も含めて一覧表示したい。適切な結合はどれか。
+- Correct: 顧客表を左側にしたLEFT OUTER JOIN
+- Explanation: 顧客表を左側にしたLEFT OUTER JOINなら、対応する注文がない顧客も結果へ残せます。INNER JOINでは注文がない顧客が除外されます。 SQL問題では、行を絞る、列を選ぶ、表を結合する、集計する、並べ替える、追加・更新・削除する、のどの操作かを先に分けます。正解は、問題文の操作対象とSQL句または命令の役割が一致するものです。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。
+- Detail: `{"reason":"誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"}`
+
+## LOW weak-distractor-explanation
+
+- ID: database-117
+- Stage: データベース
+- Tag: 複合ケース
+- Question: 商品ごとの売上合計が10万円以上の商品だけを表示したい。集計後の条件指定に使う句はどれか。
+- Correct: HAVING
+- Explanation: 集計結果のグループへ条件を付けるにはHAVINGを使います。 SQL問題では、行を絞る、列を選ぶ、表を結合する、集計する、並べ替える、追加・更新・削除する、のどの操作かを先に分けます。正解は、問題文の操作対象とSQL句または命令の役割が一致するものです。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。
+- Detail: `{"reason":"誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"}`
+
+## LOW possible-acronym-duplication
+
+- ID: database-117
+- Stage: データベース
+- Tag: 複合ケース
+- Question: 商品ごとの売上合計が10万円以上の商品だけを表示したい。集計後の条件指定に使う句はどれか。
+- Correct: HAVING
+- Explanation: 集計結果のグループへ条件を付けるにはHAVINGを使います。 SQL問題では、行を絞る、列を選ぶ、表を結合する、集計する、並べ替える、追加・更新・削除する、のどの操作かを先に分けます。正解は、問題文の操作対象とSQL句または命令の役割が一致するものです。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。
+- Detail: `{"reason":"略語補足と既存解説の内容が重複する可能性があります。"}`
+
+## LOW weak-distractor-explanation
+
+- ID: database-118
+- Stage: データベース
+- Tag: 複合ケース
+- Question: 送金処理で口座Aの減額後に障害が起きた。口座Bの増額も含め処理全体を取り消すために必要な性質はどれか。
+- Correct: 原子性
+- Explanation: 原子性は一連の処理を全て実行するか、全て取り消す性質です。 DB運用問題では、障害前に備えるバックアップ、更新履歴を残すログ、障害後に戻すリカバリを区別します。復旧に必要なものが、フルバックアップ、差分、増分、ログのどれかを確認します。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。
+- Detail: `{"reason":"誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"}`
+
+## LOW weak-distractor-explanation
+
+- ID: database-119
+- Stage: データベース
+- Tag: 複合ケース
+- Question: 在庫表を複数処理が同時更新し、後の更新で先の更新結果が失われた。この問題はどれか。
+- Correct: ロストアップデート
+- Explanation: 同時更新で一方の更新が上書きされる現象はロストアップデートです。 データベース系は、SQL操作、キーと制約、正規化、トランザクション、設計、運用のどれを問う問題かを先に分類します。正解は、データの整合性や操作目的に最も合う説明です。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。
+- Detail: `{"reason":"誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"}`
+
+## LOW weak-distractor-explanation
+
+- ID: database-120
+- Stage: データベース
+- Tag: 複合ケース
+- Question: 顧客表のメールアドレスに重複を許さず、未入力は許可したい。適切な制約はどれか。
+- Correct: メールアドレス列へUNIQUE制約を設定する
+- Explanation: 重複を防ぎ、NULLは許可したい場合はUNIQUE制約を使います。NOT NULLは未入力を禁止するため要件に合いません。 キーと制約の問題では、一意に識別するのか、他表を参照するのか、重複やNULLを防ぐのかを区別します。正解は、表内の行を識別する役割と、表同士の関連を保つ役割を取り違えないものです。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。
+- Detail: `{"reason":"誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"}`
+
+## LOW possible-acronym-duplication
+
+- ID: database-120
+- Stage: データベース
+- Tag: 複合ケース
+- Question: 顧客表のメールアドレスに重複を許さず、未入力は許可したい。適切な制約はどれか。
+- Correct: メールアドレス列へUNIQUE制約を設定する
+- Explanation: 重複を防ぎ、NULLは許可したい場合はUNIQUE制約を使います。NOT NULLは未入力を禁止するため要件に合いません。 キーと制約の問題では、一意に識別するのか、他表を参照するのか、重複やNULLを防ぐのかを区別します。正解は、表内の行を識別する役割と、表同士の関連を保つ役割を取り違えないものです。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。
+- Detail: `{"reason":"略語補足と既存解説の内容が重複する可能性があります。"}`
+
+## MEDIUM generic-explanation
+
+- ID: management-028
+- Stage: マネジメント系
+- Tag: 開発・運用
+- Question: 要件定義で主に行うことはどれか。
+- Correct: 利用者が必要とする機能や制約を明確にする
+- Explanation: 正解は「利用者が必要とする機能や制約を明確にする」です。開発・運用管理でよく問われます。 開発手法の問題では、段階的に進めるのか、短い反復で改善するのか、試作品で要求を確認するのか、開発と運用を連携するのかを分けます。正解は、要求変更への対応方法と進め方が問題文に合うものです。
+- Detail: `{"reason":"分野の定番という説明だけでは、なぜ正解かが残りにくい可能性があります。"}`
+
+## MEDIUM generic-explanation
+
+- ID: management-029
+- Stage: マネジメント系
+- Tag: 開発・運用
+- Question: 基本設計で主に行うことはどれか。
+- Correct: 外部仕様や画面・帳票・インタフェースを設計する
+- Explanation: 正解は「外部仕様や画面・帳票・インタフェースを設計する」です。開発・運用管理でよく問われます。 ITサービス管理問題では、早期復旧、根本原因分析、変更の承認、構成情報の管理、サービス水準の合意を区別します。正解は、利用者へのサービスを安定して提供するための活動に合うものです。
+- Detail: `{"reason":"分野の定番という説明だけでは、なぜ正解かが残りにくい可能性があります。"}`
+
+## MEDIUM generic-explanation
+
+- ID: management-030
+- Stage: マネジメント系
+- Tag: 開発・運用
+- Question: 詳細設計で主に行うことはどれか。
+- Correct: プログラム内部の処理構造を具体化する
+- Explanation: 正解は「プログラム内部の処理構造を具体化する」です。開発・運用管理でよく問われます。 ITサービス管理問題では、早期復旧、根本原因分析、変更の承認、構成情報の管理、サービス水準の合意を区別します。正解は、利用者へのサービスを安定して提供するための活動に合うものです。
+- Detail: `{"reason":"分野の定番という説明だけでは、なぜ正解かが残りにくい可能性があります。"}`
+
+## MEDIUM weak-correct-reason
+
+- ID: management-032
+- Stage: マネジメント系
+- Tag: 開発・運用
+- Question: 負荷テストの目的はどれか。
+- Correct: 想定されるアクセスや処理量で性能を確認するテスト
+- Explanation: 正解は「想定されるアクセスや処理量で性能を確認する」です。開発・運用管理でよく問われます。 品質・テスト問題では、人が成果物を確認する活動、部品単位の確認、部品間の確認、利用者要求の確認、修正後の影響確認を区別します。正解は、欠陥を見つける段階と目的が一致するものです。
+- Detail: `{"explanationLength":120,"reason":"正解名だけ、または汎用文だけで理由が不足している可能性があります。"}`
+
+## MEDIUM generic-explanation
+
+- ID: management-032
+- Stage: マネジメント系
+- Tag: 開発・運用
+- Question: 負荷テストの目的はどれか。
+- Correct: 想定されるアクセスや処理量で性能を確認するテスト
+- Explanation: 正解は「想定されるアクセスや処理量で性能を確認する」です。開発・運用管理でよく問われます。 品質・テスト問題では、人が成果物を確認する活動、部品単位の確認、部品間の確認、利用者要求の確認、修正後の影響確認を区別します。正解は、欠陥を見つける段階と目的が一致するものです。
+- Detail: `{"reason":"分野の定番という説明だけでは、なぜ正解かが残りにくい可能性があります。"}`
+
+## MEDIUM weak-correct-reason
+
+- ID: management-033
+- Stage: マネジメント系
+- Tag: 開発・運用
+- Question: フェールオーバの説明はどれか。
+- Correct: 障害時に待機系へ処理を引き継ぐ仕組み
+- Explanation: 正解は「障害時に待機系へ処理を引き継ぐこと」です。開発・運用管理でよく問われます。 ITサービス管理問題では、早期復旧、根本原因分析、変更の承認、構成情報の管理、サービス水準の合意を区別します。正解は、利用者へのサービスを安定して提供するための活動に合うものです。
+- Detail: `{"explanationLength":118,"reason":"正解名だけ、または汎用文だけで理由が不足している可能性があります。"}`
+
+## MEDIUM generic-explanation
+
+- ID: management-033
+- Stage: マネジメント系
+- Tag: 開発・運用
+- Question: フェールオーバの説明はどれか。
+- Correct: 障害時に待機系へ処理を引き継ぐ仕組み
+- Explanation: 正解は「障害時に待機系へ処理を引き継ぐこと」です。開発・運用管理でよく問われます。 ITサービス管理問題では、早期復旧、根本原因分析、変更の承認、構成情報の管理、サービス水準の合意を区別します。正解は、利用者へのサービスを安定して提供するための活動に合うものです。
+- Detail: `{"reason":"分野の定番という説明だけでは、なぜ正解かが残りにくい可能性があります。"}`
+
+## MEDIUM generic-explanation
+
+- ID: management-034
+- Stage: マネジメント系
+- Tag: 開発・運用
+- Question: フェールセーフの説明はどれか。
+- Correct: 故障時に安全側へ動作させる考え方
+- Explanation: 正解は「故障時に安全側へ動作させる考え方」です。開発・運用管理でよく問われます。 ITサービス管理問題では、早期復旧、根本原因分析、変更の承認、構成情報の管理、サービス水準の合意を区別します。正解は、利用者へのサービスを安定して提供するための活動に合うものです。
+- Detail: `{"reason":"分野の定番という説明だけでは、なぜ正解かが残りにくい可能性があります。"}`
+
+## LOW weak-distractor-explanation
+
+- ID: management-035
+- Stage: マネジメント系
+- Tag: ケース問題
+- Question: 作業Aが3日、作業Bが5日で、BはA完了後に開始する。最短完了日数はどれか。
+- Correct: 8日
+- Explanation: 直列なので3+5=8日です。 マネジメント系は、開発手法、品質・テスト、プロジェクト管理、ITサービス管理、監査・統制のどの活動かを先に分類します。正解は、活動の目的と実施する段階が問題文に合う説明です。 数値の誤答は、EV、PV、ACの取り違え、工数と期間の混同、割合の分母、クリティカルパス上の作業だけを見るかどうかで出やすいです。式に入れる値の意味を先に確認します。
+- Detail: `{"reason":"誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"}`
+
+## LOW weak-distractor-explanation
+
+- ID: management-036
+- Stage: マネジメント系
+- Tag: ケース問題
+- Question: 作業Aが3日、作業Bが5日で並行実施できる。両方完了までの最短日数はどれか。
+- Correct: 5日
+- Explanation: 並行なら長い方の5日で両方完了します。 マネジメント系は、開発手法、品質・テスト、プロジェクト管理、ITサービス管理、監査・統制のどの活動かを先に分類します。正解は、活動の目的と実施する段階が問題文に合う説明です。 数値の誤答は、EV、PV、ACの取り違え、工数と期間の混同、割合の分母、クリティカルパス上の作業だけを見るかどうかで出やすいです。式に入れる値の意味を先に確認します。
+- Detail: `{"reason":"誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"}`
+
+## LOW weak-distractor-explanation
+
+- ID: management-039
+- Stage: マネジメント系
+- Tag: ケース問題
+- Question: 障害を早く復旧した後、根本原因を分析して再発防止する活動はどれか。
+- Correct: 問題管理
+- Explanation: 早期復旧はインシデント管理、根本原因分析は問題管理です。 ITサービス管理問題では、早期復旧、根本原因分析、変更の承認、構成情報の管理、サービス水準の合意を区別します。正解は、利用者へのサービスを安定して提供するための活動に合うものです。 他の選択肢も管理系の用語としては正しい場合がありますが、計画、品質確認、障害復旧、再発防止、変更承認、監査証跡のどの目的かが問題文と違うものは除外します。
+- Detail: `{"reason":"誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"}`
+
+## LOW weak-distractor-explanation
+
+- ID: management-040
+- Stage: マネジメント系
+- Tag: ケース問題
+- Question: 本番環境への変更による障害リスクを抑えるため、事前に評価・承認する活動はどれか。
+- Correct: 変更管理
+- Explanation: 変更管理は変更のリスクを評価し承認します。 プロジェクト管理問題では、作業を分解する、日程を可視化する、遅延に直結する経路を見る、出来高で進捗とコストを測る、リスク対応を選ぶ、のどれかを整理します。CPIはコスト効率、SPIはスケジュール効率です。 他の選択肢も管理系の用語としては正しい場合がありますが、計画、品質確認、障害復旧、再発防止、変更承認、監査証跡のどの目的かが問題文と違うものは除外します。
+- Detail: `{"reason":"誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"}`
+
+## LOW weak-distractor-explanation
+
+- ID: management-041
+- Stage: マネジメント系
+- Tag: ケース問題
+- Question: レビューで設計書の欠陥を早期発見する主な効果はどれか。
+- Correct: 後工程で発覚する欠陥と手戻りを減らす
+- Explanation: 上流工程のレビューで欠陥を見つけると、実装やテスト後に修正するより手戻りと修正コストを抑えられます。レビューだけでテストが不要になるわけではありません。 品質・テスト問題では、人が成果物を確認する活動、部品単位の確認、部品間の確認、利用者要求の確認、修正後の影響確認を区別します。正解は、欠陥を見つける段階と目的が一致するものです。 他の選択肢も管理系の用語としては正しい場合がありますが、計画、品質確認、障害復旧、再発防止、変更承認、監査証跡のどの目的かが問題文と違うものは除外します。
+- Detail: `{"reason":"誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"}`
+
+## LOW weak-distractor-explanation
+
+- ID: management-042
+- Stage: マネジメント系
+- Tag: ケース問題
+- Question: 受入テストで主に確認することはどれか。
+- Correct: 利用者要求を満たしているか確認するテスト
+- Explanation: 受入テストは利用者視点で要求充足を確認します。 開発手法の問題では、段階的に進めるのか、短い反復で改善するのか、試作品で要求を確認するのか、開発と運用を連携するのかを分けます。正解は、要求変更への対応方法と進め方が問題文に合うものです。 他の選択肢も管理系の用語としては正しい場合がありますが、計画、品質確認、障害復旧、再発防止、変更承認、監査証跡のどの目的かが問題文と違うものは除外します。
+- Detail: `{"reason":"誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"}`

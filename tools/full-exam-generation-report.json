@@ -1,6 +1,6 @@
 {
   "summary": {
-    "generatedAt": "2026-06-21T10:23:56.269Z",
+    "generatedAt": "2026-06-21T11:02:49.438Z",
     "iterations": 100,
     "subjectAQuestionCounts": [
       60
@@ -9,7 +9,7 @@
       20
     ],
     "subjectAUniqueQuestionsSeen": 819,
-    "subjectBUniqueQuestionsSeen": 149,
+    "subjectBUniqueQuestionsSeen": 151,
     "findingCount": 0,
     "counts": {},
     "samples": []

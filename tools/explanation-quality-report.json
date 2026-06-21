@@ -1,38 +1,28 @@
 {
-  "generatedAt": "2026-06-21T10:23:55.925Z",
+  "generatedAt": "2026-06-21T11:02:49.093Z",
   "questionCount": 822,
-  "findingCount": 301,
+  "findingCount": 159,
   "severityCounts": {
     "low": 136,
-    "medium": 165
+    "medium": 23
   },
   "typeCounts": {
     "possible-acronym-duplication": 98,
     "weak-distractor-explanation": 38,
-    "weak-correct-reason": 70,
-    "short-definition-explanation": 60,
     "generic-explanation": 19,
-    "short-subject-b-explanation": 16
+    "weak-correct-reason": 4
   },
   "stageCounts": {
     "technology": 66,
     "algorithm": 12,
-    "database": 102,
-    "management": 88,
+    "database": 28,
+    "management": 20,
     "strategy": 33
   },
   "topTypes": [
     {
       "key": "possible-acronym-duplication",
       "count": 98
-    },
-    {
-      "key": "weak-correct-reason",
-      "count": 70
-    },
-    {
-      "key": "short-definition-explanation",
-      "count": 60
     },
     {
       "key": "weak-distractor-explanation",
@@ -43,19 +33,11 @@
       "count": 19
     },
     {
-      "key": "short-subject-b-explanation",
-      "count": 16
+      "key": "weak-correct-reason",
+      "count": 4
     }
   ],
   "topStages": [
-    {
-      "key": "database",
-      "count": 102
-    },
-    {
-      "key": "management",
-      "count": 88
-    },
     {
       "key": "technology",
       "count": 66
@@ -63,6 +45,14 @@
     {
       "key": "strategy",
       "count": 33
+    },
+    {
+      "key": "database",
+      "count": 28
+    },
+    {
+      "key": "management",
+      "count": 20
     },
     {
       "key": "algorithm",
@@ -1163,51 +1153,6 @@
       }
     },
     {
-      "id": "database-001",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "SQL",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "表から条件に合う行を取り出すSQLの句はどれか。",
-      "correct": "WHERE",
-      "explanation": "WHERE句は行を抽出する条件を指定します。",
-      "detail": {
-        "explanationLength": 21,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-001",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "SQL",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "表から条件に合う行を取り出すSQLの句はどれか。",
-      "correct": "WHERE",
-      "explanation": "WHERE句は行を抽出する条件を指定します。",
-      "detail": {
-        "explanationLength": 21,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "database-002",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "キー",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "表の各行を一意に識別するための項目はどれか。",
-      "correct": "主キー",
-      "explanation": "主キーは表内の各レコードを一意に識別する項目です。",
-      "detail": {
-        "explanationLength": 24,
-        "minimum": 32
-      }
-    },
-    {
       "id": "database-004",
       "stage": "データベース",
       "stageId": "database",
@@ -1216,129 +1161,9 @@
       "severity": "low",
       "text": "ACID特性の A が表すものはどれか。",
       "correct": "Atomicity",
-      "explanation": "ACIDのAはAtomicity、処理がすべて成功するか、すべて取り消される性質です。",
+      "explanation": "ACIDのAはAtomicity、処理がすべて成功するか、すべて取り消される性質です。 トランザクション問題では、全部実行か全部取消し、整合条件の維持、同時実行の独立、確定更新の永続化を分けます。COMMITは確定、ROLLBACKは取消し、ロックは同時更新の衝突防止に使います。",
       "detail": {
         "reason": "略語補足と既存解説の内容が重複する可能性があります。"
-      }
-    },
-    {
-      "id": "database-007",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "SQL",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "表に新しい行を追加するSQL命令はどれか。",
-      "correct": "INSERT",
-      "explanation": "INSERT文は表へ新しい行を追加します。",
-      "detail": {
-        "explanationLength": 20,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-007",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "SQL",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "表に新しい行を追加するSQL命令はどれか。",
-      "correct": "INSERT",
-      "explanation": "INSERT文は表へ新しい行を追加します。",
-      "detail": {
-        "explanationLength": 20,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "database-010",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "キー",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "外部キーの説明として最も適切なものはどれか。",
-      "correct": "他の表の主キーなどを参照して関連を表す項目",
-      "explanation": "参照整合性の維持に使われます。",
-      "detail": {
-        "explanationLength": 14,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-010",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "キー",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "外部キーの説明として最も適切なものはどれか。",
-      "correct": "他の表の主キーなどを参照して関連を表す項目",
-      "explanation": "参照整合性の維持に使われます。",
-      "detail": {
-        "explanationLength": 14,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "database-011",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "キー",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "候補キーの説明として最も適切なものはどれか。",
-      "correct": "行を一意に識別できる属性または属性の組",
-      "explanation": "主キーに選ばれ得るキーです。",
-      "detail": {
-        "explanationLength": 13,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-011",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "キー",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "候補キーの説明として最も適切なものはどれか。",
-      "correct": "行を一意に識別できる属性または属性の組",
-      "explanation": "主キーに選ばれ得るキーです。",
-      "detail": {
-        "explanationLength": 13,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "database-012",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "キー",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "複合キーの説明として最も適切なものはどれか。",
-      "correct": "複数列の組合せで行を一意に識別するキー",
-      "explanation": "単独列では一意にならない場合に使います。",
-      "detail": {
-        "explanationLength": 19,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-012",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "キー",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "複合キーの説明として最も適切なものはどれか。",
-      "correct": "複数列の組合せで行を一意に識別するキー",
-      "explanation": "単独列では一意にならない場合に使います。",
-      "detail": {
-        "explanationLength": 19,
-        "minimum": 32
       }
     },
     {
@@ -1356,426 +1181,6 @@
       }
     },
     {
-      "id": "database-016",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "トランザクション",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "コミットの説明として最も適切なものはどれか。",
-      "correct": "トランザクションの更新を確定する処理",
-      "explanation": "確定後は更新が反映されます。",
-      "detail": {
-        "explanationLength": 13,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-016",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "トランザクション",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "コミットの説明として最も適切なものはどれか。",
-      "correct": "トランザクションの更新を確定する処理",
-      "explanation": "確定後は更新が反映されます。",
-      "detail": {
-        "explanationLength": 13,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "database-017",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "トランザクション",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "ロールバックの説明として最も適切なものはどれか。",
-      "correct": "トランザクション中の更新を取り消す処理",
-      "explanation": "障害時などに整合性を保ちます。",
-      "detail": {
-        "explanationLength": 14,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-017",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "トランザクション",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "ロールバックの説明として最も適切なものはどれか。",
-      "correct": "トランザクション中の更新を取り消す処理",
-      "explanation": "障害時などに整合性を保ちます。",
-      "detail": {
-        "explanationLength": 14,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "database-018",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "トランザクション",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "一貫性の説明として最も適切なものはどれか。",
-      "correct": "処理の前後でデータベースの整合条件が守られる性質",
-      "explanation": "ACIDのCです。",
-      "detail": {
-        "explanationLength": 8,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-018",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "トランザクション",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "一貫性の説明として最も適切なものはどれか。",
-      "correct": "処理の前後でデータベースの整合条件が守られる性質",
-      "explanation": "ACIDのCです。",
-      "detail": {
-        "explanationLength": 8,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "database-019",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "トランザクション",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "独立性の説明として最も適切なものはどれか。",
-      "correct": "同時実行する処理が互いに不当に影響しない性質",
-      "explanation": "ACIDのIです。",
-      "detail": {
-        "explanationLength": 8,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-019",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "トランザクション",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "独立性の説明として最も適切なものはどれか。",
-      "correct": "同時実行する処理が互いに不当に影響しない性質",
-      "explanation": "ACIDのIです。",
-      "detail": {
-        "explanationLength": 8,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "database-020",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "トランザクション",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "耐久性の説明として最も適切なものはどれか。",
-      "correct": "確定した更新が障害後も失われない性質",
-      "explanation": "ACIDのDです。",
-      "detail": {
-        "explanationLength": 8,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-020",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "トランザクション",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "耐久性の説明として最も適切なものはどれか。",
-      "correct": "確定した更新が障害後も失われない性質",
-      "explanation": "ACIDのDです。",
-      "detail": {
-        "explanationLength": 8,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "database-021",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "設計",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "ER図の説明として最も適切なものはどれか。",
-      "correct": "実体と関連を表してデータ構造を設計する図",
-      "explanation": "概念データモデルを表します。",
-      "detail": {
-        "explanationLength": 13,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-021",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "設計",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "ER図の説明として最も適切なものはどれか。",
-      "correct": "実体と関連を表してデータ構造を設計する図",
-      "explanation": "概念データモデルを表します。",
-      "detail": {
-        "explanationLength": 13,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "database-022",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "設計",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "カーディナリティの説明として最も適切なものはどれか。",
-      "correct": "エンティティ間の対応数を表すもの",
-      "explanation": "1対多、多対多などを示します。",
-      "detail": {
-        "explanationLength": 13,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-022",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "設計",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "カーディナリティの説明として最も適切なものはどれか。",
-      "correct": "エンティティ間の対応数を表すもの",
-      "explanation": "1対多、多対多などを示します。",
-      "detail": {
-        "explanationLength": 13,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "database-023",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "運用",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "ログの説明として最も適切なものはどれか。",
-      "correct": "更新履歴や操作履歴を記録したもの",
-      "explanation": "障害解析や復旧に利用されます。",
-      "detail": {
-        "explanationLength": 14,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-023",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "運用",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "ログの説明として最も適切なものはどれか。",
-      "correct": "更新履歴や操作履歴を記録したもの",
-      "explanation": "障害解析や復旧に利用されます。",
-      "detail": {
-        "explanationLength": 14,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "database-024",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "運用",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "差分バックアップの説明として最も適切なものはどれか。",
-      "correct": "前回のフルバックアップ以降の変更分を保存する方式",
-      "explanation": "復旧にはフルバックアップと最新差分が必要です。",
-      "detail": {
-        "explanationLength": 22,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-024",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "運用",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "差分バックアップの説明として最も適切なものはどれか。",
-      "correct": "前回のフルバックアップ以降の変更分を保存する方式",
-      "explanation": "復旧にはフルバックアップと最新差分が必要です。",
-      "detail": {
-        "explanationLength": 22,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "database-025",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "運用",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "増分バックアップの説明として最も適切なものはどれか。",
-      "correct": "前回バックアップ以降の変更分だけを保存する方式",
-      "explanation": "保存量は少ないが復旧時に複数バックアップが必要な場合があります。",
-      "detail": {
-        "explanationLength": 31,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-025",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "運用",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "増分バックアップの説明として最も適切なものはどれか。",
-      "correct": "前回バックアップ以降の変更分だけを保存する方式",
-      "explanation": "保存量は少ないが復旧時に複数バックアップが必要な場合があります。",
-      "detail": {
-        "explanationLength": 31,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "database-026",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "排他制御",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "共有ロックの説明として最も適切なものはどれか。",
-      "correct": "他トランザクションの参照は許すが更新を制限するロック",
-      "explanation": "読み取り時の整合性確保に使います。",
-      "detail": {
-        "explanationLength": 16,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-026",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "排他制御",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "共有ロックの説明として最も適切なものはどれか。",
-      "correct": "他トランザクションの参照は許すが更新を制限するロック",
-      "explanation": "読み取り時の整合性確保に使います。",
-      "detail": {
-        "explanationLength": 16,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "database-027",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "排他制御",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "専有ロックの説明として最も適切なものはどれか。",
-      "correct": "他トランザクションの参照や更新を制限するロック",
-      "explanation": "更新時の競合防止に使います。",
-      "detail": {
-        "explanationLength": 13,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-027",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "排他制御",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "専有ロックの説明として最も適切なものはどれか。",
-      "correct": "他トランザクションの参照や更新を制限するロック",
-      "explanation": "更新時の競合防止に使います。",
-      "detail": {
-        "explanationLength": 13,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "database-028",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "排他制御",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "デッドロックの説明として最も適切なものはどれか。",
-      "correct": "複数の処理が互いの資源解放を待ち続け、進行できない状態",
-      "explanation": "DBでも発生し得ます。",
-      "detail": {
-        "explanationLength": 10,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-028",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "排他制御",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "デッドロックの説明として最も適切なものはどれか。",
-      "correct": "複数の処理が互いの資源解放を待ち続け、進行できない状態",
-      "explanation": "DBでも発生し得ます。",
-      "detail": {
-        "explanationLength": 10,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "database-029",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "頻出SQL",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "社員表から部署が'営業'の行だけを取り出す条件指定に使う句はどれか。",
-      "correct": "WHERE",
-      "explanation": "行の抽出条件はWHERE句で指定します。",
-      "detail": {
-        "explanationLength": 19,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-029",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "頻出SQL",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "社員表から部署が'営業'の行だけを取り出す条件指定に使う句はどれか。",
-      "correct": "WHERE",
-      "explanation": "行の抽出条件はWHERE句で指定します。",
-      "detail": {
-        "explanationLength": 19,
-        "minimum": 32
-      }
-    },
-    {
       "id": "database-029",
       "stage": "データベース",
       "stageId": "database",
@@ -1784,69 +1189,9 @@
       "severity": "low",
       "text": "社員表から部署が'営業'の行だけを取り出す条件指定に使う句はどれか。",
       "correct": "WHERE",
-      "explanation": "行の抽出条件はWHERE句で指定します。",
+      "explanation": "行の抽出条件はWHERE句で指定します。 SQL問題では、行を絞る、列を選ぶ、表を結合する、集計する、並べ替える、追加・更新・削除する、のどの操作かを先に分けます。正解は、問題文の操作対象とSQL句または命令の役割が一致するものです。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。",
       "detail": {
         "reason": "略語補足と既存解説の内容が重複する可能性があります。"
-      }
-    },
-    {
-      "id": "database-030",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "頻出SQL",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "部署ごとの平均給与を求めるときに使う句の組合せとして適切なものはどれか。",
-      "correct": "GROUP BYとAVG",
-      "explanation": "グループ化して平均を求めます。",
-      "detail": {
-        "explanationLength": 14,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-030",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "頻出SQL",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "部署ごとの平均給与を求めるときに使う句の組合せとして適切なものはどれか。",
-      "correct": "GROUP BYとAVG",
-      "explanation": "グループ化して平均を求めます。",
-      "detail": {
-        "explanationLength": 14,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "database-031",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "頻出SQL",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "主キーに設定できない値はどれか。",
-      "correct": "NULL",
-      "explanation": "主キーはNULLを許しません。",
-      "detail": {
-        "explanationLength": 14,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-031",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "頻出SQL",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "主キーに設定できない値はどれか。",
-      "correct": "NULL",
-      "explanation": "主キーはNULLを許しません。",
-      "detail": {
-        "explanationLength": 14,
-        "minimum": 32
       }
     },
     {
@@ -1858,72 +1203,12 @@
       "severity": "low",
       "text": "主キーに設定できない値はどれか。",
       "correct": "NULL",
-      "explanation": "主キーはNULLを許しません。",
+      "explanation": "主キーはNULLを許しません。 SQL問題では、行を絞る、列を選ぶ、表を結合する、集計する、並べ替える、追加・更新・削除する、のどの操作かを先に分けます。正解は、問題文の操作対象とSQL句または命令の役割が一致するものです。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。",
       "detail": {
         "reason": "略語補足と既存解説の内容が重複する可能性があります。"
       }
     },
     {
-      "id": "database-032",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "頻出SQL",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "参照整合性制約の目的はどれか。",
-      "correct": "存在しない親レコードを参照しないようにする",
-      "explanation": "外部キーが参照先と矛盾しないようにします。",
-      "detail": {
-        "explanationLength": 20,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-032",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "頻出SQL",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "参照整合性制約の目的はどれか。",
-      "correct": "存在しない親レコードを参照しないようにする",
-      "explanation": "外部キーが参照先と矛盾しないようにします。",
-      "detail": {
-        "explanationLength": 20,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "database-033",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "頻出SQL",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "トランザクションの途中で障害が起きた場合、更新を取り消す処理はどれか。",
-      "correct": "ロールバック",
-      "explanation": "未確定の更新はロールバックで取り消します。",
-      "detail": {
-        "explanationLength": 20,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-033",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "頻出SQL",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "トランザクションの途中で障害が起きた場合、更新を取り消す処理はどれか。",
-      "correct": "ロールバック",
-      "explanation": "未確定の更新はロールバックで取り消します。",
-      "detail": {
-        "explanationLength": 20,
-        "minimum": 32
-      }
-    },
-    {
       "id": "database-034",
       "stage": "データベース",
       "stageId": "database",
@@ -1932,24 +1217,9 @@
       "severity": "medium",
       "text": "顧客表から氏名列だけを取り出す操作はどれか。",
       "correct": "射影",
-      "explanation": "正解は「射影」です。データベース分野の定番論点です。",
+      "explanation": "正解は「射影」です。データベース分野の定番論点です。 データベース系は、SQL操作、キーと制約、正規化、トランザクション、設計、運用のどれを問う問題かを先に分類します。正解は、データの整合性や操作目的に最も合う説明です。",
       "detail": {
         "reason": "分野の定番という説明だけでは、なぜ正解かが残りにくい可能性があります。"
-      }
-    },
-    {
-      "id": "database-034",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "DB頻出",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "顧客表から氏名列だけを取り出す操作はどれか。",
-      "correct": "射影",
-      "explanation": "正解は「射影」です。データベース分野の定番論点です。",
-      "detail": {
-        "explanationLength": 22,
-        "minimum": 32
       }
     },
     {
@@ -1961,24 +1231,9 @@
       "severity": "medium",
       "text": "顧客表から東京都の行だけを取り出す操作はどれか。",
       "correct": "選択",
-      "explanation": "正解は「選択」です。データベース分野の定番論点です。",
+      "explanation": "正解は「選択」です。データベース分野の定番論点です。 データベース系は、SQL操作、キーと制約、正規化、トランザクション、設計、運用のどれを問う問題かを先に分類します。正解は、データの整合性や操作目的に最も合う説明です。",
       "detail": {
         "reason": "分野の定番という説明だけでは、なぜ正解かが残りにくい可能性があります。"
-      }
-    },
-    {
-      "id": "database-035",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "DB頻出",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "顧客表から東京都の行だけを取り出す操作はどれか。",
-      "correct": "選択",
-      "explanation": "正解は「選択」です。データベース分野の定番論点です。",
-      "detail": {
-        "explanationLength": 22,
-        "minimum": 32
       }
     },
     {
@@ -1990,24 +1245,9 @@
       "severity": "medium",
       "text": "二つの表を共通列で対応付ける操作はどれか。",
       "correct": "結合",
-      "explanation": "正解は「結合」です。データベース分野の定番論点です。",
+      "explanation": "正解は「結合」です。データベース分野の定番論点です。 データベース系は、SQL操作、キーと制約、正規化、トランザクション、設計、運用のどれを問う問題かを先に分類します。正解は、データの整合性や操作目的に最も合う説明です。",
       "detail": {
         "reason": "分野の定番という説明だけでは、なぜ正解かが残りにくい可能性があります。"
-      }
-    },
-    {
-      "id": "database-036",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "DB頻出",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "二つの表を共通列で対応付ける操作はどれか。",
-      "correct": "結合",
-      "explanation": "正解は「結合」です。データベース分野の定番論点です。",
-      "detail": {
-        "explanationLength": 22,
-        "minimum": 32
       }
     },
     {
@@ -2019,24 +1259,9 @@
       "severity": "medium",
       "text": "表から重複行を取り除く集合演算はどれか。",
       "correct": "重複排除",
-      "explanation": "正解は「和集合ではなく重複排除」です。データベース分野の定番論点です。",
+      "explanation": "正解は「和集合ではなく重複排除」です。データベース分野の定番論点です。 データベース系は、SQL操作、キーと制約、正規化、トランザクション、設計、運用のどれを問う問題かを先に分類します。正解は、データの整合性や操作目的に最も合う説明です。",
       "detail": {
         "reason": "分野の定番という説明だけでは、なぜ正解かが残りにくい可能性があります。"
-      }
-    },
-    {
-      "id": "database-037",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "DB頻出",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "表から重複行を取り除く集合演算はどれか。",
-      "correct": "重複排除",
-      "explanation": "正解は「和集合ではなく重複排除」です。データベース分野の定番論点です。",
-      "detail": {
-        "explanationLength": 31,
-        "minimum": 32
       }
     },
     {
@@ -2048,7 +1273,7 @@
       "severity": "medium",
       "text": "NULL値の説明として適切なものはどれか。",
       "correct": "値が存在しない、または不明であることを表す",
-      "explanation": "正解は「値が存在しない、または不明であることを表す」です。データベース分野の定番論点です。",
+      "explanation": "正解は「値が存在しない、または不明であることを表す」です。データベース分野の定番論点です。 データベース系は、SQL操作、キーと制約、正規化、トランザクション、設計、運用のどれを問う問題かを先に分類します。正解は、データの整合性や操作目的に最も合う説明です。",
       "detail": {
         "reason": "分野の定番という説明だけでは、なぜ正解かが残りにくい可能性があります。"
       }
@@ -2062,7 +1287,7 @@
       "severity": "low",
       "text": "NULL値の説明として適切なものはどれか。",
       "correct": "値が存在しない、または不明であることを表す",
-      "explanation": "正解は「値が存在しない、または不明であることを表す」です。データベース分野の定番論点です。",
+      "explanation": "正解は「値が存在しない、または不明であることを表す」です。データベース分野の定番論点です。 データベース系は、SQL操作、キーと制約、正規化、トランザクション、設計、運用のどれを問う問題かを先に分類します。正解は、データの整合性や操作目的に最も合う説明です。",
       "detail": {
         "reason": "略語補足と既存解説の内容が重複する可能性があります。"
       }
@@ -2090,9 +1315,9 @@
       "severity": "medium",
       "text": "NOT NULL制約の目的はどれか。",
       "correct": "列にNULLを入れられないようにする制約",
-      "explanation": "正解は「列にNULLを入れられないようにする」です。データベース分野の定番論点です。",
+      "explanation": "正解は「列にNULLを入れられないようにする」です。データベース分野の定番論点です。 キーと制約の問題では、一意に識別するのか、他表を参照するのか、重複やNULLを防ぐのかを区別します。正解は、表内の行を識別する役割と、表同士の関連を保つ役割を取り違えないものです。",
       "detail": {
-        "explanationLength": 38,
+        "explanationLength": 121,
         "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
       }
     },
@@ -2105,7 +1330,7 @@
       "severity": "medium",
       "text": "NOT NULL制約の目的はどれか。",
       "correct": "列にNULLを入れられないようにする制約",
-      "explanation": "正解は「列にNULLを入れられないようにする」です。データベース分野の定番論点です。",
+      "explanation": "正解は「列にNULLを入れられないようにする」です。データベース分野の定番論点です。 キーと制約の問題では、一意に識別するのか、他表を参照するのか、重複やNULLを防ぐのかを区別します。正解は、表内の行を識別する役割と、表同士の関連を保つ役割を取り違えないものです。",
       "detail": {
         "reason": "分野の定番という説明だけでは、なぜ正解かが残りにくい可能性があります。"
       }
@@ -2119,9 +1344,9 @@
       "severity": "medium",
       "text": "CHECK制約の目的はどれか。",
       "correct": "列の値が条件を満たすように制限する制約",
-      "explanation": "正解は「列の値が条件を満たすように制限する」です。データベース分野の定番論点です。",
+      "explanation": "正解は「列の値が条件を満たすように制限する」です。データベース分野の定番論点です。 キーと制約の問題では、一意に識別するのか、他表を参照するのか、重複やNULLを防ぐのかを区別します。正解は、表内の行を識別する役割と、表同士の関連を保つ役割を取り違えないものです。",
       "detail": {
-        "explanationLength": 37,
+        "explanationLength": 120,
         "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
       }
     },
@@ -2134,72 +1359,12 @@
       "severity": "medium",
       "text": "CHECK制約の目的はどれか。",
       "correct": "列の値が条件を満たすように制限する制約",
-      "explanation": "正解は「列の値が条件を満たすように制限する」です。データベース分野の定番論点です。",
+      "explanation": "正解は「列の値が条件を満たすように制限する」です。データベース分野の定番論点です。 キーと制約の問題では、一意に識別するのか、他表を参照するのか、重複やNULLを防ぐのかを区別します。正解は、表内の行を識別する役割と、表同士の関連を保つ役割を取り違えないものです。",
       "detail": {
         "reason": "分野の定番という説明だけでは、なぜ正解かが残りにくい可能性があります。"
       }
     },
     {
-      "id": "database-043",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "SQL読解",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "社員(社員ID, 氏名, 部署ID)と部署(部署ID, 部署名)から氏名と部署名を表示する操作として適切なものはどれか。",
-      "correct": "部署IDで結合する",
-      "explanation": "共通する部署IDで結合すると部署名を取り出せます。",
-      "detail": {
-        "explanationLength": 24,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-043",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "SQL読解",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "社員(社員ID, 氏名, 部署ID)と部署(部署ID, 部署名)から氏名と部署名を表示する操作として適切なものはどれか。",
-      "correct": "部署IDで結合する",
-      "explanation": "共通する部署IDで結合すると部署名を取り出せます。",
-      "detail": {
-        "explanationLength": 24,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "database-044",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "SQL読解",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "売上表から商品ごとの売上合計を求めるSQLで必要な指定はどれか。",
-      "correct": "GROUP BY 商品",
-      "explanation": "商品ごとに集計するにはGROUP BYを使います。",
-      "detail": {
-        "explanationLength": 23,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-044",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "SQL読解",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "売上表から商品ごとの売上合計を求めるSQLで必要な指定はどれか。",
-      "correct": "GROUP BY 商品",
-      "explanation": "商品ごとに集計するにはGROUP BYを使います。",
-      "detail": {
-        "explanationLength": 23,
-        "minimum": 32
-      }
-    },
-    {
       "id": "database-044",
       "stage": "データベース",
       "stageId": "database",
@@ -2208,204 +1373,9 @@
       "severity": "low",
       "text": "売上表から商品ごとの売上合計を求めるSQLで必要な指定はどれか。",
       "correct": "GROUP BY 商品",
-      "explanation": "商品ごとに集計するにはGROUP BYを使います。",
+      "explanation": "商品ごとに集計するにはGROUP BYを使います。 SQL問題では、行を絞る、列を選ぶ、表を結合する、集計する、並べ替える、追加・更新・削除する、のどの操作かを先に分けます。正解は、問題文の操作対象とSQL句または命令の役割が一致するものです。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。",
       "detail": {
         "reason": "略語補足と既存解説の内容が重複する可能性があります。"
-      }
-    },
-    {
-      "id": "database-045",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "SQL読解",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "WHERE句とHAVING句の違いとして適切なものはどれか。",
-      "correct": "WHEREは集計前の行、HAVINGは集計後のグループに条件を付ける",
-      "explanation": "集計前後のどちらに条件を付けるかが違います。",
-      "detail": {
-        "explanationLength": 21,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-045",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "SQL読解",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "WHERE句とHAVING句の違いとして適切なものはどれか。",
-      "correct": "WHEREは集計前の行、HAVINGは集計後のグループに条件を付ける",
-      "explanation": "集計前後のどちらに条件を付けるかが違います。",
-      "detail": {
-        "explanationLength": 21,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "database-046",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "SQL読解",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "注文表で注文IDだけでは商品を一意に識別できず、注文IDと商品IDの組で一意になる。このキーはどれか。",
-      "correct": "複合キー",
-      "explanation": "複数列の組合せで一意に識別するキーです。",
-      "detail": {
-        "explanationLength": 19,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-046",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "SQL読解",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "注文表で注文IDだけでは商品を一意に識別できず、注文IDと商品IDの組で一意になる。このキーはどれか。",
-      "correct": "複合キー",
-      "explanation": "複数列の組合せで一意に識別するキーです。",
-      "detail": {
-        "explanationLength": 19,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "database-047",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "SQL読解",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "学生表に複数の電話番号を1つの列へカンマ区切りで入れている。正規化でまず改善すべき点はどれか。",
-      "correct": "繰返し項目を分離する",
-      "explanation": "第1正規形では繰返し項目をなくします。",
-      "detail": {
-        "explanationLength": 18,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-047",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "SQL読解",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "学生表に複数の電話番号を1つの列へカンマ区切りで入れている。正規化でまず改善すべき点はどれか。",
-      "correct": "繰返し項目を分離する",
-      "explanation": "第1正規形では繰返し項目をなくします。",
-      "detail": {
-        "explanationLength": 18,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "database-048",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "SQL読解",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "商品名が商品IDに依存し、注文IDには依存しない。注文IDと商品IDの複合キー表で起きる問題はどれか。",
-      "correct": "部分関数従属",
-      "explanation": "複合キーの一部にだけ依存している状態です。",
-      "detail": {
-        "explanationLength": 20,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-048",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "SQL読解",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "商品名が商品IDに依存し、注文IDには依存しない。注文IDと商品IDの複合キー表で起きる問題はどれか。",
-      "correct": "部分関数従属",
-      "explanation": "複合キーの一部にだけ依存している状態です。",
-      "detail": {
-        "explanationLength": 20,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "database-049",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "SQL読解",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "部署名が部署IDに依存し、社員IDから部署IDが決まるとき、社員IDから部署名が間接的に決まる関係はどれか。",
-      "correct": "推移的関数従属",
-      "explanation": "非キー項目を経由して依存する関係です。",
-      "detail": {
-        "explanationLength": 18,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-049",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "SQL読解",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "部署名が部署IDに依存し、社員IDから部署IDが決まるとき、社員IDから部署名が間接的に決まる関係はどれか。",
-      "correct": "推移的関数従属",
-      "explanation": "非キー項目を経由して依存する関係です。",
-      "detail": {
-        "explanationLength": 18,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "database-050",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "SQL読解",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "更新途中のデータを他の処理が読まないようにする制御として適切なものはどれか。",
-      "correct": "排他制御",
-      "explanation": "同時実行時の不整合を防ぐため排他制御を行います。",
-      "detail": {
-        "explanationLength": 23,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "database-051",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "SQL読解",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "誤って更新した直後、まだCOMMITしていない。更新を取り消す操作はどれか。",
-      "correct": "ROLLBACK",
-      "explanation": "未確定の更新はROLLBACKで取り消せます。",
-      "detail": {
-        "explanationLength": 22,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-051",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "SQL読解",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "誤って更新した直後、まだCOMMITしていない。更新を取り消す操作はどれか。",
-      "correct": "ROLLBACK",
-      "explanation": "未確定の更新はROLLBACKで取り消せます。",
-      "detail": {
-        "explanationLength": 22,
-        "minimum": 32
       }
     },
     {
@@ -2417,24 +1387,9 @@
       "severity": "low",
       "text": "誤って更新した直後、まだCOMMITしていない。更新を取り消す操作はどれか。",
       "correct": "ROLLBACK",
-      "explanation": "未確定の更新はROLLBACKで取り消せます。",
+      "explanation": "未確定の更新はROLLBACKで取り消せます。 SQL問題では、行を絞る、列を選ぶ、表を結合する、集計する、並べ替える、追加・更新・削除する、のどの操作かを先に分けます。正解は、問題文の操作対象とSQL句または命令の役割が一致するものです。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。",
       "detail": {
         "reason": "略語補足と既存解説の内容が重複する可能性があります。"
-      }
-    },
-    {
-      "id": "database-052",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "SQL読解",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "検索頻度が高い列にインデックスを作成する主な効果はどれか。",
-      "correct": "検索の高速化",
-      "explanation": "インデックスは検索を速くできますが、更新負荷は増えることがあります。",
-      "detail": {
-        "explanationLength": 32,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
       }
     },
     {
@@ -2446,7 +1401,7 @@
       "severity": "low",
       "text": "「左表の行を残し右表の一致行を結合する操作」に該当する用語はどれか。",
       "correct": "LEFT OUTER JOIN",
-      "explanation": "LEFT OUTER JOINは、左表の行を残し右表の一致行を結合する操作です。 一致しない右表側はNULLになります。",
+      "explanation": "LEFT OUTER JOINは、左表の行を残し右表の一致行を結合する操作です。 一致しない右表側はNULLになります。 SQL問題では、行を絞る、列を選ぶ、表を結合する、集計する、並べ替える、追加・更新・削除する、のどの操作かを先に分けます。正解は、問題文の操作対象とSQL句または命令の役割が一致するものです。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。",
       "detail": {
         "reason": "略語補足と既存解説の内容が重複する可能性があります。"
       }
@@ -2460,7 +1415,7 @@
       "severity": "low",
       "text": "LEFT OUTER JOINの説明として適切なものはどれか。",
       "correct": "左表の行を残し右表の一致行を結合する操作です。",
-      "explanation": "LEFT OUTER JOINは、左表の行を残し右表の一致行を結合する操作です。 一致しない右表側はNULLになります。",
+      "explanation": "LEFT OUTER JOINは、左表の行を残し右表の一致行を結合する操作です。 一致しない右表側はNULLになります。 SQL問題では、行を絞る、列を選ぶ、表を結合する、集計する、並べ替える、追加・更新・削除する、のどの操作かを先に分けます。正解は、問題文の操作対象とSQL句または命令の役割が一致するものです。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。",
       "detail": {
         "reason": "略語補足と既存解説の内容が重複する可能性があります。"
       }
@@ -2474,39 +1429,9 @@
       "severity": "low",
       "text": "LEFT OUTER JOINを見分ける特徴として最も適切なものはどれか。",
       "correct": "左表を残す",
-      "explanation": "LEFT OUTER JOINでは「左表を残す」が重要です。一致しない右表側はNULLになります。",
+      "explanation": "LEFT OUTER JOINでは「左表を残す」が重要です。一致しない右表側はNULLになります。 SQL問題では、行を絞る、列を選ぶ、表を結合する、集計する、並べ替える、追加・更新・削除する、のどの操作かを先に分けます。正解は、問題文の操作対象とSQL句または命令の役割が一致するものです。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。",
       "detail": {
         "reason": "略語補足と既存解説の内容が重複する可能性があります。"
-      }
-    },
-    {
-      "id": "database-078",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "キー",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "外部キーの説明として適切なものはどれか。",
-      "correct": "他の表の主キーなどを参照する項目です。",
-      "explanation": "外部キーは、他の表の主キーなどを参照する項目です。 参照整合性に関係します。",
-      "detail": {
-        "explanationLength": 34,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "database-079",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "キー",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "外部キーを見分ける特徴として最も適切なものはどれか。",
-      "correct": "他表を参照する",
-      "explanation": "外部キーでは「他表を参照する」が重要です。参照整合性に関係します。",
-      "detail": {
-        "explanationLength": 29,
-        "minimum": 32
       }
     },
     {
@@ -2532,24 +1457,9 @@
       "severity": "low",
       "text": "注文表と顧客表から、注文がない顧客も含めて一覧表示したい。適切な結合はどれか。",
       "correct": "顧客表を左側にしたLEFT OUTER JOIN",
-      "explanation": "顧客表を左側にしたLEFT OUTER JOINなら、対応する注文がない顧客も結果へ残せます。INNER JOINでは注文がない顧客が除外されます。",
+      "explanation": "顧客表を左側にしたLEFT OUTER JOINなら、対応する注文がない顧客も結果へ残せます。INNER JOINでは注文がない顧客が除外されます。 SQL問題では、行を絞る、列を選ぶ、表を結合する、集計する、並べ替える、追加・更新・削除する、のどの操作かを先に分けます。正解は、問題文の操作対象とSQL句または命令の役割が一致するものです。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。",
       "detail": {
         "reason": "誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"
-      }
-    },
-    {
-      "id": "database-117",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "複合ケース",
-      "type": "short-subject-b-explanation",
-      "severity": "medium",
-      "text": "商品ごとの売上合計が10万円以上の商品だけを表示したい。集計後の条件指定に使う句はどれか。",
-      "correct": "HAVING",
-      "explanation": "集計結果のグループへ条件を付けるにはHAVINGを使います。",
-      "detail": {
-        "explanationLength": 29,
-        "minimum": 55
       }
     },
     {
@@ -2561,7 +1471,7 @@
       "severity": "low",
       "text": "商品ごとの売上合計が10万円以上の商品だけを表示したい。集計後の条件指定に使う句はどれか。",
       "correct": "HAVING",
-      "explanation": "集計結果のグループへ条件を付けるにはHAVINGを使います。",
+      "explanation": "集計結果のグループへ条件を付けるにはHAVINGを使います。 SQL問題では、行を絞る、列を選ぶ、表を結合する、集計する、並べ替える、追加・更新・削除する、のどの操作かを先に分けます。正解は、問題文の操作対象とSQL句または命令の役割が一致するものです。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。",
       "detail": {
         "reason": "誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"
       }
@@ -2575,7 +1485,7 @@
       "severity": "low",
       "text": "商品ごとの売上合計が10万円以上の商品だけを表示したい。集計後の条件指定に使う句はどれか。",
       "correct": "HAVING",
-      "explanation": "集計結果のグループへ条件を付けるにはHAVINGを使います。",
+      "explanation": "集計結果のグループへ条件を付けるにはHAVINGを使います。 SQL問題では、行を絞る、列を選ぶ、表を結合する、集計する、並べ替える、追加・更新・削除する、のどの操作かを先に分けます。正解は、問題文の操作対象とSQL句または命令の役割が一致するものです。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。",
       "detail": {
         "reason": "略語補足と既存解説の内容が重複する可能性があります。"
       }
@@ -2585,26 +1495,11 @@
       "stage": "データベース",
       "stageId": "database",
       "tag": "複合ケース",
-      "type": "short-subject-b-explanation",
-      "severity": "medium",
-      "text": "送金処理で口座Aの減額後に障害が起きた。口座Bの増額も含め処理全体を取り消すために必要な性質はどれか。",
-      "correct": "原子性",
-      "explanation": "原子性は一連の処理を全て実行するか、全て取り消す性質です。",
-      "detail": {
-        "explanationLength": 27,
-        "minimum": 55
-      }
-    },
-    {
-      "id": "database-118",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "複合ケース",
       "type": "weak-distractor-explanation",
       "severity": "low",
       "text": "送金処理で口座Aの減額後に障害が起きた。口座Bの増額も含め処理全体を取り消すために必要な性質はどれか。",
       "correct": "原子性",
-      "explanation": "原子性は一連の処理を全て実行するか、全て取り消す性質です。",
+      "explanation": "原子性は一連の処理を全て実行するか、全て取り消す性質です。 DB運用問題では、障害前に備えるバックアップ、更新履歴を残すログ、障害後に戻すリカバリを区別します。復旧に必要なものが、フルバックアップ、差分、増分、ログのどれかを確認します。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。",
       "detail": {
         "reason": "誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"
       }
@@ -2614,26 +1509,11 @@
       "stage": "データベース",
       "stageId": "database",
       "tag": "複合ケース",
-      "type": "short-subject-b-explanation",
-      "severity": "medium",
-      "text": "在庫表を複数処理が同時更新し、後の更新で先の更新結果が失われた。この問題はどれか。",
-      "correct": "ロストアップデート",
-      "explanation": "同時更新で一方の更新が上書きされる現象はロストアップデートです。",
-      "detail": {
-        "explanationLength": 31,
-        "minimum": 55
-      }
-    },
-    {
-      "id": "database-119",
-      "stage": "データベース",
-      "stageId": "database",
-      "tag": "複合ケース",
       "type": "weak-distractor-explanation",
       "severity": "low",
       "text": "在庫表を複数処理が同時更新し、後の更新で先の更新結果が失われた。この問題はどれか。",
       "correct": "ロストアップデート",
-      "explanation": "同時更新で一方の更新が上書きされる現象はロストアップデートです。",
+      "explanation": "同時更新で一方の更新が上書きされる現象はロストアップデートです。 データベース系は、SQL操作、キーと制約、正規化、トランザクション、設計、運用のどれを問う問題かを先に分類します。正解は、データの整合性や操作目的に最も合う説明です。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。",
       "detail": {
         "reason": "誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"
       }
@@ -2647,7 +1527,7 @@
       "severity": "low",
       "text": "顧客表のメールアドレスに重複を許さず、未入力は許可したい。適切な制約はどれか。",
       "correct": "メールアドレス列へUNIQUE制約を設定する",
-      "explanation": "重複を防ぎ、NULLは許可したい場合はUNIQUE制約を使います。NOT NULLは未入力を禁止するため要件に合いません。",
+      "explanation": "重複を防ぎ、NULLは許可したい場合はUNIQUE制約を使います。NOT NULLは未入力を禁止するため要件に合いません。 キーと制約の問題では、一意に識別するのか、他表を参照するのか、重複やNULLを防ぐのかを区別します。正解は、表内の行を識別する役割と、表同士の関連を保つ役割を取り違えないものです。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。",
       "detail": {
         "reason": "誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"
       }
@@ -2661,549 +1541,9 @@
       "severity": "low",
       "text": "顧客表のメールアドレスに重複を許さず、未入力は許可したい。適切な制約はどれか。",
       "correct": "メールアドレス列へUNIQUE制約を設定する",
-      "explanation": "重複を防ぎ、NULLは許可したい場合はUNIQUE制約を使います。NOT NULLは未入力を禁止するため要件に合いません。",
+      "explanation": "重複を防ぎ、NULLは許可したい場合はUNIQUE制約を使います。NOT NULLは未入力を禁止するため要件に合いません。 キーと制約の問題では、一意に識別するのか、他表を参照するのか、重複やNULLを防ぐのかを区別します。正解は、表内の行を識別する役割と、表同士の関連を保つ役割を取り違えないものです。 他の選択肢もDB用語としては正しい場合がありますが、行を絞る操作、表を結ぶ操作、制約で守る内容、復旧で使う情報が問題文と違うものは除外します。行・列・表・制約・トランザクションのどれに関する説明かで比較します。",
       "detail": {
         "reason": "略語補足と既存解説の内容が重複する可能性があります。"
-      }
-    },
-    {
-      "id": "management-002",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "品質管理",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "テストで見つかった不具合の原因を分析し再発防止する活動はどれか。",
-      "correct": "品質改善",
-      "explanation": "不具合の原因分析と再発防止は品質改善活動の一部です。",
-      "detail": {
-        "explanationLength": 25,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "management-005",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "開発手法",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "短い期間で計画・実装・評価を繰り返す開発手法はどれか。",
-      "correct": "アジャイル開発",
-      "explanation": "アジャイル開発は短い反復を通じて開発と改善を進めます。",
-      "detail": {
-        "explanationLength": 26,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "management-007",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "リスク管理",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "リスク対応で、発生確率や影響を小さくする方針はどれか。",
-      "correct": "軽減",
-      "explanation": "リスク軽減は発生確率や影響度を下げる対策です。",
-      "detail": {
-        "explanationLength": 22,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "management-008",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "開発",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "プロトタイピングの説明として最も適切なものはどれか。",
-      "correct": "試作品を作って利用者の要求を確認しながら進める方法",
-      "explanation": "要求が曖昧な場合に有効です。",
-      "detail": {
-        "explanationLength": 13,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-008",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "開発",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "プロトタイピングの説明として最も適切なものはどれか。",
-      "correct": "試作品を作って利用者の要求を確認しながら進める方法",
-      "explanation": "要求が曖昧な場合に有効です。",
-      "detail": {
-        "explanationLength": 13,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "management-009",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "開発",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "スパイラルモデルの説明として最も適切なものはどれか。",
-      "correct": "リスク分析を重視し反復的に開発するモデル",
-      "explanation": "大規模開発などでリスクを段階的に扱います。",
-      "detail": {
-        "explanationLength": 20,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-009",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "開発",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "スパイラルモデルの説明として最も適切なものはどれか。",
-      "correct": "リスク分析を重視し反復的に開発するモデル",
-      "explanation": "大規模開発などでリスクを段階的に扱います。",
-      "detail": {
-        "explanationLength": 20,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "management-010",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "開発",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "DevOpsの説明として最も適切なものはどれか。",
-      "correct": "開発と運用が協力して継続的に価値を届ける考え方",
-      "explanation": "自動化や継続的改善を重視します。",
-      "detail": {
-        "explanationLength": 15,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-010",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "開発",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "DevOpsの説明として最も適切なものはどれか。",
-      "correct": "開発と運用が協力して継続的に価値を届ける考え方",
-      "explanation": "自動化や継続的改善を重視します。",
-      "detail": {
-        "explanationLength": 15,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "management-011",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "開発",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "CIの説明として最も適切なものはどれか。",
-      "correct": "変更を頻繁に統合し自動テストなどで確認する仕組み",
-      "explanation": "継続的インテグレーションです。",
-      "detail": {
-        "explanationLength": 14,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-011",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "開発",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "CIの説明として最も適切なものはどれか。",
-      "correct": "変更を頻繁に統合し自動テストなどで確認する仕組み",
-      "explanation": "継続的インテグレーションです。",
-      "detail": {
-        "explanationLength": 14,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "management-012",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "開発",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "CDの説明として最も適切なものはどれか。",
-      "correct": "ソフトウェアを継続的に配備可能な状態にする仕組み",
-      "explanation": "継続的デリバリやデプロイを指します。",
-      "detail": {
-        "explanationLength": 17,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-012",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "開発",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "CDの説明として最も適切なものはどれか。",
-      "correct": "ソフトウェアを継続的に配備可能な状態にする仕組み",
-      "explanation": "継続的デリバリやデプロイを指します。",
-      "detail": {
-        "explanationLength": 17,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "management-013",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "開発",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "レビューの説明として最も適切なものはどれか。",
-      "correct": "成果物を人が確認して欠陥を早期発見する活動",
-      "explanation": "テスト前の品質向上に役立ちます。",
-      "detail": {
-        "explanationLength": 15,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-013",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "開発",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "レビューの説明として最も適切なものはどれか。",
-      "correct": "成果物を人が確認して欠陥を早期発見する活動",
-      "explanation": "テスト前の品質向上に役立ちます。",
-      "detail": {
-        "explanationLength": 15,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "management-014",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "開発",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "単体テストの説明として最も適切なものはどれか。",
-      "correct": "個々の部品や関数が正しく動くか確認するテスト",
-      "explanation": "関数やモジュール単位で行います。",
-      "detail": {
-        "explanationLength": 15,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-014",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "開発",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "単体テストの説明として最も適切なものはどれか。",
-      "correct": "個々の部品や関数が正しく動くか確認するテスト",
-      "explanation": "関数やモジュール単位で行います。",
-      "detail": {
-        "explanationLength": 15,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "management-015",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "開発",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "結合テストの説明として最も適切なものはどれか。",
-      "correct": "複数の部品を組み合わせた動作を確認するテスト",
-      "explanation": "インタフェースの不具合を見つけます。",
-      "detail": {
-        "explanationLength": 17,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-015",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "開発",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "結合テストの説明として最も適切なものはどれか。",
-      "correct": "複数の部品を組み合わせた動作を確認するテスト",
-      "explanation": "インタフェースの不具合を見つけます。",
-      "detail": {
-        "explanationLength": 17,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "management-016",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "監査",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "監査証跡の説明として最も適切なものはどれか。",
-      "correct": "処理や操作の記録を追跡できる情報",
-      "explanation": "不正調査や統制評価で重要です。",
-      "detail": {
-        "explanationLength": 14,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-016",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "監査",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "監査証跡の説明として最も適切なものはどれか。",
-      "correct": "処理や操作の記録を追跡できる情報",
-      "explanation": "不正調査や統制評価で重要です。",
-      "detail": {
-        "explanationLength": 14,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "management-017",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "監査",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "内部統制の説明として最も適切なものはどれか。",
-      "correct": "業務の有効性や法令順守などを確保する仕組み",
-      "explanation": "組織内のルールや手続きです。",
-      "detail": {
-        "explanationLength": 13,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-017",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "監査",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "内部統制の説明として最も適切なものはどれか。",
-      "correct": "業務の有効性や法令順守などを確保する仕組み",
-      "explanation": "組織内のルールや手続きです。",
-      "detail": {
-        "explanationLength": 13,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "management-018",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "監査",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "職務分掌の説明として最も適切なものはどれか。",
-      "correct": "権限や担当を分けて不正や誤りを防ぐ統制",
-      "explanation": "一人に権限を集中させない考え方です。",
-      "detail": {
-        "explanationLength": 17,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-018",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "監査",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "職務分掌の説明として最も適切なものはどれか。",
-      "correct": "権限や担当を分けて不正や誤りを防ぐ統制",
-      "explanation": "一人に権限を集中させない考え方です。",
-      "detail": {
-        "explanationLength": 17,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "management-020",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "品質",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "保守性の説明として最も適切なものはどれか。",
-      "correct": "修正や改善のしやすさを表す性質",
-      "explanation": "変更しやすい設計が重要です。",
-      "detail": {
-        "explanationLength": 13,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-020",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "品質",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "保守性の説明として最も適切なものはどれか。",
-      "correct": "修正や改善のしやすさを表す性質",
-      "explanation": "変更しやすい設計が重要です。",
-      "detail": {
-        "explanationLength": 13,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "management-021",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "品質",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "使用性の説明として最も適切なものはどれか。",
-      "correct": "利用者にとって使いやすい性質",
-      "explanation": "UIや操作性に関係します。",
-      "detail": {
-        "explanationLength": 12,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-021",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "品質",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "使用性の説明として最も適切なものはどれか。",
-      "correct": "利用者にとって使いやすい性質",
-      "explanation": "UIや操作性に関係します。",
-      "detail": {
-        "explanationLength": 12,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "management-023",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "頻出管理",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "WBSで分解した最下位の作業単位を何と呼ぶか。",
-      "correct": "ワークパッケージ",
-      "explanation": "管理可能な作業単位をワークパッケージと呼びます。",
-      "detail": {
-        "explanationLength": 23,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-025",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "頻出管理",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "CPIを求める式として適切なものはどれか。",
-      "correct": "EV / AC",
-      "explanation": "CPIはコスト効率を示しEVをACで割ります。",
-      "detail": {
-        "explanationLength": 22,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-025",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "頻出管理",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "CPIを求める式として適切なものはどれか。",
-      "correct": "EV / AC",
-      "explanation": "CPIはコスト効率を示しEVをACで割ります。",
-      "detail": {
-        "explanationLength": 22,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "management-026",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "頻出管理",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "SPIを求める式として適切なものはどれか。",
-      "correct": "EV / PV",
-      "explanation": "SPIはスケジュール効率を示しEVをPVで割ります。",
-      "detail": {
-        "explanationLength": 25,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-026",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "頻出管理",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "SPIを求める式として適切なものはどれか。",
-      "correct": "EV / PV",
-      "explanation": "SPIはスケジュール効率を示しEVをPVで割ります。",
-      "detail": {
-        "explanationLength": 25,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "management-027",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "頻出管理",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "SLAで主に合意するものはどれか。",
-      "correct": "サービス水準",
-      "explanation": "SLAはサービスレベル合意です。",
-      "detail": {
-        "explanationLength": 15,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-027",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "頻出管理",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "SLAで主に合意するものはどれか。",
-      "correct": "サービス水準",
-      "explanation": "SLAはサービスレベル合意です。",
-      "detail": {
-        "explanationLength": 15,
-        "minimum": 32
       }
     },
     {
@@ -3215,7 +1555,7 @@
       "severity": "medium",
       "text": "要件定義で主に行うことはどれか。",
       "correct": "利用者が必要とする機能や制約を明確にする",
-      "explanation": "正解は「利用者が必要とする機能や制約を明確にする」です。開発・運用管理でよく問われます。",
+      "explanation": "正解は「利用者が必要とする機能や制約を明確にする」です。開発・運用管理でよく問われます。 開発手法の問題では、段階的に進めるのか、短い反復で改善するのか、試作品で要求を確認するのか、開発と運用を連携するのかを分けます。正解は、要求変更への対応方法と進め方が問題文に合うものです。",
       "detail": {
         "reason": "分野の定番という説明だけでは、なぜ正解かが残りにくい可能性があります。"
       }
@@ -3229,7 +1569,7 @@
       "severity": "medium",
       "text": "基本設計で主に行うことはどれか。",
       "correct": "外部仕様や画面・帳票・インタフェースを設計する",
-      "explanation": "正解は「外部仕様や画面・帳票・インタフェースを設計する」です。開発・運用管理でよく問われます。",
+      "explanation": "正解は「外部仕様や画面・帳票・インタフェースを設計する」です。開発・運用管理でよく問われます。 ITサービス管理問題では、早期復旧、根本原因分析、変更の承認、構成情報の管理、サービス水準の合意を区別します。正解は、利用者へのサービスを安定して提供するための活動に合うものです。",
       "detail": {
         "reason": "分野の定番という説明だけでは、なぜ正解かが残りにくい可能性があります。"
       }
@@ -3243,7 +1583,7 @@
       "severity": "medium",
       "text": "詳細設計で主に行うことはどれか。",
       "correct": "プログラム内部の処理構造を具体化する",
-      "explanation": "正解は「プログラム内部の処理構造を具体化する」です。開発・運用管理でよく問われます。",
+      "explanation": "正解は「プログラム内部の処理構造を具体化する」です。開発・運用管理でよく問われます。 ITサービス管理問題では、早期復旧、根本原因分析、変更の承認、構成情報の管理、サービス水準の合意を区別します。正解は、利用者へのサービスを安定して提供するための活動に合うものです。",
       "detail": {
         "reason": "分野の定番という説明だけでは、なぜ正解かが残りにくい可能性があります。"
       }
@@ -3257,9 +1597,9 @@
       "severity": "medium",
       "text": "負荷テストの目的はどれか。",
       "correct": "想定されるアクセスや処理量で性能を確認するテスト",
-      "explanation": "正解は「想定されるアクセスや処理量で性能を確認する」です。開発・運用管理でよく問われます。",
+      "explanation": "正解は「想定されるアクセスや処理量で性能を確認する」です。開発・運用管理でよく問われます。 品質・テスト問題では、人が成果物を確認する活動、部品単位の確認、部品間の確認、利用者要求の確認、修正後の影響確認を区別します。正解は、欠陥を見つける段階と目的が一致するものです。",
       "detail": {
-        "explanationLength": 40,
+        "explanationLength": 120,
         "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
       }
     },
@@ -3272,7 +1612,7 @@
       "severity": "medium",
       "text": "負荷テストの目的はどれか。",
       "correct": "想定されるアクセスや処理量で性能を確認するテスト",
-      "explanation": "正解は「想定されるアクセスや処理量で性能を確認する」です。開発・運用管理でよく問われます。",
+      "explanation": "正解は「想定されるアクセスや処理量で性能を確認する」です。開発・運用管理でよく問われます。 品質・テスト問題では、人が成果物を確認する活動、部品単位の確認、部品間の確認、利用者要求の確認、修正後の影響確認を区別します。正解は、欠陥を見つける段階と目的が一致するものです。",
       "detail": {
         "reason": "分野の定番という説明だけでは、なぜ正解かが残りにくい可能性があります。"
       }
@@ -3286,9 +1626,9 @@
       "severity": "medium",
       "text": "フェールオーバの説明はどれか。",
       "correct": "障害時に待機系へ処理を引き継ぐ仕組み",
-      "explanation": "正解は「障害時に待機系へ処理を引き継ぐこと」です。開発・運用管理でよく問われます。",
+      "explanation": "正解は「障害時に待機系へ処理を引き継ぐこと」です。開発・運用管理でよく問われます。 ITサービス管理問題では、早期復旧、根本原因分析、変更の承認、構成情報の管理、サービス水準の合意を区別します。正解は、利用者へのサービスを安定して提供するための活動に合うものです。",
       "detail": {
-        "explanationLength": 36,
+        "explanationLength": 118,
         "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
       }
     },
@@ -3301,7 +1641,7 @@
       "severity": "medium",
       "text": "フェールオーバの説明はどれか。",
       "correct": "障害時に待機系へ処理を引き継ぐ仕組み",
-      "explanation": "正解は「障害時に待機系へ処理を引き継ぐこと」です。開発・運用管理でよく問われます。",
+      "explanation": "正解は「障害時に待機系へ処理を引き継ぐこと」です。開発・運用管理でよく問われます。 ITサービス管理問題では、早期復旧、根本原因分析、変更の承認、構成情報の管理、サービス水準の合意を区別します。正解は、利用者へのサービスを安定して提供するための活動に合うものです。",
       "detail": {
         "reason": "分野の定番という説明だけでは、なぜ正解かが残りにくい可能性があります。"
       }
@@ -3315,7 +1655,7 @@
       "severity": "medium",
       "text": "フェールセーフの説明はどれか。",
       "correct": "故障時に安全側へ動作させる考え方",
-      "explanation": "正解は「故障時に安全側へ動作させる考え方」です。開発・運用管理でよく問われます。",
+      "explanation": "正解は「故障時に安全側へ動作させる考え方」です。開発・運用管理でよく問われます。 ITサービス管理問題では、早期復旧、根本原因分析、変更の承認、構成情報の管理、サービス水準の合意を区別します。正解は、利用者へのサービスを安定して提供するための活動に合うものです。",
       "detail": {
         "reason": "分野の定番という説明だけでは、なぜ正解かが残りにくい可能性があります。"
       }
@@ -3325,73 +1665,13 @@
       "stage": "マネジメント系",
       "stageId": "management",
       "tag": "ケース問題",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "作業Aが3日、作業Bが5日で、BはA完了後に開始する。最短完了日数はどれか。",
-      "correct": "8日",
-      "explanation": "直列なので3+5=8日です。",
-      "detail": {
-        "explanationLength": 13,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-035",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "ケース問題",
-      "type": "short-subject-b-explanation",
-      "severity": "medium",
-      "text": "作業Aが3日、作業Bが5日で、BはA完了後に開始する。最短完了日数はどれか。",
-      "correct": "8日",
-      "explanation": "直列なので3+5=8日です。",
-      "detail": {
-        "explanationLength": 13,
-        "minimum": 55
-      }
-    },
-    {
-      "id": "management-035",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "ケース問題",
       "type": "weak-distractor-explanation",
       "severity": "low",
       "text": "作業Aが3日、作業Bが5日で、BはA完了後に開始する。最短完了日数はどれか。",
       "correct": "8日",
-      "explanation": "直列なので3+5=8日です。",
+      "explanation": "直列なので3+5=8日です。 マネジメント系は、開発手法、品質・テスト、プロジェクト管理、ITサービス管理、監査・統制のどの活動かを先に分類します。正解は、活動の目的と実施する段階が問題文に合う説明です。 数値の誤答は、EV、PV、ACの取り違え、工数と期間の混同、割合の分母、クリティカルパス上の作業だけを見るかどうかで出やすいです。式に入れる値の意味を先に確認します。",
       "detail": {
         "reason": "誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"
-      }
-    },
-    {
-      "id": "management-036",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "ケース問題",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "作業Aが3日、作業Bが5日で並行実施できる。両方完了までの最短日数はどれか。",
-      "correct": "5日",
-      "explanation": "並行なら長い方の5日で両方完了します。",
-      "detail": {
-        "explanationLength": 18,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-036",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "ケース問題",
-      "type": "short-subject-b-explanation",
-      "severity": "medium",
-      "text": "作業Aが3日、作業Bが5日で並行実施できる。両方完了までの最短日数はどれか。",
-      "correct": "5日",
-      "explanation": "並行なら長い方の5日で両方完了します。",
-      "detail": {
-        "explanationLength": 18,
-        "minimum": 55
       }
     },
     {
@@ -3403,54 +1683,9 @@
       "severity": "low",
       "text": "作業Aが3日、作業Bが5日で並行実施できる。両方完了までの最短日数はどれか。",
       "correct": "5日",
-      "explanation": "並行なら長い方の5日で両方完了します。",
+      "explanation": "並行なら長い方の5日で両方完了します。 マネジメント系は、開発手法、品質・テスト、プロジェクト管理、ITサービス管理、監査・統制のどの活動かを先に分類します。正解は、活動の目的と実施する段階が問題文に合う説明です。 数値の誤答は、EV、PV、ACの取り違え、工数と期間の混同、割合の分母、クリティカルパス上の作業だけを見るかどうかで出やすいです。式に入れる値の意味を先に確認します。",
       "detail": {
         "reason": "誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"
-      }
-    },
-    {
-      "id": "management-037",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "ケース問題",
-      "type": "short-subject-b-explanation",
-      "severity": "medium",
-      "text": "EV=80、AC=100のときCPIはどれか。",
-      "correct": "0.8",
-      "explanation": "CPI=EV/AC=80/100=0.8です。",
-      "detail": {
-        "explanationLength": 21,
-        "minimum": 55
-      }
-    },
-    {
-      "id": "management-038",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "ケース問題",
-      "type": "short-subject-b-explanation",
-      "severity": "medium",
-      "text": "EV=90、PV=100のときSPIはどれか。",
-      "correct": "0.9",
-      "explanation": "SPI=EV/PV=90/100=0.9です。",
-      "detail": {
-        "explanationLength": 21,
-        "minimum": 55
-      }
-    },
-    {
-      "id": "management-039",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "ケース問題",
-      "type": "short-subject-b-explanation",
-      "severity": "medium",
-      "text": "障害を早く復旧した後、根本原因を分析して再発防止する活動はどれか。",
-      "correct": "問題管理",
-      "explanation": "早期復旧はインシデント管理、根本原因分析は問題管理です。",
-      "detail": {
-        "explanationLength": 26,
-        "minimum": 55
       }
     },
     {
@@ -3462,39 +1697,9 @@
       "severity": "low",
       "text": "障害を早く復旧した後、根本原因を分析して再発防止する活動はどれか。",
       "correct": "問題管理",
-      "explanation": "早期復旧はインシデント管理、根本原因分析は問題管理です。",
+      "explanation": "早期復旧はインシデント管理、根本原因分析は問題管理です。 ITサービス管理問題では、早期復旧、根本原因分析、変更の承認、構成情報の管理、サービス水準の合意を区別します。正解は、利用者へのサービスを安定して提供するための活動に合うものです。 他の選択肢も管理系の用語としては正しい場合がありますが、計画、品質確認、障害復旧、再発防止、変更承認、監査証跡のどの目的かが問題文と違うものは除外します。",
       "detail": {
         "reason": "誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"
-      }
-    },
-    {
-      "id": "management-040",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "ケース問題",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "本番環境への変更による障害リスクを抑えるため、事前に評価・承認する活動はどれか。",
-      "correct": "変更管理",
-      "explanation": "変更管理は変更のリスクを評価し承認します。",
-      "detail": {
-        "explanationLength": 20,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-040",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "ケース問題",
-      "type": "short-subject-b-explanation",
-      "severity": "medium",
-      "text": "本番環境への変更による障害リスクを抑えるため、事前に評価・承認する活動はどれか。",
-      "correct": "変更管理",
-      "explanation": "変更管理は変更のリスクを評価し承認します。",
-      "detail": {
-        "explanationLength": 20,
-        "minimum": 55
       }
     },
     {
@@ -3506,7 +1711,7 @@
       "severity": "low",
       "text": "本番環境への変更による障害リスクを抑えるため、事前に評価・承認する活動はどれか。",
       "correct": "変更管理",
-      "explanation": "変更管理は変更のリスクを評価し承認します。",
+      "explanation": "変更管理は変更のリスクを評価し承認します。 プロジェクト管理問題では、作業を分解する、日程を可視化する、遅延に直結する経路を見る、出来高で進捗とコストを測る、リスク対応を選ぶ、のどれかを整理します。CPIはコスト効率、SPIはスケジュール効率です。 他の選択肢も管理系の用語としては正しい場合がありますが、計画、品質確認、障害復旧、再発防止、変更承認、監査証跡のどの目的かが問題文と違うものは除外します。",
       "detail": {
         "reason": "誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"
       }
@@ -3520,39 +1725,9 @@
       "severity": "low",
       "text": "レビューで設計書の欠陥を早期発見する主な効果はどれか。",
       "correct": "後工程で発覚する欠陥と手戻りを減らす",
-      "explanation": "上流工程のレビューで欠陥を見つけると、実装やテスト後に修正するより手戻りと修正コストを抑えられます。レビューだけでテストが不要になるわけではありません。",
+      "explanation": "上流工程のレビューで欠陥を見つけると、実装やテスト後に修正するより手戻りと修正コストを抑えられます。レビューだけでテストが不要になるわけではありません。 品質・テスト問題では、人が成果物を確認する活動、部品単位の確認、部品間の確認、利用者要求の確認、修正後の影響確認を区別します。正解は、欠陥を見つける段階と目的が一致するものです。 他の選択肢も管理系の用語としては正しい場合がありますが、計画、品質確認、障害復旧、再発防止、変更承認、監査証跡のどの目的かが問題文と違うものは除外します。",
       "detail": {
         "reason": "誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"
-      }
-    },
-    {
-      "id": "management-042",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "ケース問題",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "受入テストで主に確認することはどれか。",
-      "correct": "利用者要求を満たしているか確認するテスト",
-      "explanation": "受入テストは利用者視点で要求充足を確認します。",
-      "detail": {
-        "explanationLength": 22,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-042",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "ケース問題",
-      "type": "short-subject-b-explanation",
-      "severity": "medium",
-      "text": "受入テストで主に確認することはどれか。",
-      "correct": "利用者要求を満たしているか確認するテスト",
-      "explanation": "受入テストは利用者視点で要求充足を確認します。",
-      "detail": {
-        "explanationLength": 22,
-        "minimum": 55
       }
     },
     {
@@ -3564,39 +1739,9 @@
       "severity": "low",
       "text": "受入テストで主に確認することはどれか。",
       "correct": "利用者要求を満たしているか確認するテスト",
-      "explanation": "受入テストは利用者視点で要求充足を確認します。",
+      "explanation": "受入テストは利用者視点で要求充足を確認します。 開発手法の問題では、段階的に進めるのか、短い反復で改善するのか、試作品で要求を確認するのか、開発と運用を連携するのかを分けます。正解は、要求変更への対応方法と進め方が問題文に合うものです。 他の選択肢も管理系の用語としては正しい場合がありますが、計画、品質確認、障害復旧、再発防止、変更承認、監査証跡のどの目的かが問題文と違うものは除外します。",
       "detail": {
         "reason": "誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"
-      }
-    },
-    {
-      "id": "management-043",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "ケース問題",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "監査で職務分掌を確認する目的はどれか。",
-      "correct": "権限集中による不正や誤りを防ぐ",
-      "explanation": "担当と権限を分けることで不正やミスを抑えます。",
-      "detail": {
-        "explanationLength": 22,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-043",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "ケース問題",
-      "type": "short-subject-b-explanation",
-      "severity": "medium",
-      "text": "監査で職務分掌を確認する目的はどれか。",
-      "correct": "権限集中による不正や誤りを防ぐ",
-      "explanation": "担当と権限を分けることで不正やミスを抑えます。",
-      "detail": {
-        "explanationLength": 22,
-        "minimum": 55
       }
     },
     {
@@ -3608,174 +1753,9 @@
       "severity": "low",
       "text": "監査で職務分掌を確認する目的はどれか。",
       "correct": "権限集中による不正や誤りを防ぐ",
-      "explanation": "担当と権限を分けることで不正やミスを抑えます。",
+      "explanation": "担当と権限を分けることで不正やミスを抑えます。 監査・統制問題では、処理記録を追跡できること、業務ルールで誤りを防ぐこと、担当や権限を分けることを区別します。正解は、不正や誤りを防ぐ統制目的と手段が一致するものです。 他の選択肢も管理系の用語としては正しい場合がありますが、計画、品質確認、障害復旧、再発防止、変更承認、監査証跡のどの目的かが問題文と違うものは除外します。",
       "detail": {
         "reason": "誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"
-      }
-    },
-    {
-      "id": "management-049",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "開発",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "アジャイル開発を見分ける特徴として最も適切なものはどれか。",
-      "correct": "短い期間で開発と改善を繰り返して進める",
-      "explanation": "アジャイル開発では「短い反復で改善する」が重要です。変化への対応を重視します。",
-      "detail": {
-        "explanationLength": 35,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-058",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "開発",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "CIを見分ける特徴として最も適切なものはどれか。",
-      "correct": "変更のたびに自動で統合確認を行う",
-      "explanation": "CIでは「変更を継続的に統合する」が重要です。継続的インテグレーションです。",
-      "detail": {
-        "explanationLength": 34,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-064",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "テスト",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "単体テストを見分ける特徴として最も適切なものはどれか。",
-      "correct": "部品単位で確認する",
-      "explanation": "単体テストでは「部品単位で確認する」が重要です。結合前に行います。",
-      "detail": {
-        "explanationLength": 29,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "management-069",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "テスト",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "受入テストの説明として適切なものはどれか。",
-      "correct": "利用者要求を満たすか確認するテストです。",
-      "explanation": "受入テストは、利用者要求を満たすか確認するテストです。 本番受入前に行います。",
-      "detail": {
-        "explanationLength": 35,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-097",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "サービス管理",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "変更管理の説明として適切なものはどれか。",
-      "correct": "変更を評価・承認してリスクを抑える活動です。",
-      "explanation": "変更管理は、変更を評価・承認してリスクを抑える活動です。 本番変更前に重要です。",
-      "detail": {
-        "explanationLength": 35,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-098",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "サービス管理",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "変更管理を見分ける特徴として最も適切なものはどれか。",
-      "correct": "変更リスクを抑える",
-      "explanation": "変更管理では「変更リスクを抑える」が重要です。本番変更前に重要です。",
-      "detail": {
-        "explanationLength": 30,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "management-106",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "サービス管理",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "RTOの説明として適切なものはどれか。",
-      "correct": "障害後に復旧するまでの目標時間です。",
-      "explanation": "RTOは、障害後に復旧するまでの目標時間です。 BCPと合わせて問われます。",
-      "detail": {
-        "explanationLength": 34,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-113",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "可用性",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "フェールオーバを見分ける特徴として最も適切なものはどれか。",
-      "correct": "障害時に待機系へ処理を自動的に切り替える",
-      "explanation": "フェールオーバでは「待機系へ切り替える」が重要です。可用性を高めます。",
-      "detail": {
-        "explanationLength": 31,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-113",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "可用性",
-      "type": "short-definition-explanation",
-      "severity": "medium",
-      "text": "フェールオーバを見分ける特徴として最も適切なものはどれか。",
-      "correct": "障害時に待機系へ処理を自動的に切り替える",
-      "explanation": "フェールオーバでは「待機系へ切り替える」が重要です。可用性を高めます。",
-      "detail": {
-        "explanationLength": 31,
-        "minimum": 32
-      }
-    },
-    {
-      "id": "management-114",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "複合ケース",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "プロジェクトのCPIが0.8、SPIが1.1である。状況として適切なものはどれか。",
-      "correct": "予定よりコスト効率が悪いが進捗は予定より進んでいる",
-      "explanation": "CPIは1未満でコスト超過傾向、SPIは1超で進捗先行です。",
-      "detail": {
-        "explanationLength": 28,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-114",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "複合ケース",
-      "type": "short-subject-b-explanation",
-      "severity": "medium",
-      "text": "プロジェクトのCPIが0.8、SPIが1.1である。状況として適切なものはどれか。",
-      "correct": "予定よりコスト効率が悪いが進捗は予定より進んでいる",
-      "explanation": "CPIは1未満でコスト超過傾向、SPIは1超で進捗先行です。",
-      "detail": {
-        "explanationLength": 28,
-        "minimum": 55
       }
     },
     {
@@ -3787,39 +1767,9 @@
       "severity": "low",
       "text": "プロジェクトのCPIが0.8、SPIが1.1である。状況として適切なものはどれか。",
       "correct": "予定よりコスト効率が悪いが進捗は予定より進んでいる",
-      "explanation": "CPIは1未満でコスト超過傾向、SPIは1超で進捗先行です。",
+      "explanation": "CPIは1未満でコスト超過傾向、SPIは1超で進捗先行です。 プロジェクト管理問題では、作業を分解する、日程を可視化する、遅延に直結する経路を見る、出来高で進捗とコストを測る、リスク対応を選ぶ、のどれかを整理します。CPIはコスト効率、SPIはスケジュール効率です。 他の選択肢も管理系の用語としては正しい場合がありますが、計画、品質確認、障害復旧、再発防止、変更承認、監査証跡のどの目的かが問題文と違うものは除外します。",
       "detail": {
         "reason": "誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"
-      }
-    },
-    {
-      "id": "management-115",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "複合ケース",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "サービス障害を復旧した後、同じ障害の再発防止を検討する活動はどれか。",
-      "correct": "問題管理",
-      "explanation": "原因分析と再発防止は問題管理の役割です。",
-      "detail": {
-        "explanationLength": 19,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-115",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "複合ケース",
-      "type": "short-subject-b-explanation",
-      "severity": "medium",
-      "text": "サービス障害を復旧した後、同じ障害の再発防止を検討する活動はどれか。",
-      "correct": "問題管理",
-      "explanation": "原因分析と再発防止は問題管理の役割です。",
-      "detail": {
-        "explanationLength": 19,
-        "minimum": 55
       }
     },
     {
@@ -3831,24 +1781,9 @@
       "severity": "low",
       "text": "サービス障害を復旧した後、同じ障害の再発防止を検討する活動はどれか。",
       "correct": "問題管理",
-      "explanation": "原因分析と再発防止は問題管理の役割です。",
+      "explanation": "原因分析と再発防止は問題管理の役割です。 ITサービス管理問題では、早期復旧、根本原因分析、変更の承認、構成情報の管理、サービス水準の合意を区別します。正解は、利用者へのサービスを安定して提供するための活動に合うものです。 他の選択肢も管理系の用語としては正しい場合がありますが、計画、品質確認、障害復旧、再発防止、変更承認、監査証跡のどの目的かが問題文と違うものは除外します。",
       "detail": {
         "reason": "誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"
-      }
-    },
-    {
-      "id": "management-116",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "複合ケース",
-      "type": "short-subject-b-explanation",
-      "severity": "medium",
-      "text": "設計変更を本番へ反映する前に、影響とリスクを評価して承認する活動はどれか。",
-      "correct": "変更管理",
-      "explanation": "変更管理では変更の影響、リスク、手順を評価・承認します。",
-      "detail": {
-        "explanationLength": 24,
-        "minimum": 55
       }
     },
     {
@@ -3860,39 +1795,9 @@
       "severity": "low",
       "text": "設計変更を本番へ反映する前に、影響とリスクを評価して承認する活動はどれか。",
       "correct": "変更管理",
-      "explanation": "変更管理では変更の影響、リスク、手順を評価・承認します。",
+      "explanation": "変更管理では変更の影響、リスク、手順を評価・承認します。 プロジェクト管理問題では、作業を分解する、日程を可視化する、遅延に直結する経路を見る、出来高で進捗とコストを測る、リスク対応を選ぶ、のどれかを整理します。CPIはコスト効率、SPIはスケジュール効率です。 他の選択肢も管理系の用語としては正しい場合がありますが、計画、品質確認、障害復旧、再発防止、変更承認、監査証跡のどの目的かが問題文と違うものは除外します。",
       "detail": {
         "reason": "誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"
-      }
-    },
-    {
-      "id": "management-117",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "複合ケース",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "結合テストで多数のインタフェース不具合が発生した。上流で強化すべき活動はどれか。",
-      "correct": "設計段階でインタフェース仕様をレビューする",
-      "explanation": "インタフェース設計を上流レビューで確認すると後工程の手戻りを減らせます。",
-      "detail": {
-        "explanationLength": 35,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-117",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "複合ケース",
-      "type": "short-subject-b-explanation",
-      "severity": "medium",
-      "text": "結合テストで多数のインタフェース不具合が発生した。上流で強化すべき活動はどれか。",
-      "correct": "設計段階でインタフェース仕様をレビューする",
-      "explanation": "インタフェース設計を上流レビューで確認すると後工程の手戻りを減らせます。",
-      "detail": {
-        "explanationLength": 35,
-        "minimum": 55
       }
     },
     {
@@ -3904,39 +1809,9 @@
       "severity": "low",
       "text": "結合テストで多数のインタフェース不具合が発生した。上流で強化すべき活動はどれか。",
       "correct": "設計段階でインタフェース仕様をレビューする",
-      "explanation": "インタフェース設計を上流レビューで確認すると後工程の手戻りを減らせます。",
+      "explanation": "インタフェース設計を上流レビューで確認すると後工程の手戻りを減らせます。 品質・テスト問題では、人が成果物を確認する活動、部品単位の確認、部品間の確認、利用者要求の確認、修正後の影響確認を区別します。正解は、欠陥を見つける段階と目的が一致するものです。 他の選択肢も管理系の用語としては正しい場合がありますが、計画、品質確認、障害復旧、再発防止、変更承認、監査証跡のどの目的かが問題文と違うものは除外します。",
       "detail": {
         "reason": "誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"
-      }
-    },
-    {
-      "id": "management-118",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "複合ケース",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "監査人がシステム開発を担当した後、自らそのシステムを監査する場合の問題はどれか。",
-      "correct": "独立性が損なわれる",
-      "explanation": "監査対象から独立した立場で評価する必要があります。",
-      "detail": {
-        "explanationLength": 24,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
-      }
-    },
-    {
-      "id": "management-118",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "複合ケース",
-      "type": "short-subject-b-explanation",
-      "severity": "medium",
-      "text": "監査人がシステム開発を担当した後、自らそのシステムを監査する場合の問題はどれか。",
-      "correct": "独立性が損なわれる",
-      "explanation": "監査対象から独立した立場で評価する必要があります。",
-      "detail": {
-        "explanationLength": 24,
-        "minimum": 55
       }
     },
     {
@@ -3948,24 +1823,9 @@
       "severity": "low",
       "text": "監査人がシステム開発を担当した後、自らそのシステムを監査する場合の問題はどれか。",
       "correct": "独立性が損なわれる",
-      "explanation": "監査対象から独立した立場で評価する必要があります。",
+      "explanation": "監査対象から独立した立場で評価する必要があります。 監査・統制問題では、処理記録を追跡できること、業務ルールで誤りを防ぐこと、担当や権限を分けることを区別します。正解は、不正や誤りを防ぐ統制目的と手段が一致するものです。 他の選択肢も管理系の用語としては正しい場合がありますが、計画、品質確認、障害復旧、再発防止、変更承認、監査証跡のどの目的かが問題文と違うものは除外します。",
       "detail": {
         "reason": "誤答選択肢の説明が本文またはchoiceNotesに十分含まれていない可能性があります。"
-      }
-    },
-    {
-      "id": "management-120",
-      "stage": "マネジメント系",
-      "stageId": "management",
-      "tag": "サンプル発展・設計",
-      "type": "weak-correct-reason",
-      "severity": "medium",
-      "text": "モジュール間の結合度を低くする主な効果はどれか。",
-      "correct": "一つのモジュール変更が他へ与える影響を小さくできる",
-      "explanation": "結合度を低くすると依存関係が減り、変更・テスト・再利用が行いやすくなります。",
-      "detail": {
-        "explanationLength": 34,
-        "reason": "正解名だけ、または汎用文だけで理由が不足している可能性があります。"
       }
     },
     {
