@@ -47,6 +47,39 @@ check(
   `${concept.conceptGroups} concept groups, findings ${concept.findingCount}`
 );
 
+const contentQuality = runJson("question content quality", ["tools/audit_question_content_quality.js"]);
+const contentHigh = contentQuality.severityCounts.high || 0;
+const contentMedium = contentQuality.severityCounts.medium || 0;
+const contentLow = contentQuality.severityCounts.low || 0;
+check(
+  "question content quality",
+  contentHigh === 0,
+  `findings ${contentQuality.findingCount}, high ${contentHigh}, medium ${contentMedium}, low ${contentLow}`
+);
+if (contentMedium > 0 || contentLow > 0) {
+  warnings.push(`question content quality: medium ${contentMedium}, low ${contentLow}`);
+}
+
+const acronymCoverage = runJson("acronym coverage", ["tools/audit_acronym_coverage.js"]);
+check(
+  "acronym coverage",
+  acronymCoverage.missingCount === 0,
+  `${acronymCoverage.registeredCount} registered, missing ${acronymCoverage.missingCount}`
+);
+
+const explanationQuality = runJson("explanation quality", ["tools/audit_explanation_quality.js"]);
+const explanationHigh = explanationQuality.severityCounts.high || 0;
+const explanationMedium = explanationQuality.severityCounts.medium || 0;
+const explanationLow = explanationQuality.severityCounts.low || 0;
+check(
+  "explanation quality",
+  explanationHigh === 0,
+  `findings ${explanationQuality.findingCount}, high ${explanationHigh}, medium ${explanationMedium}, low ${explanationLow}`
+);
+if (explanationMedium > 0 || explanationLow > 0) {
+  warnings.push(`explanation quality: medium ${explanationMedium}, low ${explanationLow}`);
+}
+
 runJson("choice candidate quality", ["tools/audit_choice_candidate_quality.js"], { silent: true });
 const choiceQuality = readJson("tools/choice-candidate-quality-report.json");
 const highSeverity = choiceQuality.summary.severityCounts.high || 0;

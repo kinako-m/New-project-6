@@ -2919,6 +2919,232 @@ function applyExternalQuestionChoiceSets() {
 
 applyExternalQuestionChoiceSets();
 
+function improveAlgorithmExplanations() {
+  const algorithmStage = stages.find((stage) => stage.id === "algorithm");
+  if (!algorithmStage) return;
+
+  function normalizeText(value) {
+    return String(value || "").normalize("NFKC").replace(/\s+/g, "");
+  }
+
+  function appendUniqueParts(question, parts) {
+    const existing = normalizeText(question.explanation);
+    const additions = parts
+      .filter(Boolean)
+      .filter((part) => {
+        const key = normalizeText(part).slice(0, 24);
+        return key && !existing.includes(key);
+      });
+    if (!additions.length) return;
+    question.explanation = [question.explanation, ...additions].filter(Boolean).join(" ");
+  }
+
+  function isNumericChoice(value) {
+    return /^[-+]?\d+(?:\.\d+)?(?:回|個|件|秒|分|時間|%)?$/.test(String(value || "").trim());
+  }
+
+  function algorithmReason(question, correctChoice) {
+    const text = `${question.tag} ${question.text} ${correctChoice}`;
+    if (/O\(1\)/.test(text)) return "O(1)は、入力件数が増えても参照や代入の回数がほぼ一定で済む場合に使います。配列の添字アクセスのように、対象の全件を調べない処理が代表例です。";
+    if (/O\(log n\)|二分探索/.test(text)) return "O(log n)は、1回の比較ごとに候補範囲をおよそ半分にできる処理で現れます。二分探索では整列済みであることが前提なので、未整列データなら線形探索と区別します。";
+    if (/O\(n log n\)|マージソート|クイックソート/.test(text)) return "O(n log n)は、分割しながら各段階で全体を処理する効率的な比較ソートでよく現れます。単純な二重ループのO(n²)より、件数が大きいと差が出ます。";
+    if (/O\(n²\)|O\(n2\)|二重ループ|バブルソート|選択ソート/.test(text)) return "O(n²)は、各要素に対して別の全要素を調べるような二重の繰返しで現れます。入力件数が2倍になると処理量はおよそ4倍になる点を押さえます。";
+    if (/O\(n\)|線形探索|全要素|先頭から|配列/.test(text)) return "O(n)は、要素数に比例して処理回数が増える場合の計算量です。合計、件数カウント、線形探索のように、基本的に各要素を1回ずつ確認する処理で使います。";
+    if (/スタック|LIFO|push|pop/.test(text)) return "スタックは最後に入れた値を最初に取り出す構造です。pushした順序とpopされる順序が逆になるため、直前の状態を戻す処理や再帰呼出しの管理と結び付けて判断します。";
+    if (/キュー|FIFO|enqueue|dequeue/.test(text)) return "キューは先に入れた値を先に取り出す構造です。受付順の処理、印刷待ち、幅優先探索の待ち行列のように、順番を保つ場面で使います。";
+    if (/木|ヒープ|二分探索木|ノード|節/.test(text)) return "木構造では、親子関係と左右の大小関係を分けて考えます。二分探索木は左が小さい値、右が大きい値、ヒープは親子間の優先順位を保つ構造です。";
+    if (/ソート|整列|挿入|選択|バブル|マージ|クイック/.test(text)) return "整列法は、何を基準に並べ替えるかで区別します。隣接交換はバブルソート、最小値の選択は選択ソート、整列済み部分への挿入は挿入ソートです。";
+    if (/再帰|終了条件/.test(text)) return "再帰では、処理を止める終了条件と、問題を小さくして再び呼び出す部分を分けて確認します。終了条件がないと呼出しが積み重なり、スタックオーバーフローの原因になります。";
+    if (/AND|OR|XOR|論理|真|偽/.test(text)) return "論理演算は真理値表で確認すると安定します。ANDは両方が真、ORは少なくとも一方が真、XORは二つの入力が異なるときだけ真になります。";
+    if (/トレース|変数|ループ|繰返し|繰り返し|実行後|出力|結果/.test(text)) return "トレース問題では、変数の初期値、更新される順番、ループの終了条件を表にして追うと誤答を減らせます。最後の反復後の値と、最後に加算された値を混同しないことが重要です。";
+    if (/文字列|部分文字列|文字|連続/.test(text)) return "文字列処理では、現在位置、直前の文字、追加済みの結果を分けて追います。境界条件として先頭文字、末尾文字、連続が切れる位置を確認します。";
+    if (/グラフ|幅優先|深さ優先|探索/.test(text)) return "グラフ探索では、次に調べる候補をどの構造で管理するかが判断点です。幅優先探索はキュー、深さ優先探索はスタックや再帰と対応します。";
+    return "アルゴリズム問題は、用語名だけでなく、入力件数が増えたときの処理回数、データ構造の取り出し順、変数の更新順を対応させると判断しやすくなります。";
+  }
+
+  function distractorReason(question) {
+    if (!Array.isArray(question.choices) || question.choices.length < 4) return "";
+    if (question.choices.every(isNumericChoice)) {
+      return "数値の誤答は、最後の1回を数え忘れる、ループ終了後の変数値を答える、全要素数と条件一致数を混同する、式の掛け算と足し算を取り違える場合に出やすいです。";
+    }
+    const wrongTerms = question.choices
+      .filter((_, index) => index !== question.answer)
+      .filter((choice) => String(choice).trim().length <= 16)
+      .slice(0, 3);
+    if (!wrongTerms.length) return "他の選択肢は、似た処理でもデータの取り出し順、前提条件、計算量、使うデータ構造が異なります。問題文の動作条件と対応しないものを除外します。";
+    return `他の選択肢（${wrongTerms.join("、")}）は、似た用語でも前提条件や処理手順が異なります。問題文が求める取り出し順、探索条件、計算量と一致するかで切り分けます。`;
+  }
+
+  algorithmStage.questions.forEach((question) => {
+    const correctChoice = question.choices?.[question.answer] || "";
+    const explanationLength = normalizeText(question.explanation).length;
+    const isSubjectBLike = question.difficulty === "advanced" || /科目B|長文|ケース|トレース/.test(String(question.tag || ""));
+    if (explanationLength >= (isSubjectBLike ? 72 : 48)) return;
+    appendUniqueParts(question, [
+      algorithmReason(question, correctChoice),
+      isSubjectBLike ? distractorReason(question) : ""
+    ]);
+  });
+}
+
+improveAlgorithmExplanations();
+
+function improveTechnologyExplanations() {
+  const technologyStage = stages.find((stage) => stage.id === "technology");
+  if (!technologyStage) return;
+
+  function normalizeText(value) {
+    return String(value || "").normalize("NFKC").replace(/\s+/g, "");
+  }
+
+  function appendUniqueParts(question, parts) {
+    const existing = normalizeText(question.explanation);
+    const additions = parts
+      .filter(Boolean)
+      .filter((part) => {
+        const key = normalizeText(part).slice(0, 24);
+        return key && !existing.includes(key);
+      });
+    if (!additions.length) return;
+    question.explanation = [question.explanation, ...additions].filter(Boolean).join(" ");
+  }
+
+  function isNumericChoice(value) {
+    return /^[-+]?\d+(?:\.\d+)?(?:%|回|個|件|秒|分|時間|バイト|KB|MB|GB|TB|ビット)?$/.test(String(value || "").trim());
+  }
+
+  function technologyReason(question, correctChoice) {
+    const text = `${question.tag} ${question.text} ${correctChoice}`;
+    if (/2進数|10進数|基数|ビット|バイト|KB|MB|GB/.test(text)) {
+      return "基数変換や容量計算では、各桁の重みと単位を先に確認します。2進数は右端から1、2、4、8...の重みを足し、容量は1KB=1024バイトのような前提を使います。";
+    }
+    if (/XOR|AND|OR|排他的論理和|標本化|量子化|パリティ|ハミング|補数|浮動小数点|情報量|標準偏差|待ち行列|基礎理論/.test(text)) {
+      return "基礎理論は、用語名と処理の順序を対応させると判断しやすくなります。標本化、量子化、符号化のように工程が並ぶものは、何を何へ変換しているかを確認します。";
+    }
+    if (/CPU|キャッシュ|主記憶|補助記憶|ALU|DMA|RAID|SSD|HDD|メモリ|ハードウェア/.test(text)) {
+      return "ハードウェア問題では、処理装置、主記憶、補助記憶、入出力装置のどこで働く仕組みかを分けて考えます。速度差を埋めるのか、容量を確保するのか、耐障害性を高めるのかが判断点です。";
+    }
+    if (/OS|仮想記憶|ページ|プロセス|スケジューリング|タイムスライス|デッドロック|スプーリング|ファイルシステム|マルチタスク/.test(text)) {
+      return "OS問題では、CPUの割当て、記憶管理、入出力管理、ファイル管理のどれを扱うかで切り分けます。プロセスの実行順、主記憶にないページ、入出力待ちなどのキーワードに注目します。";
+    }
+    if (/DNS|DHCP|ARP|NAT|TCP|UDP|IP|LAN|WAN|HTTP|HTTPS|TLS|SMTP|POP3|IMAP|SNMP|ICMP|ネットワーク/.test(text)) {
+      return "ネットワーク問題では、名前解決、アドレス割当、アドレス変換、到達確認、通信制御、暗号化のどの役割かを先に分類します。似た略語は、何を入力にして何を得るかで区別します。";
+    }
+    if (/暗号|公開鍵|秘密鍵|電子署名|認証|認証局|証明書|多要素|ゼロトラスト|ハッシュ|ソルト|XSS|CSRF|SQLインジェクション|IDS|IPS|WAF|ランサム|セキュリティ/.test(text)) {
+      return "セキュリティ問題では、認証、暗号化、改ざん検知、アクセス制御、攻撃対策、監視のどれかを分けます。公開鍵暗号では暗号化に使う鍵と検証に使う鍵を混同しないことが重要です。";
+    }
+    if (/Unicode|UTF-8|ASCII|文字コード|画像|音声|データ表現/.test(text)) {
+      return "データ表現では、文字、画像、音声、数値のどの表現形式かを確認します。可変長か固定長か、互換性があるか、圧縮や符号化の目的は何かを対応させます。";
+    }
+    if (/稼働率|MTBF|MTTR|信頼性|可用性|並列|直列|フェール/.test(text)) {
+      return "信頼性・可用性の問題では、故障しにくさ、修理の早さ、稼働している割合を分けます。直列構成は全て動く必要があり、並列構成は全て故障した場合に停止する点が計算の軸です。";
+    }
+    return "テクノロジ系は、用語の名前だけでなく、どの層・装置・目的に関する仕組みかを対応させると誤答を減らせます。問題文のキーワードと役割を結び付けて判断します。";
+  }
+
+  function distractorReason(question) {
+    if (!Array.isArray(question.choices) || question.choices.length < 4) return "";
+    if (question.choices.every(isNumericChoice)) {
+      return "数値の誤答は、単位換算、桁の重み、直列と並列の式、最後の計算手順の取り違えで出やすいです。式に入れる前に単位と前提条件をそろえます。";
+    }
+    const wrongTerms = question.choices
+      .filter((_, index) => index !== question.answer)
+      .filter((choice) => String(choice).trim().length <= 20)
+      .slice(0, 3);
+    if (!wrongTerms.length) return "他の選択肢は、同じテクノロジ系でも役割や階層が異なる説明になっていることが多いです。目的、対象、入力と出力が問題文と合うかで除外します。";
+    return `他の選択肢（${wrongTerms.join("、")}）は、似た用語でも目的や対象が異なります。何を守るのか、何を変換するのか、どの装置や層で働くのかを比べます。`;
+  }
+
+  technologyStage.questions.forEach((question) => {
+    const correctChoice = question.choices?.[question.answer] || "";
+    const explanationLength = normalizeText(question.explanation).length;
+    const isSubjectBLike = question.difficulty === "advanced" || /科目B|長文|ケース/.test(String(question.tag || ""));
+    if (explanationLength >= (isSubjectBLike ? 76 : 50)) return;
+    appendUniqueParts(question, [
+      technologyReason(question, correctChoice),
+      isSubjectBLike ? distractorReason(question) : ""
+    ]);
+  });
+}
+
+improveTechnologyExplanations();
+
+function improveStrategyExplanations() {
+  const strategyStage = stages.find((stage) => stage.id === "strategy");
+  if (!strategyStage) return;
+
+  function normalizeText(value) {
+    return String(value || "").normalize("NFKC").replace(/\s+/g, "");
+  }
+
+  function appendUniqueParts(question, parts) {
+    const existing = normalizeText(question.explanation);
+    const additions = parts
+      .filter(Boolean)
+      .filter((part) => {
+        const key = normalizeText(part).slice(0, 24);
+        return key && !existing.includes(key);
+      });
+    if (!additions.length) return;
+    question.explanation = [question.explanation, ...additions].filter(Boolean).join(" ");
+  }
+
+  function isNumericChoice(value) {
+    return /^[-+]?\d+(?:\.\d+)?(?:%|円|個|件|回|倍|年|月|日)?$/.test(String(value || "").trim());
+  }
+
+  function strategyReason(question, correctChoice) {
+    const text = `${question.tag} ${question.text} ${correctChoice}`;
+    if (/SWOT|3C|4P|PPM|ファイブフォース|バリューチェーン|コアコンピタンス|経営戦略|差別化|集中戦略/.test(text)) {
+      return "ストラテジ系の経営戦略問題では、分析対象が自社内部か外部環境か、または製品・市場・競争要因のどれかを先に分けます。正解は、問題文の目的とフレームワークの使い道が一致するものです。";
+    }
+    if (/セグメンテーション|ターゲティング|ポジショニング|STP|マーケティング|プロダクトライフサイクル|ロングテール|ブランド|チャネル/.test(text)) {
+      return "マーケティング問題では、顧客を分ける、狙う市場を決める、競合との差を示す、販売方法を選ぶ、という役割の違いを確認します。正解は、顧客・市場・製品のどの判断をしているかに合う選択肢です。";
+    }
+    if (/売上|利益|原価|固定費|変動費|損益分岐|ROI|ROA|ROE|貸借対照表|損益計算書|会計|キャッシュフロー|粗利益/.test(text)) {
+      return "会計・財務問題では、売上、費用、利益、資産、負債、投資額のどれを使う指標かを整理します。正解は、式の意味と問題文で求めている経営判断が一致するものです。";
+    }
+    if (/著作権|特許|商標|意匠|個人情報|不正アクセス|派遣|請負|委任|コンプライアンス|CSR|ガバナンス|法務|知的財産|契約/.test(text)) {
+      return "法務・知的財産問題では、守る対象が創作物、発明、商品名、個人情報、契約上の責任のどれかを切り分けます。正解は、権利や契約の対象と、問題文の行為が対応するものです。";
+    }
+    if (/ERP|CRM|SCM|RFP|BPR|BPM|SaaS|PaaS|IaaS|クラウド|システム戦略|情報戦略|調達|提案依頼/.test(text)) {
+      return "システム戦略・企画問題では、業務全体の最適化、顧客管理、供給連鎖、提案依頼、業務改革など、どの経営課題を解決する仕組みかを見ます。正解は、目的と導入する仕組みの役割が一致するものです。";
+    }
+    if (/BCP|RTO|RPO|リスク|事業継続|内部統制|監査|統制/.test(text)) {
+      return "リスク管理・事業継続問題では、被害を防ぐ対策、発生後に復旧する計画、許容停止時間や復旧時点の指標を区別します。正解は、問題文が求める管理目的に合うものです。";
+    }
+    return "ストラテジ系は、経営戦略、マーケティング、会計、法務、システム企画のどの分野かを最初に分類します。正解は、用語名だけでなく、問題文の目的や対象に最も合う説明です。";
+  }
+
+  function distractorReason(question) {
+    if (!Array.isArray(question.choices) || question.choices.length < 4) return "";
+    if (question.choices.every(isNumericChoice)) {
+      return "数値の誤答は、利益と売上の取り違え、固定費と変動費の取り違え、比率計算の分母、単位の換算で出やすいです。計算前に、何を何で割るかを確認します。";
+    }
+    const wrongTerms = question.choices
+      .filter((_, index) => index !== question.answer)
+      .filter((choice) => String(choice).trim().length <= 22)
+      .slice(0, 3);
+    if (!wrongTerms.length) {
+      return "他の選択肢も経営・法務・企画の説明として成り立つ場合がありますが、対象や目的が問題文とずれているものは除外します。特に、分析手法、契約形態、権利の対象を混同しないことが重要です。";
+    }
+    return `他の選択肢（${wrongTerms.join("、")}）は関連用語ですが、対象や目的が異なります。用語の名前だけで選ばず、何を分析するか、何を守るか、どの業務を改善するかで比較します。`;
+  }
+
+  strategyStage.questions.forEach((question) => {
+    const correctChoice = question.choices?.[question.answer] || "";
+    const explanationLength = normalizeText(question.explanation).length;
+    const isSubjectBLike = question.difficulty === "advanced" || /科目B|長文|ケース/.test(String(question.tag || ""));
+    if (explanationLength >= (isSubjectBLike ? 76 : 50)) return;
+    appendUniqueParts(question, [
+      strategyReason(question, correctChoice),
+      isSubjectBLike ? distractorReason(question) : ""
+    ]);
+  });
+}
+
+improveStrategyExplanations();
+
 const els = {
   stageView: document.querySelector("#stageView"),
   quizView: document.querySelector("#quizView"),
@@ -2985,6 +3211,7 @@ const els = {
   examScoreTrendChart: document.querySelector("#examScoreTrendChart"),
   examScoreTrendEmpty: document.querySelector("#examScoreTrendEmpty"),
   statsTable: document.querySelector("#statsTable"),
+  subjectBTypeStats: document.querySelector("#subjectBTypeStats"),
   weakQuestionRanking: document.querySelector("#weakQuestionRanking"),
   reviewTopWeakQuestions: document.querySelector("#reviewTopWeakQuestions"),
   historyList: document.querySelector("#historyList"),
@@ -3053,12 +3280,160 @@ gameState.completedMissions = gameState.completedMissions || [];
 let current = null;
 let quizTimer = null;
 let pendingEvolutionChoice = null;
-const ASSET_VERSION = "v110";
+const ASSET_VERSION = "v130";
 
 const DIFFICULTY_LABELS = {
   basic: "基礎",
   standard: "標準",
   advanced: "応用"
+};
+
+const ACRONYM_EXPLANATIONS = {
+  CPU: "Central Processing Unit、中央処理装置",
+  GPU: "Graphics Processing Unit、画像処理を得意とする処理装置",
+  RAM: "Random Access Memory、読み書き可能な主記憶",
+  ROM: "Read Only Memory、読み出し中心の不揮発性メモリ",
+  HDD: "Hard Disk Drive、磁気ディスク装置",
+  SSD: "Solid State Drive、半導体メモリを使う記憶装置",
+  OS: "Operating System、基本ソフトウェア",
+  GUI: "Graphical User Interface、画面部品で操作する方式",
+  CLI: "Command Line Interface、コマンド入力で操作する方式",
+  DB: "Database、データベース",
+  SQL: "Structured Query Language、データベースを操作する言語",
+  RDBMS: "Relational Database Management System、関係データベース管理システム",
+  ACID: "Atomicity・Consistency・Isolation・Durability、トランザクションの四特性",
+  CRUD: "Create・Read・Update・Delete、基本的なデータ操作",
+  API: "Application Programming Interface、ソフトウェア同士をつなぐ窓口",
+  UML: "Unified Modeling Language、システムを図で表すためのモデリング言語",
+  ER: "Entity Relationship、実体と関連",
+  DFD: "Data Flow Diagram、データの流れを表す図",
+  TCP: "Transmission Control Protocol、信頼性重視の通信プロトコル",
+  UDP: "User Datagram Protocol、軽量な通信プロトコル",
+  IP: "Internet Protocol、ネットワーク上で宛先へ届けるためのプロトコル",
+  MAC: "Media Access Control、ネットワーク機器を識別する層やアドレス",
+  LAN: "Local Area Network、限られた範囲のネットワーク",
+  WAN: "Wide Area Network、広域ネットワーク",
+  DNS: "Domain Name System、ドメイン名とIPアドレスを対応付ける仕組み",
+  DHCP: "Dynamic Host Configuration Protocol、IPアドレスなどを自動配布する仕組み",
+  ARP: "Address Resolution Protocol、IPアドレスからMACアドレスを求める仕組み",
+  NAT: "Network Address Translation、IPアドレスを変換する仕組み",
+  VPN: "Virtual Private Network、公衆網上に仮想的な専用通信路を作る技術",
+  HTTP: "Hypertext Transfer Protocol、Web通信のプロトコル",
+  HTTPS: "HTTP over TLS、HTTPを暗号化した通信",
+  TLS: "Transport Layer Security、通信を暗号化し相手を認証する仕組み",
+  URL: "Uniform Resource Locator、インターネット上の場所を示す表記",
+  URI: "Uniform Resource Identifier、資源を識別する表記",
+  HTML: "HyperText Markup Language、Webページを記述する言語",
+  XML: "Extensible Markup Language、構造化データを表すマークアップ言語",
+  JSON: "JavaScript Object Notation、軽量なデータ記述形式",
+  CSRF: "Cross-Site Request Forgery、利用者に意図しないリクエストを送らせる攻撃",
+  XSS: "Cross-Site Scripting、Webページに悪意あるスクリプトを混入する攻撃",
+  DoS: "Denial of Service、サービス妨害攻撃",
+  DDoS: "Distributed Denial of Service、分散型サービス妨害攻撃",
+  IDS: "Intrusion Detection System、侵入検知システム",
+  IPS: "Intrusion Prevention System、侵入防止システム",
+  WAF: "Web Application Firewall、Webアプリケーション向けファイアウォール",
+  PKI: "Public Key Infrastructure、公開鍵基盤",
+  MFA: "Multi-Factor Authentication、多要素認証",
+  OTP: "One-Time Password、一度だけ使うパスワード",
+  SSO: "Single Sign-On、一度の認証で複数サービスを使う仕組み",
+  ISMS: "Information Security Management System、情報セキュリティ管理の仕組み",
+  DLP: "Data Loss Prevention、情報漏えいを防ぐ仕組み",
+  DMZ: "DeMilitarized Zone、外部公開サーバなどを置く中間的なネットワーク領域",
+  BCP: "Business Continuity Plan、事業継続計画",
+  DR: "Disaster Recovery、災害復旧",
+  UPS: "Uninterruptible Power Supply、無停電電源装置",
+  WBS: "Work Breakdown Structure、作業分解構成図",
+  EVM: "Earned Value Management、出来高による進捗・コスト管理",
+  CPI: "Cost Performance Index、コスト効率指数",
+  SPI: "Schedule Performance Index、スケジュール効率指数",
+  SLA: "Service Level Agreement、サービス水準合意",
+  RTO: "Recovery Time Objective、目標復旧時間",
+  RPO: "Recovery Point Objective、目標復旧時点",
+  KPI: "Key Performance Indicator、重要業績評価指標",
+  KGI: "Key Goal Indicator、重要目標達成指標",
+  ROI: "Return on Investment、投資利益率",
+  ROE: "Return on Equity、自己資本利益率",
+  ROA: "Return on Assets、総資産利益率",
+  SWOT: "Strengths・Weaknesses・Opportunities・Threats、強み・弱み・機会・脅威の分析",
+  SO: "Strengths・Opportunities、強みを使って機会を生かすSWOT分析上の組合せ",
+  PPM: "Product Portfolio Management、市場成長率と市場占有率で事業を分類する手法",
+  ERP: "Enterprise Resource Planning、企業資源計画",
+  CRM: "Customer Relationship Management、顧客関係管理",
+  SCM: "Supply Chain Management、供給連鎖管理",
+  RFP: "Request For Proposal、提案依頼書",
+  BPR: "Business Process Re-engineering、業務プロセスの抜本的見直し",
+  BPM: "Business Process Management、業務プロセス管理",
+  SaaS: "Software as a Service、ソフトウェアをサービスとして使う形態",
+  PaaS: "Platform as a Service、アプリ実行基盤をサービスとして使う形態",
+  IaaS: "Infrastructure as a Service、サーバなどの基盤をサービスとして使う形態",
+  CSR: "Corporate Social Responsibility、企業の社会的責任",
+  BYOD: "Bring Your Own Device、私物端末を業務利用すること",
+  IoT: "Internet of Things、モノのインターネット",
+  AI: "Artificial Intelligence、人工知能",
+  OCR: "Optical Character Recognition、光学文字認識",
+  FIFO: "First In, First Out、先に入れたデータを先に取り出す方式",
+  LIFO: "Last In, First Out、後に入れたデータを先に取り出す方式",
+  ID: "Identifier、利用者やデータを識別するための識別子",
+  IT: "Information Technology、情報技術",
+  PC: "Personal Computer、個人用コンピュータ",
+  UI: "User Interface、利用者とシステムの接点",
+  PV: "Planned Value、計画価値",
+  EV: "Earned Value、出来高",
+  AC: "Actual Cost、実コスト",
+  STP: "Segmentation・Targeting・Positioning、市場細分化・標的市場選定・位置付け",
+  "3C": "Customer・Competitor・Company、顧客・競合・自社の三つの分析視点",
+  "4P": "Product・Price・Place・Promotion、製品・価格・流通・販売促進の組合せ",
+  CI: "Continuous Integration、継続的インテグレーション",
+  DevOps: "Development and Operations、開発と運用が連携して継続的に改善する考え方",
+  RAID: "Redundant Array of Independent Disks、複数ディスクで性能や信頼性を高める技術",
+  RAID0: "RAID 0、データを分散して高速化するストライピング",
+  RAID1: "RAID 1、同じデータを複数ディスクに書くミラーリング",
+  RAID2: "RAID 2、ビット単位で分散し誤り訂正符号を使うRAID方式",
+  RAID5: "RAID 5、パリティを分散して耐障害性と容量効率を両立する方式",
+  ALU: "Arithmetic Logic Unit、算術演算や論理演算を行う装置",
+  DMA: "Direct Memory Access、CPUを介さず入出力装置と主記憶の間で転送する方式",
+  BCNF: "Boyce-Codd Normal Form、全ての決定項が候補キーになる正規形",
+  POP3: "Post Office Protocol version 3、メールを端末へ取得するためのプロトコル",
+  IMAP: "Internet Message Access Protocol、メールをサーバ上で管理しながら閲覧するプロトコル",
+  SMTP: "Simple Mail Transfer Protocol、電子メールを送信・中継するためのプロトコル",
+  MIME: "Multipurpose Internet Mail Extensions、メールで多様な形式のデータを扱うための拡張仕様",
+  IPv4: "Internet Protocol version 4、32ビットのIPアドレスを使うプロトコル",
+  IPv6: "Internet Protocol version 6、128ビットのIPアドレスを使うプロトコル",
+  ICMP: "Internet Control Message Protocol、IP通信の制御やエラー通知に使うプロトコル",
+  CIDR: "Classless Inter-Domain Routing、可変長のネットワーク部でIPアドレスを割り当てる方式",
+  FTP: "File Transfer Protocol、ファイル転送用のプロトコル",
+  NTP: "Network Time Protocol、ネットワーク上で時刻を同期するプロトコル",
+  SNMP: "Simple Network Management Protocol、ネットワーク機器を監視・管理するプロトコル",
+  SSH: "Secure Shell、暗号化した遠隔ログインや操作を行うプロトコル",
+  USB: "Universal Serial Bus、周辺機器を接続するための標準規格",
+  UTF8: "Unicode Transformation Format 8、Unicodeを8ビット単位で表す文字コード",
+  "UTF-8": "Unicode Transformation Format 8、Unicodeを8ビット単位で表す文字コード",
+  AES: "Advanced Encryption Standard、共通鍵暗号方式の標準",
+  DES: "Data Encryption Standard、旧来の共通鍵暗号方式",
+  RSA: "Rivest-Shamir-Adleman、大きな整数の素因数分解の困難性を利用する公開鍵暗号方式",
+  DH: "Diffie-Hellman、共通鍵を安全に共有するための鍵交換方式",
+  DSA: "Digital Signature Algorithm、デジタル署名方式",
+  SHA256: "Secure Hash Algorithm 256-bit、256ビットのハッシュ値を生成する方式",
+  "SHA-256": "Secure Hash Algorithm 256-bit、256ビットのハッシュ値を生成する方式",
+  PKCS: "Public-Key Cryptography Standards、公開鍵暗号に関する標準群",
+  XOR: "Exclusive OR、排他的論理和",
+  DRAM: "Dynamic Random Access Memory、定期的なリフレッシュが必要な主記憶用メモリ",
+  SRAM: "Static Random Access Memory、リフレッシュ不要で高速な半導体メモリ",
+  EEPROM: "Electrically Erasable Programmable ROM、電気的に消去・書込みできる不揮発性メモリ",
+  NAND: "Not AND、フラッシュメモリなどで使われる論理構造",
+  MTBF: "Mean Time Between Failures、平均故障間隔",
+  MTTF: "Mean Time To Failure、平均故障時間",
+  MTTR: "Mean Time To Repair、平均修理時間",
+  BPO: "Business Process Outsourcing、業務プロセスを外部委託すること",
+  BCM: "Business Continuity Management、事業継続を管理・改善する活動",
+  DRP: "Disaster Recovery Plan、災害復旧計画",
+  OLA: "Operational Level Agreement、組織内部で合意する運用水準",
+  CSP: "Content Security Policy、Webページで許可する読込み元などを制御する仕組み",
+  CSV: "Comma-Separated Values、カンマ区切りのデータ形式",
+  UC: "Use Case、利用者視点でシステムの機能を表すもの",
+  CA: "Certification Authority、電子証明書を発行する認証局",
+  "KCipher-2": "KCipher-2、日本で開発されたストリーム暗号"
 };
 
 function getDifficultyLabel(difficulty) {
@@ -3067,6 +3442,24 @@ function getDifficultyLabel(difficulty) {
 
 function getDifficultyClass(difficulty) {
   return DIFFICULTY_LABELS[difficulty] ? difficulty : "none";
+}
+
+function getSubjectBWeaknessType(questionOrRecord = {}) {
+  const text = `${questionOrRecord.text || questionOrRecord.questionText || ""} ${questionOrRecord.tag || ""}`;
+  const stageId = questionOrRecord.stageId || "";
+  if (!text.includes("科目B") && !["algorithm", "technology"].includes(stageId)) return "";
+
+  if (/計算量|オーダ|比較回数|最大何回|O\(/.test(text)) return "計算量";
+  if (/トレース|値は|出力|実行後|変数|ループ|繰返し|繰り返し/.test(text)) return "トレース";
+  if (/配列|リスト|文字列|添字|要素|二次元|表/.test(text)) return "配列・文字列";
+  if (/探索|整列|ソート|二分探索|線形探索|マージ|併合/.test(text)) return "探索・整列";
+  if (/再帰|スタック|キュー|木構造|グラフ|幅優先|深さ優先|入出庫/.test(text)) return "再帰・データ構造";
+  if (/境界|条件|フラグ|分岐|判定|状態遷移/.test(text)) return "条件・境界";
+  if (/認証|多要素|パスワード|権限|アクセス制御|セッション|CSRF|SQLインジェクション/.test(text)) return "認証・権限";
+  if (/暗号|ハッシュ|鍵|証明書|署名|TLS|APIキー/.test(text)) return "暗号・鍵";
+  if (/ログ|監査|証跡|インシデント|証拠|検知/.test(text)) return "ログ・監査";
+  if (/委託|クラウド|バックアップ|運用|DLP|ランサムウェア|管理画面|共有/.test(text)) return "委託・運用";
+  return stageId === "technology" ? "セキュリティ基礎" : "アルゴリズム基礎";
 }
 
 const creatureLines = {
@@ -3079,21 +3472,38 @@ const creatureLines = {
     "問題文のキーワードを拾っていこう。",
     "選択肢は急がず、同じ種類で比べよう。",
     "迷ったら、目的と役割を先に見るといいよ。",
-    "いまの一問が進化ポイントになるよ。"
+    "いまの一問が進化ポイントになるよ。",
+    "長い文は、先に何を聞かれているか見よう。",
+    "似た選択肢は、目的語の違いを比べよう。"
   ],
   correct: [
     "正解。いい進化ポイントだね。",
     "その調子。知識がなじんできた。",
-    "やった、今の判断きれいだったよ。"
+    "やった、今の判断きれいだったよ。",
+    "いいね。選択肢の見分けが強くなってる。",
+    "今の一問、ちゃんと経験値になったよ。"
+  ],
+  streak3: [
+    "3問連続正解。流れができてる。",
+    "いい連続正解。判断が安定してきたね。",
+    "3連続。今の集中、かなり良い。"
+  ],
+  streak5: [
+    "5問連続正解。これはかなり強い。",
+    "5連続。合格ラインに近い解き方だよ。",
+    "すごい、5問連続。進化の気配が濃いね。"
   ],
   wrong: [
     "大丈夫。解説で次の一問が強くなる。",
     "惜しい。選択肢の違いを一緒に見よう。",
-    "ここで覚えれば、次は取れるよ。"
+    "ここで覚えれば、次は取れるよ。",
+    "間違い方が分かると、次の正解率が上がるよ。",
+    "正解以外が何を指すかも見ておこう。"
   ],
   timeout: [
     "時間切れ。次は先に選択肢を削ろう。",
-    "焦らなくていいよ。型を覚えていこう。"
+    "焦らなくていいよ。型を覚えていこう。",
+    "次は問題文の最後から確認してみよう。"
   ],
   evolve: [
     "進化の気配がする。",
@@ -3101,6 +3511,19 @@ const creatureLines = {
     "このまま伸びると分岐が開くよ。"
   ]
 };
+
+const lightheartedCreatureLines = [
+  "少し休憩。脳内キャッシュをクリア中。",
+  "深呼吸。選択肢は逃げない。",
+  "この問題、見た目より話せば分かるタイプかも。",
+  "今の集中力、いい感じに発酵してる。",
+  "正解したら今日は水がちょっとおいしい。",
+  "たまには直感もログに残しておこう。",
+  "難しそうな顔をしている問題ほど、意外と手順派。",
+  "ここで一句。選択肢、比べてみたら、答えあり。",
+  "脳内メモリを整理して、もう一歩。",
+  "今日はビットも少し丸く見えるね。"
+];
 
 const evolutionBranches = {
   god: {
@@ -3582,14 +4005,75 @@ function speakCreature(kind = "idle", extraLine = "") {
   }
 }
 
+function animateCreatureReaction(kind = "happy") {
+  const className = kind === "streak" ? "happy correct streak" : kind === "correct" ? "happy correct" : kind === "wrong" ? "wrong" : kind === "timeout" ? "timeout" : kind;
+  [els.creatureVisual, els.quizCreatureVisual].filter(Boolean).forEach((visual) => {
+    visual.classList.remove("happy", "correct", "wrong", "timeout", "streak");
+    void visual.offsetWidth;
+    className.split(" ").forEach((name) => visual.classList.add(name));
+  });
+  window.setTimeout(() => {
+    [els.creatureVisual, els.quizCreatureVisual].filter(Boolean).forEach((visual) => {
+      visual.classList.remove("happy", "correct", "wrong", "timeout", "streak");
+    });
+  }, kind === "timeout" ? 760 : kind === "streak" ? 980 : 680);
+}
+
+function getCorrectStreakLine(streak) {
+  if (streak > 0 && streak % 5 === 0) return { kind: "streak5", line: pick(creatureLines.streak5), milestone: true };
+  if (streak > 0 && streak % 3 === 0) return { kind: "streak3", line: pick(creatureLines.streak3), milestone: true };
+  return { kind: "correct", line: "", milestone: false };
+}
+
+function getLightheartedCheerLine() {
+  if (!current) return "";
+  current.lightheartedCooldown = Math.max(0, current.lightheartedCooldown || 0);
+  if (current.lightheartedCooldown > 0) {
+    current.lightheartedCooldown -= 1;
+    return "";
+  }
+  const chance = isFullExamMode() ? 0.04 : 0.11;
+  if (Math.random() >= chance) return "";
+  current.lightheartedCooldown = isFullExamMode() ? 8 : 5;
+  return pick(lightheartedCreatureLines);
+}
+
 function getQuestionCheerLine(question) {
   const tag = question.tag || "";
-  if (/SQL|DB|データベース/.test(tag)) return "DBは、行・列・表・集計のどれを聞いているか見よう。";
-  if (/アルゴリズム|探索|整列|トレース/.test(tag)) return "小さい例で動きを追うと見えてくるよ。";
-  if (/セキュリティ|ネットワーク/.test(tag)) return "誰を守る話か、どこで通信する話かを切り分けよう。";
-  if (/法務|経営|会計|戦略/.test(tag)) return "ストラテジは用語の目的を合わせにいこう。";
-  if (/プロジェクト|サービス|監査|開発/.test(tag)) return "管理系は、計画・品質・運用・改善のどれかを見よう。";
-  if (/計算|基数|稼働率|ROI/.test(tag)) return "計算は先に式の意味を決めると強いよ。";
+  const text = `${question.text || ""} ${tag}`;
+  const difficulty = question.difficulty || "";
+  const weakType = getSubjectBWeaknessType(question);
+  const lightheartedLine = getLightheartedCheerLine();
+  if (lightheartedLine) return lightheartedLine;
+
+  if (weakType === "トレース") return "変数の値を1行ずつ追えば大丈夫。小さい表にしてみよう。";
+  if (weakType === "配列・文字列") return "添字、要素数、先頭と末尾を先に確認しよう。";
+  if (weakType === "探索・整列") return "探索範囲がどう狭まるか、比較の順番を見よう。";
+  if (weakType === "再帰・データ構造") return "呼び出し順、取り出し順、親子関係を分けて見よう。";
+  if (weakType === "条件・境界") return "境界値と条件の真偽を、具体例で一つ試そう。";
+  if (weakType === "計算量") return "要素数が増えたとき、何回繰り返すかに注目しよう。";
+  if (weakType === "認証・権限") return "本人確認、許可、攻撃対策のどれを聞いているか見よう。";
+  if (weakType === "暗号・鍵") return "守りたいものが秘密性、完全性、本人性のどれかを確認しよう。";
+  if (weakType === "ログ・監査") return "後から追跡できる証跡か、今すぐ防ぐ対策かを分けよう。";
+  if (weakType === "委託・運用") return "委託先・運用者・利用者の責任範囲を見よう。";
+
+  if (difficulty === "advanced") return pick([
+    "応用問題だね。条件を一つずつ削っていこう。",
+    "難しめ。最初に問われている結論を固定しよう。",
+    "焦らず、選択肢を同じ観点で比べよう。"
+  ]);
+  if (difficulty === "basic") return pick([
+    "基礎問題。用語の目的を一言で確認しよう。",
+    "まずは定義と役割をまっすぐ合わせよう。",
+    "基本を取れると全体の点が安定するよ。"
+  ]);
+
+  if (/SQL|DB|データベース|正規化|主キー|外部キー|トランザクション/.test(text)) return "DBは、行・列・表・集計のどれを聞いているか見よう。";
+  if (/アルゴリズム|探索|整列|トレース|配列|文字列|スタック|キュー/.test(text)) return "小さい例で動きを追うと見えてくるよ。";
+  if (/セキュリティ|ネットワーク|暗号|認証|権限|IP|DNS|LAN/.test(text)) return "誰を守る話か、どこで通信する話かを切り分けよう。";
+  if (/法務|経営|会計|戦略|ROI|SWOT|著作権|個人情報/.test(text)) return "ストラテジは用語の目的を合わせにいこう。";
+  if (/プロジェクト|サービス|監査|開発|レビュー|テスト|SLA|運用/.test(text)) return "管理系は、計画・品質・運用・改善のどれかを見よう。";
+  if (/計算|基数|稼働率|ROI|利益|損益|2進|16進/.test(text)) return "計算は先に式の意味を決めると強いよ。";
   return pick(creatureLines.quiz);
 }
 
@@ -3784,13 +4268,14 @@ function renderCreature(message = "", mood = "") {
   els.feedCreature.textContent = isCreatureComplete() ? "進化完了" : "自動進化";
   els.evolutionLog.textContent = message;
   if (mood) {
-    speakCreature(mood === "evolving" ? "evolve" : "idle", message);
+    const evolutionInfo = mood === "evolving" ? buildEvolutionResultInfo([message]) : null;
+    speakCreature(mood === "evolving" ? "evolve" : "idle", evolutionInfo?.comment || message);
     window.setTimeout(() => {
       els.creatureVisual.className = `creature-visual ${getCreatureClass()}`;
       if (els.quizCreatureVisual) {
         els.quizCreatureVisual.className = `creature-visual quiz-creature-visual ${getCreatureClass()}`;
       }
-    }, mood === "evolving" ? 900 : 650);
+    }, mood === "evolving" ? 1200 : 650);
   }
 }
 
@@ -4060,6 +4545,48 @@ function migrateWrongQuestionStats() {
   saveQuestionStats();
 }
 
+function enrichQuestionStatsMetadata() {
+  const catalog = getQuestionCatalog();
+  let changed = false;
+  Object.values(questionStats).forEach((item) => {
+    const question = catalog.get(item.id);
+    if (!question) return;
+    const weaknessType = item.weaknessType || getSubjectBWeaknessType(question);
+    if (!item.difficulty && question.difficulty) {
+      item.difficulty = question.difficulty;
+      changed = true;
+    }
+    if (!item.weaknessType && weaknessType) {
+      item.weaknessType = weaknessType;
+      changed = true;
+    }
+  });
+  if (changed) saveQuestionStats();
+}
+
+function migrateWeaknessTypesFromHistory() {
+  const catalog = getQuestionCatalog();
+  let changed = false;
+  history.forEach((attempt) => {
+    if (!Array.isArray(attempt.answerRecords)) return;
+    attempt.answerRecords.forEach((record) => {
+      const existing = questionStats[record.questionId];
+      const question = catalog.get(record.questionId);
+      if (!existing || !question) return;
+      const weaknessType = record.weaknessType || getSubjectBWeaknessType(question);
+      if (!existing.weaknessType && weaknessType) {
+        existing.weaknessType = weaknessType;
+        changed = true;
+      }
+      if (!existing.difficulty && (record.difficulty || question.difficulty)) {
+        existing.difficulty = record.difficulty || question.difficulty;
+        changed = true;
+      }
+    });
+  });
+  if (changed) saveQuestionStats();
+}
+
 const REVIEW_INTERVAL_DAYS = [1, 3, 7, 14, 30];
 
 function addDaysIso(date, days) {
@@ -4085,12 +4612,15 @@ function updateQuestionStats(records, questions) {
   records.forEach((record) => {
     const question = questionById.get(record.questionId);
     if (!question) return;
+    const weaknessType = record.weaknessType || getSubjectBWeaknessType(question);
     const existing = questionStats[record.questionId] || {
       id: record.questionId,
       text: question.text,
       tag: normalizeResultTag(question.tag),
       stageId: question.stageId || record.stageId,
       stageName: question.sourceStageName || getStageNameById(record.stageId),
+      difficulty: record.difficulty || question.difficulty || null,
+      weaknessType: weaknessType || "",
       attempts: 0,
       correct: 0,
       wrong: 0,
@@ -4102,6 +4632,8 @@ function updateQuestionStats(records, questions) {
     existing.attempts += 1;
     existing.correct += record.correct ? 1 : 0;
     existing.wrong += record.correct ? 0 : 1;
+    existing.difficulty = record.difficulty || question.difficulty || existing.difficulty || null;
+    existing.weaknessType = weaknessType || existing.weaknessType || "";
     existing.lastAnsweredAt = answeredAt.toISOString();
     if (record.correct) {
       existing.correctStreak = (existing.correctStreak || 0) + 1;
@@ -4115,6 +4647,55 @@ function updateQuestionStats(records, questions) {
     questionStats[record.questionId] = existing;
   });
   saveQuestionStats();
+}
+
+function getWeaknessTypeStats() {
+  return Object.values(questionStats).reduce((summary, item) => {
+    const type = item.weaknessType;
+    if (!type) return summary;
+    summary[type] = summary[type] || { type, attempts: 0, correct: 0, wrong: 0 };
+    summary[type].attempts += item.attempts || 0;
+    summary[type].correct += item.correct || 0;
+    summary[type].wrong += item.wrong || 0;
+    return summary;
+  }, {});
+}
+
+function getWeaknessTypePriorityMap() {
+  const stats = getWeaknessTypeStats();
+  return Object.values(stats).reduce((priorityMap, item) => {
+    if (!item.attempts || !item.wrong) return priorityMap;
+    const accuracy = item.correct / item.attempts;
+    priorityMap[item.type] = Math.round(item.wrong * 35 + (1 - accuracy) * 120 + Math.min(item.attempts, 12) * 4);
+    return priorityMap;
+  }, {});
+}
+
+function getSubjectBTypeStatRows() {
+  return Object.values(getWeaknessTypeStats())
+    .filter((item) => item.attempts > 0)
+    .map((item) => ({
+      ...item,
+      percentage: Math.round((item.correct / item.attempts) * 100),
+      priority: item.wrong * 2 + (item.attempts ? (100 - Math.round((item.correct / item.attempts) * 100)) / 10 : 0)
+    }))
+    .sort((a, b) => b.wrong - a.wrong || a.percentage - b.percentage || b.attempts - a.attempts || a.type.localeCompare(b.type, "ja"));
+}
+
+function getSubjectBTypeStat(type) {
+  return getSubjectBTypeStatRows().find((row) => row.type === type) || {
+    type,
+    attempts: 0,
+    correct: 0,
+    wrong: 0,
+    percentage: 0
+  };
+}
+
+function getSubjectBTypeStatus(row) {
+  if (!row.attempts || row.wrong >= 3 && row.percentage < 60) return { id: "review", label: "要復習" };
+  if (row.percentage >= 80 && row.attempts >= 5 && row.wrong <= 2) return { id: "stable", label: "安定" };
+  return { id: "improving", label: "改善中" };
 }
 
 function todayKey(date = new Date()) {
@@ -4394,6 +4975,8 @@ function startStage(stageId) {
     answered: false,
     selectedIndex: null,
     records: [],
+    correctStreak: 0,
+    maxCorrectStreak: 0,
     mode: "stage"
   };
   setView("quiz");
@@ -4416,6 +4999,8 @@ function startWeakMode() {
     answered: false,
     selectedIndex: null,
     records: [],
+    correctStreak: 0,
+    maxCorrectStreak: 0,
     mode: "weakness"
   };
   setView("quiz");
@@ -4443,6 +5028,8 @@ function startWrongReview() {
     answered: false,
     selectedIndex: null,
     records: [],
+    correctStreak: 0,
+    maxCorrectStreak: 0,
     mode: "wrong-review",
     reviewSourceName: sourceName
   };
@@ -4487,8 +5074,61 @@ function startRankedQuestionReview(questionIds) {
     answered: false,
     selectedIndex: null,
     records: [],
+    correctStreak: 0,
+    maxCorrectStreak: 0,
     mode: "wrong-review",
     reviewSourceName: "苦手問題ランキング"
+  };
+  setView("quiz");
+  renderQuestion();
+}
+
+function startSubjectBTypeReview(type) {
+  const catalog = getQuestionCatalog();
+  const now = new Date();
+  const beforeStats = getSubjectBTypeStat(type);
+  const questions = Array.from(catalog.values())
+    .filter((question) => getSubjectBWeaknessType(question) === type)
+    .map((question) => {
+      const stats = questionStats[question.id];
+      const mastery = stats ? getQuestionMastery(stats, now) : { id: "new" };
+      const percentage = stats?.attempts ? Math.round((stats.correct / stats.attempts) * 100) : 100;
+      const priority =
+        (mastery.id === "review" ? 1000 : mastery.id === "learning" ? 250 : stats ? 100 : 180) +
+        (stats?.wrong || 0) * 45 -
+        percentage;
+      return { question, priority };
+    })
+    .sort((a, b) => b.priority - a.priority)
+    .map((item) => item.question);
+  const selected = uniqueQuestionsByText(questions).slice(0, randomInt(5, 10)).map(withQuestionOrder);
+  if (!selected.length) return;
+  current = {
+    stage: {
+      id: "subject-b-type-review",
+      name: `科目B ${type} 復習`
+    },
+    questions: selected,
+    index: 0,
+    score: 0,
+    timeBonus: 0,
+    answered: false,
+    selectedIndex: null,
+    records: [],
+    correctStreak: 0,
+    maxCorrectStreak: 0,
+    mode: "weakness",
+    reviewSourceName: `科目B ${type}`,
+    subjectBTypeReview: {
+      type,
+      before: {
+        attempts: beforeStats.attempts,
+        correct: beforeStats.correct,
+        wrong: beforeStats.wrong,
+        percentage: beforeStats.percentage,
+        status: getSubjectBTypeStatus(beforeStats)
+      }
+    }
   };
   setView("quiz");
   renderQuestion();
@@ -4509,6 +5149,8 @@ function startRandomMode() {
     answered: false,
     selectedIndex: null,
     records: [],
+    correctStreak: 0,
+    maxCorrectStreak: 0,
     mode: "random"
   };
   setView("quiz");
@@ -4597,6 +5239,8 @@ function startFullExam(subject) {
     answered: false,
     selectedIndex: null,
     records: [],
+    correctStreak: 0,
+    maxCorrectStreak: 0,
     examAnswers: {},
     reviewQuestionIds: [],
     mode: isSubjectA ? "subject-a-exam" : "subject-b-exam",
@@ -4872,6 +5516,19 @@ function buildWeakQuestions() {
   );
 
   const now = new Date();
+  const weaknessTypePriority = getWeaknessTypePriorityMap();
+  const subjectBTypePriority = allQuestions
+    .filter((question) => {
+      const type = getSubjectBWeaknessType(question);
+      return type && weaknessTypePriority[type] > 0 && !questionStats[question.id];
+    })
+    .map((question) => ({
+      question,
+      priority: weaknessTypePriority[getSubjectBWeaknessType(question)] || 0
+    }))
+    .sort((a, b) => b.priority - a.priority)
+    .map((item) => item.question);
+
   const reviewPriority = allQuestions
     .filter((question) => {
       const stats = questionStats[question.id];
@@ -4883,9 +5540,11 @@ function buildWeakQuestions() {
       const daysOverdue = stats.nextReviewAt
         ? Math.max(0, Math.floor((now - new Date(stats.nextReviewAt)) / 86400000))
         : 0;
+      const typeBonus = weaknessTypePriority[stats.weaknessType || getSubjectBWeaknessType(question)] || 0;
       const priority =
         (mastery.id === "review" ? 1000 : mastery.id === "learning" ? 300 : 0) +
         (stats.wrong || 0) * 30 +
+        typeBonus +
         daysOverdue * 5 -
         (stats.correctStreak || 0) * 20;
       return { question, priority };
@@ -4905,6 +5564,7 @@ function buildWeakQuestions() {
   const unattemptedQuestions = allQuestions.filter((question) => !questionStats[question.id]);
   const pool = [
     ...reviewPriority,
+    ...subjectBTypePriority.slice(0, 5),
     ...shuffle(lowStageQuestions).slice(0, 4),
     ...shuffle(unattemptedQuestions).slice(0, 3),
     ...shuffle(unattemptedQuestions)
@@ -4978,8 +5638,9 @@ function buildExplanation(question, isCorrect) {
   const correctChoice = question.choices[question.answer];
   const prefix = isCorrect ? "正解です。" : "不正解です。";
   const extra = getExplanationTip(question, correctChoice);
+  const acronymNotes = buildAcronymNotes(question);
   const wrongNotes = buildWrongChoiceNotes(question);
-  const parts = [base, extra, wrongNotes].filter(Boolean);
+  const parts = [base, extra, acronymNotes, wrongNotes].filter(Boolean);
   const uniqueParts = [];
   const seen = [];
   parts.forEach((part) => {
@@ -4989,6 +5650,102 @@ function buildExplanation(question, isCorrect) {
     uniqueParts.push(part);
   });
   return `${prefix} 正解は「${correctChoice}」。${uniqueParts.join(" ")}`;
+}
+
+function renderExplanationHtml(question, isCorrect, leadText = "") {
+  const sections = buildExplanationSections(question, isCorrect, leadText);
+  return sections
+    .filter((section) => section.body)
+    .map((section) => `
+      <section class="explanation-section">
+        <h4>${escapeHtml(section.title)}</h4>
+        <p>${escapeHtml(section.body)}</p>
+      </section>
+    `)
+    .join("");
+}
+
+function buildExplanationSections(question, isCorrect, leadText = "") {
+  const correctChoice = question.choices[question.answer];
+  const resultText = [
+    leadText,
+    isCorrect ? "正解です。" : "不正解です。",
+    `正解は「${correctChoice}」です。`
+  ].filter(Boolean).join(" ");
+  const base = question.explanation || "";
+  const rawExtra = getExplanationTip(question, correctChoice);
+  const extra = isRedundantExplanationExtra(base, rawExtra) ? "" : rawExtra;
+  const acronymNotes = stripExplanationLabel(buildAcronymNotes(question));
+  const wrongNotes = stripExplanationLabel(buildWrongChoiceNotes(question));
+  return [
+    { title: "結果", body: resultText },
+    { title: "正解の理由", body: base },
+    { title: "補足", body: extra },
+    { title: "略語補足", body: acronymNotes },
+    { title: "他の選択肢", body: wrongNotes }
+  ];
+}
+
+function stripExplanationLabel(value) {
+  return String(value || "").replace(/^[^:：]{1,16}[:：]\s*/, "");
+}
+
+function normalizeExplanationText(value) {
+  return String(value || "").normalize("NFKC").replace(/\s+/g, "");
+}
+
+function isRedundantExplanationExtra(base, extra) {
+  const normalizedBase = normalizeExplanationText(base);
+  const normalizedExtra = normalizeExplanationText(extra);
+  if (!normalizedExtra) return true;
+  if (normalizedBase.includes(normalizedExtra)) return true;
+  return [
+    "ネットワーク問題",
+    "セキュリティ",
+    "アルゴリズム",
+    "DB問題",
+    "管理系",
+    "ストラテジ系",
+    "計算問題"
+  ].some((marker) => normalizedBase.includes(marker) && normalizedExtra.includes(marker));
+}
+
+function showFeedbackExplanation(question, isCorrect, leadText = "") {
+  els.feedback.classList.remove("hidden");
+  els.feedback.innerHTML = renderExplanationHtml(question, isCorrect, leadText);
+}
+
+function buildAcronymNotes(question) {
+  const correctChoice = question.choices?.[question.answer] || "";
+  const wrongChoices = (question.choices || []).filter((_, index) => index !== question.answer);
+  const prioritizedSources = [
+    correctChoice,
+    question.text,
+    question.explanation,
+    wrongChoices.join(" ")
+  ];
+  const found = [];
+  const seen = new Set();
+  prioritizedSources.forEach((source) => {
+    Object.entries(ACRONYM_EXPLANATIONS).forEach(([term, meaning]) => {
+      if (seen.has(term.toLowerCase()) || !containsAcronymTerm(source, term)) return;
+      found.push([term, meaning]);
+      seen.add(term.toLowerCase());
+    });
+  });
+  found.splice(5);
+  if (!found.length) return "";
+  return `略語補足: ${found.map(([term, meaning]) => `${term}は${meaning}`).join(" / ")}。`;
+}
+
+function containsAcronymTerm(source, term) {
+  const text = String(source || "");
+  if (!text) return false;
+  const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = /^[A-Z0-9]+$/.test(term)
+    ? new RegExp(`(^|[^A-Z0-9])${escaped}([^A-Z0-9]|$)`, "i")
+    : new RegExp(escaped, "i");
+  return pattern.test(text);
 }
 
 function buildWrongChoiceNotes(question) {
@@ -5111,6 +5868,12 @@ function explainChoice(choice) {
   };
 
   if (dictionary[choice]) return dictionary[choice];
+  if (/商品やサービスの識別標識|ブランド名|ロゴ/.test(choice)) return "商標権の説明です。商品名、サービス名、ロゴなどを他社の商品・サービスと区別する標識を保護します";
+  if (/物品.*デザイン|デザインを保護/.test(choice)) return "意匠権の説明です。物品などの形状、模様、色彩といったデザインを保護します";
+  if (/発明を保護|技術的思想/.test(choice)) return "特許権の説明です。技術的な発明を保護する産業財産権です";
+  if (/創作的な表現|文章|音楽|プログラム.*表現/.test(choice)) return "著作権の説明です。創作的な表現を保護し、アイデアそのものではなく表現が対象です";
+  if (/認証情報|不正ログイン|アクセス.*禁じ/.test(choice)) return "不正アクセス禁止法に関する説明です。他人のIDやパスワードなどを使った不正ログインを禁じます";
+  if (/特定の個人|個人情報|識別できる情報/.test(choice)) return "個人情報保護に関する説明です。特定の個人を識別できる情報を適切に扱うことが対象です";
   if (choice.includes("通信")) return "通信方式やネットワーク上の役割を表す説明です";
   if (/(SQL|集計|行|列|主キー|外部キー|トランザクション|正規化|データベース)/.test(choice)) return "データベース操作やSQLの役割に関する説明です";
   if (choice.includes("作業") || choice.includes("進捗")) return "プロジェクト管理で使う考え方です";
@@ -5173,12 +5936,15 @@ function answerQuestion(shownIndex) {
   current.answered = true;
   current.selectedIndex = shownIndex;
   current.score += isCorrect ? 1 : 0;
+  current.correctStreak = isCorrect ? (current.correctStreak || 0) + 1 : 0;
+  current.maxCorrectStreak = Math.max(current.maxCorrectStreak || 0, current.correctStreak || 0);
   if (isCorrect && !current.overallDeadline && current.mode !== "wrong-review") current.timeBonus += 1;
   current.records.push({
     questionId: question.id,
     stageId: question.stageId || current.stage.id,
     tag: question.tag,
     difficulty: question.difficulty || null,
+    weaknessType: getSubjectBWeaknessType(question),
     correct: isCorrect,
     selectedChoiceIndex: selected.index,
     answeredSeconds: Math.min(
@@ -5194,9 +5960,10 @@ function answerQuestion(shownIndex) {
     if (index === shownIndex && !isCorrect) choiceEl.classList.add("wrong");
   });
 
-  els.feedback.classList.remove("hidden");
-  els.feedback.textContent = buildExplanation(question, isCorrect);
-  speakCreature(isCorrect ? "correct" : "wrong");
+  showFeedbackExplanation(question, isCorrect);
+  const streakReaction = isCorrect ? getCorrectStreakLine(current.correctStreak || 0) : null;
+  animateCreatureReaction(streakReaction?.milestone ? "streak" : isCorrect ? "correct" : "wrong");
+  speakCreature(isCorrect ? streakReaction.kind : "wrong", streakReaction?.line || "");
   els.nextQuestion.disabled = false;
 }
 
@@ -5206,11 +5973,13 @@ function showAnswer() {
   const question = current.questions[current.index];
   if (!current.overallDeadline) clearQuizTimer();
   current.answered = true;
+  current.correctStreak = 0;
   current.records.push({
     questionId: question.id,
     stageId: question.stageId || current.stage.id,
     tag: question.tag,
     difficulty: question.difficulty || null,
+    weaknessType: getSubjectBWeaknessType(question),
     correct: false,
     showedAnswer: true
   });
@@ -5218,8 +5987,8 @@ function showAnswer() {
     choiceEl.disabled = true;
     if (question.order[index].index === question.answer) choiceEl.classList.add("correct");
   });
-  els.feedback.classList.remove("hidden");
-  els.feedback.textContent = buildExplanation(question, false);
+  showFeedbackExplanation(question, false);
+  animateCreatureReaction("wrong");
   speakCreature("wrong", "解説を見てから、次の一問で取り返そう。");
   els.nextQuestion.disabled = false;
 }
@@ -5230,11 +5999,13 @@ function timeOutQuestion() {
   const question = current.questions[current.index];
   if (!current.overallDeadline) clearQuizTimer();
   current.answered = true;
+  current.correctStreak = 0;
   current.records.push({
     questionId: question.id,
     stageId: question.stageId || current.stage.id,
     tag: question.tag,
     difficulty: question.difficulty || null,
+    weaknessType: getSubjectBWeaknessType(question),
     correct: false,
     timedOut: true
   });
@@ -5244,6 +6015,8 @@ function timeOutQuestion() {
   });
   els.feedback.classList.remove("hidden");
   els.feedback.textContent = `時間切れです。${buildExplanation(question, false)}`;
+  showFeedbackExplanation(question, false, "時間切れです。");
+  animateCreatureReaction("timeout");
   speakCreature("timeout");
   els.nextQuestion.disabled = false;
 }
@@ -5276,6 +6049,7 @@ function commitFullExamAnswer() {
     stageId: question.stageId || current.stage.id,
     tag: question.tag,
     difficulty: question.difficulty || null,
+    weaknessType: getSubjectBWeaknessType(question),
     correct: isCorrect,
     selectedChoiceIndex
   };
@@ -5327,6 +6101,60 @@ function getExamDomainName(record, subject) {
   return getStageNameById(record.stageId);
 }
 
+function buildCreatureResultComment(percentage, examAssessment = null, weakTags = []) {
+  const total = current.questions.length;
+  const score = current.score;
+  const maxStreak = current.maxCorrectStreak || 0;
+  const typeReview = current.subjectBTypeReview;
+  const weakestType = examAssessment?.subject === "B" ? examAssessment.weaknessTypes?.[0] : null;
+
+  if (typeReview?.after) {
+    const delta = typeReview.after.percentage - typeReview.before.percentage;
+    if (delta > 0) return `${typeReview.type}は ${delta}pt 改善。今の復習はちゃんと積み上がっています。`;
+    return `${typeReview.type}はまだ伸ばせます。間違えた選択肢の役割まで確認しましょう。`;
+  }
+  if (score === total) return "完璧です。今日は進化ポイントの吸収がかなり良いです。";
+  if (examAssessment?.level === "high") return "かなり仕上がっています。次は時間配分を崩さず本番形式で確認しましょう。";
+  if (examAssessment?.level === "borderline") return "合格圏が見えています。弱い分野を一つ削ると安定します。";
+  if (weakestType && weakestType.wrong > 0) return `${weakestType.name}を重点的に見直すと、科目Bは伸びやすいです。`;
+  if (maxStreak >= 5) return `途中の${maxStreak}問連続正解、判断がかなり安定していました。`;
+  if (maxStreak >= 3) return `途中の${maxStreak}問連続正解は良い流れでした。次はその型を長く保ちましょう。`;
+  if (percentage >= 80) return "かなり良い結果です。次は苦手タグを少し混ぜて負荷を上げましょう。";
+  if (percentage >= 60) return "あと少しです。間違えた問題の共通点を一つだけ拾いましょう。";
+  if (weakTags[0]?.count) return `${weakTags[0].tag}が今日の重点です。ここを一つ潰すだけで次が変わります。`;
+  return "ここから伸びる余地が多いです。まずは解説を一問ずつ回収しましょう。";
+}
+
+function buildEvolutionResultInfo(messages = []) {
+  if (!messages.length) return null;
+  const evolved = messages.some((message) => message.includes("進化しました"));
+  const grown = messages.some((message) => message.includes("成長しました"));
+  const species = getCreatureSpecies();
+  const branch = getEvolutionBranch();
+  const phase = getCreaturePhase();
+  const finalForm = species.id === "human" ? getFinalEvolutionForm() : null;
+  const specialForm = creature.currentSpecial ? getSpecialEvolutionForm(species.id) : null;
+  const title = evolved ? "進化しました" : grown ? "成長しました" : "進化が進みました";
+  let comment = `${getCreatureDisplayName()}は${phase}になりました。`;
+  if (finalForm) {
+    comment = `${finalForm.finalName}へ到達しました。ここからは本番形式で安定感を磨きましょう。`;
+  } else if (specialForm) {
+    comment = `${specialForm.name}として特徴が強く出ています。${specialForm.cue}`;
+  } else if (evolved) {
+    comment = `${branch.label}に近い姿へ進化しました。得意傾向が少しずつ形になっています。`;
+  } else if (grown) {
+    comment = `${getCreatureDisplayName()}が${phase}へ成長しました。次の進化条件も見えてきています。`;
+  }
+  return {
+    title,
+    comment,
+    messages,
+    name: getCreatureDisplayName(),
+    phase,
+    image: getCreatureImageSrc()
+  };
+}
+
 function buildExamAssessment() {
   if (!isFullExamMode()) return null;
 
@@ -5365,6 +6193,24 @@ function buildExamAssessment() {
       percentage: Math.round((difficulty.correct / difficulty.total) * 100)
     }))
     .sort((a, b) => ["basic", "standard", "advanced"].indexOf(a.key) - ["basic", "standard", "advanced"].indexOf(b.key));
+  const weaknessTypes = subject === "B"
+    ? Object.values(
+        current.records.reduce((summary, record) => {
+          const name = record.weaknessType || getSubjectBWeaknessType(record);
+          if (!name) return summary;
+          summary[name] = summary[name] || { name, correct: 0, total: 0 };
+          summary[name].total += 1;
+          summary[name].correct += record.correct ? 1 : 0;
+          return summary;
+        }, {})
+      )
+        .map((type) => ({
+          ...type,
+          wrong: type.total - type.correct,
+          percentage: Math.round((type.correct / type.total) * 100)
+        }))
+        .sort((a, b) => b.wrong - a.wrong || a.percentage - b.percentage || b.total - a.total)
+    : [];
   const weakest = [...domains].sort((a, b) => a.percentage - b.percentage || b.total - a.total)[0];
   const minimumDomainRate = weakest?.percentage ?? 0;
 
@@ -5386,6 +6232,7 @@ function buildExamAssessment() {
     label,
     domains,
     difficulties,
+    weaknessTypes,
     weakestDomain: weakest?.name || "なし",
     minimumDomainRate,
     timedOut: Boolean(current.examTimedOut)
@@ -5458,7 +6305,54 @@ function buildResultAdvice(percentage, examAssessment = current.examAssessment |
         .map((difficulty) => `<span class="weak-chip difficulty-chip ${difficulty.key}">${difficulty.name} ${difficulty.correct}/${difficulty.total} (${difficulty.percentage}%)</span>`)
         .join("")
     : "";
+  const subjectBWeaknessBreakdown = examAssessment?.subject === "B" && examAssessment.weaknessTypes?.length
+    ? examAssessment.weaknessTypes
+        .slice(0, 5)
+        .map((type) => `<span class="weak-chip weakness-type-chip">${type.name} ${type.correct}/${type.total} (${type.percentage}%)</span>`)
+        .join("")
+    : "";
+  const typeReview = current.subjectBTypeReview;
+  const typeReviewSummary = typeReview?.before && typeReview?.after
+    ? {
+        delta: typeReview.after.percentage - typeReview.before.percentage,
+        sessionRate: Math.round((current.score / current.questions.length) * 100)
+      }
+    : null;
+  const creatureResultComment = buildCreatureResultComment(percentage, examAssessment, weakTags);
+  const evolutionResult = buildEvolutionResultInfo(current.evolutionMessages || []);
   els.resultAdvice.innerHTML = `
+    ${evolutionResult ? `
+      <div class="advice-card evolution-result-card">
+        <span>Evolution</span>
+        <div class="evolution-result-content">
+          <img src="${evolutionResult.image}" alt="" />
+          <div>
+            <strong>${evolutionResult.title}</strong>
+            <p>${escapeHtml(evolutionResult.comment)}</p>
+            <div class="weak-chip-list">
+              ${evolutionResult.messages.map((message) => `<span class="weak-chip">${escapeHtml(message)}</span>`).join("")}
+            </div>
+          </div>
+        </div>
+      </div>
+    ` : ""}
+    <div class="advice-card creature-result-comment">
+      <span>Creature Comment</span>
+      <strong>キャラコメント</strong>
+      <p>${escapeHtml(creatureResultComment)}</p>
+    </div>
+    ${typeReviewSummary ? `
+      <div class="advice-card subject-b-type-improvement ${typeReviewSummary.delta >= 0 ? "improved" : "declined"}">
+        <span>Type Review</span>
+        <strong>${escapeHtml(typeReview.type)} 復習結果</strong>
+        <p>今回の復習は ${current.score}/${current.questions.length}問正解（${typeReviewSummary.sessionRate}%）です。</p>
+        <div class="weak-chip-list">
+          <span class="weak-chip">正答率 ${typeReview.before.percentage}% → ${typeReview.after.percentage}%</span>
+          <span class="weak-chip">${typeReviewSummary.delta >= 0 ? "+" : ""}${typeReviewSummary.delta}pt</span>
+          <span class="weak-chip subject-b-type-status ${typeReview.after.status.id}">${typeReview.after.status.label}</span>
+        </div>
+      </div>
+    ` : ""}
     ${examAssessment ? `
       <div class="advice-card exam-assessment ${examAssessment.level}">
         <span>Estimated Score</span>
@@ -5469,6 +6363,7 @@ function buildResultAdvice(percentage, examAssessment = current.examAssessment |
     ` : ""}
     ${examBreakdown ? `<div class="advice-card"><span>Breakdown</span><strong>分野別内訳</strong><div class="weak-chip-list">${examBreakdown}</div></div>` : ""}
     ${difficultyBreakdown ? `<div class="advice-card"><span>Difficulty</span><strong>難易度別内訳</strong><div class="weak-chip-list">${difficultyBreakdown}</div></div>` : ""}
+    ${subjectBWeaknessBreakdown ? `<div class="advice-card"><span>Subject B</span><strong>弱点タイプ分析</strong><p>誤答が多いタイプを優先表示しています。次の復習では上位タイプを重点的に確認しましょう。</p><div class="weak-chip-list">${subjectBWeaknessBreakdown}</div></div>` : ""}
     <div class="advice-card">
       <span>Weak Point</span>
       <strong>今回の弱点</strong>
@@ -5509,6 +6404,7 @@ function renderResultReview() {
       const correctAnswer = question.choices[question.answer];
       const difficultyLabel = getDifficultyLabel(record.difficulty || question.difficulty);
       const difficultyClass = getDifficultyClass(record.difficulty || question.difficulty);
+      const weaknessType = record.weaknessType || getSubjectBWeaknessType(question);
       return `
         <article class="result-review-item">
           <div class="result-review-meta">
@@ -5516,6 +6412,7 @@ function renderResultReview() {
             <span>${escapeHtml(getStageNameById(record.stageId))}</span>
             <span>${escapeHtml(normalizeResultTag(record.tag))}</span>
             ${difficultyLabel ? `<span class="difficulty-badge ${difficultyClass}">${difficultyLabel}</span>` : ""}
+            ${weaknessType ? `<span class="weakness-type-badge">${escapeHtml(weaknessType)}</span>` : ""}
           </div>
           <h4>${escapeHtml(question.text)}</h4>
           <dl class="answer-comparison">
@@ -5578,6 +6475,7 @@ function showResult() {
         stageId: record.stageId,
         tag: record.tag,
         difficulty: record.difficulty || question?.difficulty || null,
+        weaknessType: record.weaknessType || getSubjectBWeaknessType(question),
         questionText: question?.text || "",
         correct: record.correct,
         selectedChoiceIndex: Number.isInteger(record.selectedChoiceIndex) ? record.selectedChoiceIndex : null,
@@ -5590,7 +6488,18 @@ function showResult() {
   });
   history = history.slice(0, 100);
   updateQuestionStats(current.records, current.questions);
+  if (current.subjectBTypeReview?.type) {
+    const afterStats = getSubjectBTypeStat(current.subjectBTypeReview.type);
+    current.subjectBTypeReview.after = {
+      attempts: afterStats.attempts,
+      correct: afterStats.correct,
+      wrong: afterStats.wrong,
+      percentage: afterStats.percentage,
+      status: getSubjectBTypeStatus(afterStats)
+    };
+  }
   const evolutionMessages = autoAdvanceCreature();
+  current.evolutionMessages = evolutionMessages;
   saveProgress();
   saveHistory();
   saveCreature();
@@ -6120,6 +7029,31 @@ function renderStats() {
       .join("")}
   `;
 
+  const subjectBTypeRows = getSubjectBTypeStatRows();
+  els.subjectBTypeStats.innerHTML = subjectBTypeRows.length
+    ? `
+      <div class="subject-b-type-row header">
+        <span>タイプ</span><span>状態</span><span>正答率</span><span>正解</span><span>誤答</span><span>挑戦</span><span>復習</span>
+      </div>
+      ${subjectBTypeRows
+        .map((row) => {
+          const status = getSubjectBTypeStatus(row);
+          return `
+            <div class="subject-b-type-row ${row.percentage < 60 ? "weak" : row.percentage >= 80 ? "strong" : ""}">
+              <strong>${escapeHtml(row.type)}</strong>
+              <span class="subject-b-type-status ${status.id}">${status.label}</span>
+              <span>${row.percentage}%</span>
+              <span>${row.correct}</span>
+              <span>${row.wrong}</span>
+              <span>${row.attempts}</span>
+              <button class="secondary-button compact" type="button" data-review-subject-b-type="${escapeHtml(row.type)}">復習</button>
+            </div>
+          `;
+        })
+        .join("")}
+    `
+    : `<div class="feedback">科目Bの回答記録が増えると、トレース・配列・認証などのタイプ別成績が表示されます。</div>`;
+
   const weakQuestions = getRankedWeakQuestions(10);
   els.reviewTopWeakQuestions.classList.toggle("hidden", !weakQuestions.length);
 
@@ -6374,7 +7308,9 @@ els.retryStage.addEventListener("click", () => {
       timeBonus: 0,
       answered: false,
       selectedIndex: null,
-      records: []
+      records: [],
+      correctStreak: 0,
+      maxCorrectStreak: 0
     };
     setView("quiz");
     renderQuestion();
@@ -6421,6 +7357,10 @@ els.reviewTopWeakQuestions.addEventListener("click", () => {
 els.weakQuestionRanking.addEventListener("click", (event) => {
   const questionIdToReview = event.target.dataset.reviewQuestion;
   if (questionIdToReview) startRankedQuestionReview([questionIdToReview]);
+});
+els.subjectBTypeStats.addEventListener("click", (event) => {
+  const type = event.target.dataset.reviewSubjectBType;
+  if (type) startSubjectBTypeReview(type);
 });
 els.historyList.addEventListener("click", (event) => {
   const attemptId = event.target.dataset.historyDetail;
@@ -6522,6 +7462,8 @@ els.resetProgress.addEventListener("click", () => {
 });
 
 migrateWrongQuestionStats();
+enrichQuestionStatsMetadata();
+migrateWeaknessTypesFromHistory();
 recordEvolutionUnlock(creature.branchId);
 syncGameAchievements();
 renderStages();
