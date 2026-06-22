@@ -139,13 +139,6 @@ for (const question of questions) {
     });
   }
 
-  const acronymSources = [question.text, correctChoice, explanation, ...(question.choices || [])].join(" ");
-  if (hasAcronym(acronymSources) && hasAcronymMeaningInExplanation(explanation)) {
-    addFinding(findings, question, "possible-acronym-duplication", "low", {
-      reason: "略語補足と既存解説の内容が重複する可能性があります。",
-    });
-  }
-
   if (textLength >= 80 && explanationLength < 45) {
     addFinding(findings, question, "long-question-short-explanation", "medium", {
       questionLength: textLength,

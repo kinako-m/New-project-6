@@ -3286,6 +3286,75 @@ function improveManagementExplanations() {
 
 improveManagementExplanations();
 
+function polishRemainingExplanationQuality() {
+  const explanations = new Map([
+    ["顧客表から氏名列だけを取り出す操作はどれか。", "射影は、関係から必要な列（属性）だけを取り出す操作です。氏名列だけを残すので、行を絞る選択ではなく射影に該当します。"],
+    ["顧客表から東京都の行だけを取り出す操作はどれか。", "選択は、条件に合う行（タプル）だけを取り出す操作です。住所が東京都という条件で行を絞るため、列を選ぶ射影ではなく選択です。"],
+    ["二つの表を共通列で対応付ける操作はどれか。", "結合は、二つの表を共通する属性値で対応付けて一つの結果にする操作です。顧客表と注文表を顧客番号で結び付けるような場合に使います。"],
+    ["表から重複行を取り除く集合演算はどれか。", "重複排除は、同じ値を持つ行を一つにまとめる操作です。和集合のように二つの集合を合わせる操作ではなく、結果内の重複をなくす点が判断ポイントです。"],
+    ["NULL値の説明として適切なものはどれか。", "NULLは、値が存在しない、未設定、または不明であることを表します。空文字列や数値の0とは異なり、値そのものがない状態として扱います。"],
+    ["NOT NULL制約の目的はどれか。", "NOT NULL制約は、指定列にNULLを格納できないようにする制約です。必ず値が必要な顧客名や注文日のような項目で、未入力を防ぐために使います。"],
+    ["CHECK制約の目的はどれか。", "CHECK制約は、列の値が定めた条件を満たす場合だけ登録・更新を許可する制約です。例えば数量を0以上に限定し、範囲外の値を防ぎます。"],
+    ["要件定義で主に行うことはどれか。", "要件定義では、利用者や業務が必要とする機能、性能、制約、運用条件を明確にします。画面や内部処理を具体化する設計工程より前に、何を作るかを合意する段階です。"],
+    ["基本設計で主に行うことはどれか。", "基本設計では、利用者から見える外部仕様を定めます。画面、帳票、入出力、他システムとのインタフェースなどを設計し、詳細なプログラム内部の処理は詳細設計で扱います。"],
+    ["詳細設計で主に行うことはどれか。", "詳細設計では、プログラムやモジュール内部の処理手順、データ構造、例外処理などを具体化します。画面や帳票の外部仕様を定める基本設計よりも、実装に近い工程です。"],
+    ["負荷テストの目的はどれか。", "負荷テストは、想定される利用者数や処理量をかけたときに、応答時間や処理能力が要求を満たすか確認するテストです。機能の正しさではなく性能・容量を評価します。"],
+    ["フェールオーバの説明はどれか。", "フェールオーバは、主系で障害が起きたときに待機系へ自動または手動で処理を引き継ぐ仕組みです。サービス停止時間を短くし、可用性を高めるために使います。"],
+    ["フェールセーフの説明はどれか。", "フェールセーフは、故障や異常が起きたときに、被害が最小になる安全側の状態へ移行させる考え方です。処理を継続するフェールオーバとは目的が異なります。"],
+    ["サブスクリプションモデルの説明はどれか。", "サブスクリプションモデルは、商品やサービスを所有させる代わりに、一定期間の利用権に対して継続的な料金を得るモデルです。月額や年額で提供するソフトウェアサービスが代表例です。"],
+    ["フリーミアムの説明はどれか。", "フリーミアムは、基本機能を無料で提供して利用者を増やし、高度な機能や追加容量などを有料にするビジネスモデルです。無料版から有料版へ移行する利用者の割合が収益に関わります。"],
+    ["ロックインの説明はどれか。", "ロックインは、データ形式、操作習熟、契約条件、周辺サービスなどの理由で、特定製品やサービスから他へ乗り換えにくくなる状態です。利用継続を促す一方、利用者の選択肢を狭める面もあります。"],
+    ["ベンチマーキングの説明はどれか。", "ベンチマーキングは、優れた他社や他部門の事例を基準として比較し、自社の改善点を見つける手法です。単に競合を調査するだけでなく、改善目標を設定するために使います。"],
+    ["KPIの説明はどれか。", "KPIはKey Performance Indicatorの略で、最終目標に向かう途中の達成度を測る重要業績評価指標です。売上目標に対する商談数や解約率のように、日常的に進捗を管理するために使います。"],
+    ["KGIの説明はどれか。", "KGIはKey Goal Indicatorの略で、最終的な経営目標の達成度を示す指標です。売上高や利益額のような最終成果を表し、途中の行動を測るKPIと区別します。"]
+  ]);
+
+  stages.forEach((stage) => {
+    stage.questions.forEach((question) => {
+      const explanation = explanations.get(question.text);
+      if (explanation) question.explanation = explanation;
+    });
+  });
+}
+
+polishRemainingExplanationQuality();
+
+function enrichCaseDistractorNotes() {
+  function noteFor(question, choice) {
+    const text = `${question.text} ${choice}`;
+    if (question.stageId === "technology") {
+      if (/最初|初動|障害|感染|不正|脆弱性/.test(text)) return "この対応だけでは、被害拡大を止めることと、調査に必要な証拠・影響範囲を保全することを同時に満たせません。";
+      if (/個人情報|委託|録画|クラウド|保存|公開/.test(text)) return "情報の利用目的、必要最小限の範囲、アクセス制御、保存・削除の条件のいずれかが不足します。";
+      return "問題文で求める認証強化、アクセス制御、監視、復旧の優先順位と一致しない対応です。";
+    }
+    if (question.stageId === "algorithm") {
+      return "この選択肢は、問題文で指定されたデータの取り出し順、比較順、または変数更新の順序と一致しません。小さい例で手順を追って確認します。";
+    }
+    if (question.stageId === "database") {
+      return "この選択肢はDB用語としては関連しますが、問題文が求める行・列・表の操作、制約、またはトランザクションの性質と一致しません。";
+    }
+    if (question.stageId === "management") {
+      if (/CPI|SPI|日数|工数|期間/.test(text)) return "計算の前提となる作業の順序、並行可否、または指標の分子・分母を取り違えた結果です。";
+      return "この選択肢は管理活動としては関連しますが、問題文が求める目的や実施するタイミングと一致しません。";
+    }
+    return "問題文で求める対象や目的と一致しないため、正解にはなりません。";
+  }
+
+  stages.forEach((stage) => {
+    stage.questions.forEach((question) => {
+      const isCaseLike = question.difficulty === "advanced" || /科目B|ケース|複合|トレース/.test(String(question.tag || ""));
+      if (!isCaseLike || !Array.isArray(question.choices)) return;
+      const notes = { ...(question.choiceNotes || {}) };
+      question.choices.forEach((choice, index) => {
+        if (index !== question.answer && !notes[choice]) notes[choice] = noteFor(question, choice);
+      });
+      question.choiceNotes = notes;
+    });
+  });
+}
+
+enrichCaseDistractorNotes();
+
 const els = {
   stageView: document.querySelector("#stageView"),
   quizView: document.querySelector("#quizView"),
@@ -3421,7 +3490,7 @@ gameState.completedMissions = gameState.completedMissions || [];
 let current = null;
 let quizTimer = null;
 let pendingEvolutionChoice = null;
-const ASSET_VERSION = "v135";
+const ASSET_VERSION = "v138";
 
 const DIFFICULTY_LABELS = {
   basic: "基礎",
@@ -5859,6 +5928,7 @@ function showFeedbackExplanation(question, isCorrect, leadText = "") {
 function buildAcronymNotes(question) {
   const correctChoice = question.choices?.[question.answer] || "";
   const wrongChoices = (question.choices || []).filter((_, index) => index !== question.answer);
+  const explanation = String(question.explanation || "");
   const prioritizedSources = [
     correctChoice,
     question.text,
@@ -5870,6 +5940,10 @@ function buildAcronymNotes(question) {
   prioritizedSources.forEach((source) => {
     Object.entries(ACRONYM_EXPLANATIONS).forEach(([term, meaning]) => {
       if (seen.has(term.toLowerCase()) || !containsAcronymTerm(source, term)) return;
+      if (containsAcronymTerm(explanation, term)) {
+        seen.add(term.toLowerCase());
+        return;
+      }
       found.push([term, meaning]);
       seen.add(term.toLowerCase());
     });
