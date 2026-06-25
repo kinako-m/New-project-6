@@ -9,7 +9,7 @@
     <title>基本情報 ステージ模試</title>
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
-    <link rel="stylesheet" href="styles.css?v138" />
+    <link rel="stylesheet" href="styles.css?v145" />
   </head>
   <body>
     <main class="app-shell">
@@ -95,6 +95,16 @@
             <b>開始 →</b>
           </button>
         </div>
+        <section class="today-review-section home-focus-section">
+          <div class="section-heading compact-heading">
+            <div>
+              <p class="eyebrow">Today's Focus</p>
+              <h3>今日の重点5問</h3>
+            </div>
+            <button class="primary-button compact" id="startHomeTodayReview" type="button">5問を復習</button>
+          </div>
+          <div id="homeTodayReview" class="today-review compact"></div>
+        </section>
         <div id="missionBoard" class="mission-board"></div>
         <div id="badgeBoard" class="badge-board"></div>
         <div id="stageGrid" class="stage-grid"></div>
@@ -140,6 +150,11 @@
               <button class="ghost-button compact" id="closeExamNavigator" type="button">閉じる</button>
             </div>
             <div id="examNavigatorSummary" class="exam-navigator-summary"></div>
+            <div id="examNavigatorFilters" class="exam-navigator-filters" role="group" aria-label="問題一覧の絞り込み">
+              <button class="secondary-button compact active" type="button" data-exam-filter="all">すべて</button>
+              <button class="secondary-button compact" type="button" data-exam-filter="unanswered">未回答</button>
+              <button class="secondary-button compact" type="button" data-exam-filter="review">見直し</button>
+            </div>
             <div id="examQuestionGrid" class="exam-question-grid"></div>
           </section>
 
@@ -234,6 +249,16 @@
             </div>
           </section>
           <div id="statsTable" class="stats-table"></div>
+          <section class="today-review-section">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Today's Focus</p>
+                <h3>今日の重点5問</h3>
+              </div>
+              <button class="primary-button compact" id="startTodayReview" type="button">5問を復習</button>
+            </div>
+            <div id="todayReview" class="today-review"></div>
+          </section>
           <section class="subject-b-type-section">
             <div class="section-heading">
               <div>
@@ -303,11 +328,11 @@
       </section>
     </main>
 
-    <script src="improvement-questions.js?v138"></script>
-    <script src="subject-b-case-questions.js?v138"></script>
-    <script src="subject-b-case-questions-2.js?v138"></script>
-    <script src="sample-derived-questions.js?v138"></script>
-    <script src="question-choice-sets.js?v138"></script>
-    <script src="app.js?v138"></script>
+    <script src="improvement-questions.js?v145"></script>
+    <script src="subject-b-case-questions.js?v145"></script>
+    <script src="subject-b-case-questions-2.js?v145"></script>
+    <script src="sample-derived-questions.js?v145"></script>
+    <script src="question-choice-sets.js?v145"></script>
+    <script src="app.js?v145"></script>
   </body>
 </html>

@@ -38,7 +38,7 @@ const indexSource = fs.readFileSync(path.join(root, "index.html"), "utf8");
 const serviceWorkerSource = fs.readFileSync(path.join(root, "service-worker.js"), "utf8");
 const manifest = JSON.parse(fs.readFileSync(path.join(root, "manifest.webmanifest"), "utf8"));
 
-if (!/navigator\.serviceWorker\.register\("\.\/service-worker\.js"\)/.test(appSource)) {
+if (!/navigator\s*\.\s*serviceWorker\s*\.\s*register\s*\(\s*"\.\/service-worker\.js"(?:\s*,|\s*\))/.test(appSource)) {
   findings.push({ type: "service-worker-register-not-relative" });
 }
 
@@ -56,6 +56,50 @@ for (const external of [...indexSource.matchAll(/(?:src|href)=["'](https?:\/\/[^
 
 for (const localOnly of [...[appSource, indexSource, serviceWorkerSource].join("\n").matchAll(/(?:localhost|127\.0\.0\.1|file:\/\/|C:\\)/g)]) {
   findings.push({ type: "local-only-reference", value: localOnly[0] });
+}
+
+const requiredTodayReviewIds = [
+  "homeTodayReview",
+  "startHomeTodayReview",
+  "todayReview",
+  "startTodayReview"
+];
+
+for (const id of requiredTodayReviewIds) {
+  if (!indexSource.includes(`id="${id}"`)) {
+    findings.push({ type: "missing-today-review-dom", id });
+  }
+  if (!appSource.includes(`querySelector("#${id}")`)) {
+    findings.push({ type: "missing-today-review-selector", id });
+  }
+}
+
+const todayReviewExpectations = [
+  ["homeTodayReview", /renderTodayReviewList\s*\(\s*els\.homeTodayReview\s*,\s*els\.startHomeTodayReview\s*,\s*5\s*\)/],
+  ["todayReview", /renderTodayReviewList\s*\(\s*els\.todayReview\s*,\s*els\.startTodayReview\s*,\s*5\s*\)/],
+  ["startHomeTodayReview", /els\.startHomeTodayReview\.addEventListener\s*\(\s*"click"/],
+  ["startTodayReview", /els\.startTodayReview\.addEventListener\s*\(\s*"click"/]
+];
+
+for (const [id, pattern] of todayReviewExpectations) {
+  if (!pattern.test(appSource)) {
+    findings.push({ type: "missing-today-review-wiring", id });
+  }
+}
+
+const examNavigatorExpectations = [
+  ["examNavigatorFilters", indexSource.includes('id="examNavigatorFilters"')],
+  ["exam-filter-all", indexSource.includes('data-exam-filter="all"')],
+  ["exam-filter-unanswered", indexSource.includes('data-exam-filter="unanswered"')],
+  ["exam-filter-review", indexSource.includes('data-exam-filter="review"')],
+  ["examNavigatorFilters-selector", appSource.includes('querySelector("#examNavigatorFilters")')],
+  ["examNavigatorFilters-listener", /els\.examNavigatorFilters\.addEventListener\s*\(\s*"click"/.test(appSource)],
+  ["examNavigatorFilter-state", appSource.includes("examNavigatorFilter")],
+  ["examNavigatorFilter-match", appSource.includes("matchesExamNavigatorFilter")]
+];
+
+for (const [id, ok] of examNavigatorExpectations) {
+  if (!ok) findings.push({ type: "missing-exam-navigator-filter-wiring", id });
 }
 
 const appShell = [...serviceWorkerSource.matchAll(/"(\.\/[^"]+)"/g)].map((match) => match[1]);

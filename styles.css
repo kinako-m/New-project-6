@@ -1132,6 +1132,19 @@ body[data-view="quiz"] .quiz-panel {
   color: #8a4b08;
 }
 
+.exam-navigator-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.exam-navigator-filters .active {
+  border-color: var(--brand);
+  background: #e7f6ee;
+  color: var(--brand-dark);
+}
+
 .exam-question-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
@@ -1169,6 +1182,16 @@ body[data-view="quiz"] .quiz-panel {
   top: 1px;
   color: #b45309;
   font-size: 0.72rem;
+}
+
+.exam-question-empty {
+  grid-column: 1 / -1;
+  padding: 14px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  text-align: center;
+  font-weight: 800;
 }
 
 .ghost-button,
@@ -1945,6 +1968,94 @@ body[data-view="quiz"] .choice {
 
 .weak-question-section {
   margin-top: 26px;
+}
+
+.today-review-section {
+  margin-top: 26px;
+}
+
+.home-focus-section {
+  margin: 18px 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+}
+
+.compact-heading {
+  align-items: center;
+  margin: 0 0 12px;
+}
+
+.compact-heading h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.today-review {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.today-review.compact {
+  margin-top: 0;
+}
+
+.today-review-item {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+}
+
+.today-review-item > span {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.today-review-item strong,
+.today-review-item p,
+.today-review-item em,
+.today-review-item small {
+  margin: 0;
+}
+
+.today-review-item strong {
+  color: var(--brand-dark);
+  font-size: 0.8rem;
+}
+
+.today-review-item p {
+  margin-top: 3px;
+  line-height: 1.45;
+}
+
+.today-review-item em {
+  display: block;
+  margin-top: 5px;
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.today-review-item small {
+  color: var(--muted);
+  text-align: right;
+  white-space: nowrap;
 }
 
 .subject-b-type-section {
@@ -2936,6 +3047,15 @@ body[data-view="quiz"] .choice {
 
   .weak-question-item {
     grid-template-columns: 32px minmax(0, 1fr);
+  }
+
+  .today-review-item {
+    grid-template-columns: 30px minmax(0, 1fr);
+  }
+
+  .today-review-item small {
+    grid-column: 2;
+    text-align: left;
   }
 
   .weak-question-score {

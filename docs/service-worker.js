@@ -1,14 +1,14 @@
-const CACHE_NAME = "fe-stage-practice-v138";
+const CACHE_NAME = "fe-stage-practice-v145";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v138",
-  "./improvement-questions.js?v138",
-  "./subject-b-case-questions.js?v138",
-  "./subject-b-case-questions-2.js?v138",
-  "./question-choice-sets.js?v138",
-  "./sample-derived-questions.js?v138",
-  "./app.js?v138",
+  "./styles.css?v145",
+  "./improvement-questions.js?v145",
+  "./subject-b-case-questions.js?v145",
+  "./subject-b-case-questions-2.js?v145",
+  "./question-choice-sets.js?v145",
+  "./sample-derived-questions.js?v145",
+  "./app.js?v145",
   "./manifest.webmanifest",
   "./assets/branch-evolution-sheet.png",
   "./assets/creature-amphibian.png",
@@ -79,6 +79,19 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put("./index.html", copy));
+          return response;
+        })
+        .catch(() => caches.match("./index.html"))
+    );
+    return;
+  }
 
   event.respondWith(
     caches.match(event.request).then((cached) => {

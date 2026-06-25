@@ -3395,6 +3395,7 @@ const els = {
   examNavigator: document.querySelector("#examNavigator"),
   closeExamNavigator: document.querySelector("#closeExamNavigator"),
   examNavigatorSummary: document.querySelector("#examNavigatorSummary"),
+  examNavigatorFilters: document.querySelector("#examNavigatorFilters"),
   examQuestionGrid: document.querySelector("#examQuestionGrid"),
   questionTag: document.querySelector("#questionTag"),
   timeRemaining: document.querySelector("#timeRemaining"),
@@ -3421,6 +3422,10 @@ const els = {
   examScoreTrendChart: document.querySelector("#examScoreTrendChart"),
   examScoreTrendEmpty: document.querySelector("#examScoreTrendEmpty"),
   statsTable: document.querySelector("#statsTable"),
+  homeTodayReview: document.querySelector("#homeTodayReview"),
+  todayReview: document.querySelector("#todayReview"),
+  startHomeTodayReview: document.querySelector("#startHomeTodayReview"),
+  startTodayReview: document.querySelector("#startTodayReview"),
   subjectBTypeStats: document.querySelector("#subjectBTypeStats"),
   weakQuestionRanking: document.querySelector("#weakQuestionRanking"),
   reviewTopWeakQuestions: document.querySelector("#reviewTopWeakQuestions"),
@@ -3490,7 +3495,7 @@ gameState.completedMissions = gameState.completedMissions || [];
 let current = null;
 let quizTimer = null;
 let pendingEvolutionChoice = null;
-const ASSET_VERSION = "v138";
+const ASSET_VERSION = "v145";
 
 const DIFFICULTY_LABELS = {
   basic: "基礎",
@@ -3691,24 +3696,35 @@ const creatureLines = {
     "その調子。知識がなじんできた。",
     "やった、今の判断きれいだったよ。",
     "いいね。選択肢の見分けが強くなってる。",
-    "今の一問、ちゃんと経験値になったよ。"
+    "今の一問、ちゃんと経験値になったよ。",
+    "判断の軸が合ってきた。今の解き方を覚えておこう。",
+    "よし。問題文と選択肢の対応がきれいに取れてる。"
   ],
   streak3: [
     "3問連続正解。流れができてる。",
     "いい連続正解。判断が安定してきたね。",
-    "3連続。今の集中、かなり良い。"
+    "3連続。今の集中、かなり良い。",
+    "3連続。進化ゲージが静かに熱くなってきた。"
   ],
   streak5: [
     "5問連続正解。これはかなり強い。",
     "5連続。合格ラインに近い解き方だよ。",
-    "すごい、5問連続。進化の気配が濃いね。"
+    "すごい、5問連続。進化の気配が濃いね。",
+    "5連続。苦手が経験値に変わってる。"
+  ],
+  streak10: [
+    "10問連続正解。完全に流れをつかんでる。",
+    "10連続。これは模試でもかなり頼れる解き方。",
+    "10問連続。進化先がこちらを見ている。"
   ],
   wrong: [
     "大丈夫。解説で次の一問が強くなる。",
     "惜しい。選択肢の違いを一緒に見よう。",
     "ここで覚えれば、次は取れるよ。",
     "間違い方が分かると、次の正解率が上がるよ。",
-    "正解以外が何を指すかも見ておこう。"
+    "正解以外が何を指すかも見ておこう。",
+    "今のミスは記録した。次の復習で回収しよう。",
+    "一問落としても大丈夫。原因が分かれば育成は進む。"
   ],
   timeout: [
     "時間切れ。次は先に選択肢を削ろう。",
@@ -3719,6 +3735,11 @@ const creatureLines = {
     "進化の気配がする。",
     "姿が変わるかも。条件を見てみよう。",
     "このまま伸びると分岐が開くよ。"
+  ],
+  nearEvolution: [
+    "進化が近い。次のチャレンジで届くかも。",
+    "あと少しで姿が変わりそう。正答率を守っていこう。",
+    "成長がかなり進んでる。ここからの一問が効くよ。"
   ]
 };
 
@@ -4230,9 +4251,44 @@ function animateCreatureReaction(kind = "happy") {
 }
 
 function getCorrectStreakLine(streak) {
+  if (streak > 0 && streak % 10 === 0) return { kind: "streak10", line: pick(creatureLines.streak10), milestone: true };
   if (streak > 0 && streak % 5 === 0) return { kind: "streak5", line: pick(creatureLines.streak5), milestone: true };
   if (streak > 0 && streak % 3 === 0) return { kind: "streak3", line: pick(creatureLines.streak3), milestone: true };
   return { kind: "correct", line: "", milestone: false };
+}
+
+function getNearEvolutionLine() {
+  if (!current || isCreatureComplete()) return "";
+  current.evolutionHintCooldown = Math.max(0, current.evolutionHintCooldown || 0);
+  if (current.evolutionHintCooldown > 0) {
+    current.evolutionHintCooldown -= 1;
+    return "";
+  }
+  const nextCost = getNextCreatureCost();
+  if (!nextCost) return "";
+  const readiness = getHumanEvolutionReadiness();
+  if (isHumanEvolutionStep() && !readiness.ready && creature.food >= nextCost * 0.8) {
+    current.evolutionHintCooldown = 6;
+    return `人型進化には合格見込みが必要。${readiness.message}`;
+  }
+  if (creature.food / nextCost < 0.82) return "";
+  current.evolutionHintCooldown = 5;
+  return pick(creatureLines.nearEvolution);
+}
+
+function getWrongReactionLine(question) {
+  const weakType = getSubjectBWeaknessType(question);
+  if (weakType === "トレース") return "トレース問題は、次に変わる変数だけを追えば立て直せる。";
+  if (weakType === "配列・文字列") return "添字か末尾条件でずれたかも。解説で境界を確認しよう。";
+  if (weakType === "探索・整列") return "探索条件や整列の前提を見直そう。ここは復習で伸びやすい。";
+  if (weakType === "計算量") return "計算量はループの回数に戻ると整理しやすい。";
+  if (weakType === "暗号・鍵") return "鍵の向き、守る目的、本人性のどれかをもう一度分けよう。";
+  if (weakType === "認証・権限") return "認証と認可の違いを確認しよう。ここは混同しやすい。";
+  if (weakType === "委託・運用") return "責任範囲と安全管理措置を切り分けると次は取れる。";
+  if (/SQL|DB|データベース|正規化/.test(`${question.tag || ""} ${question.text || ""}`)) {
+    return "DB問題は、行・列・表・集計のどれを操作するかに戻ろう。";
+  }
+  return pick(creatureLines.wrong);
 }
 
 function getLightheartedCheerLine() {
@@ -4253,6 +4309,8 @@ function getQuestionCheerLine(question) {
   const text = `${question.text || ""} ${tag}`;
   const difficulty = question.difficulty || "";
   const weakType = getSubjectBWeaknessType(question);
+  const nearEvolutionLine = getNearEvolutionLine();
+  if (nearEvolutionLine) return nearEvolutionLine;
   const lightheartedLine = getLightheartedCheerLine();
   if (lightheartedLine) return lightheartedLine;
 
@@ -5060,6 +5118,7 @@ function renderStages() {
   els.clearedCount.textContent = Object.values(progress).filter(Boolean).length;
   renderSuspendedExamBoard();
   renderMissionsAndBadges();
+  renderTodayReviewList(els.homeTodayReview, els.startHomeTodayReview, 5);
   els.stageGrid.innerHTML = "";
 
   stages.forEach((stage) => {
@@ -5265,6 +5324,51 @@ function getRankedWeakQuestions(limit = 10) {
     .slice(0, limit);
 }
 
+function getTodayReviewReason(item) {
+  const reasons = [];
+  const mastery = item.mastery || getQuestionMastery(item);
+  if (mastery.id === "review") {
+    reasons.push(mastery.due ? "復習期限" : "要復習");
+  }
+  if ((item.percentage || 0) < 60) {
+    reasons.push(`正答率${item.percentage || 0}%`);
+  }
+  if ((item.wrong || 0) >= 2) {
+    reasons.push(`誤答${item.wrong}回`);
+  }
+  if ((item.correctStreak || 0) === 0) {
+    reasons.push("連続正解なし");
+  }
+  if (!reasons.length) {
+    reasons.push(`定着確認`, `誤答${item.wrong || 0}回`);
+  }
+  return reasons.slice(0, 3).join(" / ");
+}
+
+function renderTodayReviewList(container, startButton, limit = 5) {
+  const dailyReviewQuestions = getRankedWeakQuestions(limit);
+  if (startButton) startButton.disabled = !dailyReviewQuestions.length;
+  if (!container) return dailyReviewQuestions;
+
+  container.innerHTML = dailyReviewQuestions.length
+    ? dailyReviewQuestions
+        .map((item, index) => `
+          <article class="today-review-item">
+            <span>${index + 1}</span>
+            <div>
+              <strong>${escapeHtml(item.tag || "その他")}</strong>
+              <p>${escapeHtml(item.text)}</p>
+              <em>${escapeHtml(getTodayReviewReason(item))}</em>
+            </div>
+            <small>正答率 ${item.percentage}% / 誤答 ${item.wrong}回</small>
+          </article>
+        `)
+        .join("")
+    : `<div class="feedback">回答記録が増えると、正答率・誤答回数・復習状態から今日の重点問題を選びます。</div>`;
+
+  return dailyReviewQuestions;
+}
+
 function startRankedQuestionReview(questionIds) {
   const catalog = getQuestionCatalog();
   const questions = questionIds
@@ -5453,6 +5557,7 @@ function startFullExam(subject) {
     maxCorrectStreak: 0,
     examAnswers: {},
     reviewQuestionIds: [],
+    examNavigatorFilter: "all",
     mode: isSubjectA ? "subject-a-exam" : "subject-b-exam",
     overallLimitSeconds: minutes * 60,
     overallDeadline: Date.now() + minutes * 60 * 1000
@@ -5473,28 +5578,53 @@ function getExamSelectedShownIndex(question) {
   return shownIndex >= 0 ? shownIndex : null;
 }
 
+function getExamNavigatorFilterLabel(filter) {
+  return {
+    all: "すべて",
+    unanswered: "未回答",
+    review: "見直し"
+  }[filter] || "すべて";
+}
+
+function matchesExamNavigatorFilter(question, filter, reviewIds) {
+  if (filter === "unanswered") return !Number.isInteger(current.examAnswers?.[question.id]);
+  if (filter === "review") return reviewIds.has(question.id);
+  return true;
+}
+
 function renderExamNavigator() {
   if (!isFullExamMode()) return;
   const answeredCount = Object.keys(current.examAnswers || {}).length;
   const reviewIds = new Set(current.reviewQuestionIds || []);
   const unansweredCount = current.questions.length - answeredCount;
+  const filter = current.examNavigatorFilter || "all";
   els.examNavigatorSummary.innerHTML = `
     <span class="answered">回答済み ${answeredCount}</span>
     <span class="unanswered">未回答 ${unansweredCount}</span>
     <span class="review">見直し ${reviewIds.size}</span>
   `;
-  els.examQuestionGrid.innerHTML = current.questions
-    .map((question, index) => {
-      const answered = Number.isInteger(current.examAnswers?.[question.id]);
-      const review = reviewIds.has(question.id);
-      return `
-        <button class="exam-question-jump ${answered ? "answered" : "unanswered"} ${review ? "review" : ""} ${index === current.index ? "current" : ""}"
-          type="button" data-exam-question-index="${index}" aria-label="問${index + 1}${answered ? " 回答済み" : " 未回答"}${review ? " 見直し対象" : ""}">
-          ${index + 1}${review ? `<span>!</span>` : ""}
-        </button>
-      `;
-    })
-    .join("");
+  els.examNavigatorFilters.querySelectorAll("[data-exam-filter]").forEach((button) => {
+    const active = button.dataset.examFilter === filter;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+  const visibleQuestions = current.questions
+    .map((question, index) => ({ question, index }))
+    .filter(({ question }) => matchesExamNavigatorFilter(question, filter, reviewIds));
+  els.examQuestionGrid.innerHTML = visibleQuestions.length
+    ? visibleQuestions
+        .map(({ question, index }) => {
+          const answered = Number.isInteger(current.examAnswers?.[question.id]);
+          const review = reviewIds.has(question.id);
+          return `
+            <button class="exam-question-jump ${answered ? "answered" : "unanswered"} ${review ? "review" : ""} ${index === current.index ? "current" : ""}"
+              type="button" data-exam-question-index="${index}" aria-label="問${index + 1}${answered ? " 回答済み" : " 未回答"}${review ? " 見直し対象" : ""}">
+              ${index + 1}${review ? `<span>!</span>` : ""}
+            </button>
+          `;
+        })
+        .join("")
+    : `<div class="exam-question-empty">${getExamNavigatorFilterLabel(filter)}に該当する問題はありません。</div>`;
 }
 
 function jumpToExamQuestion(index) {
@@ -5667,6 +5797,7 @@ function refreshSuspendedExamState(savedState) {
     records,
     examAnswers,
     reviewQuestionIds,
+    examNavigatorFilter: savedState.examNavigatorFilter || "all",
     selectedIndex: selectedIndex >= 0 ? selectedIndex : null,
     answered: selectedIndex >= 0 ? savedState.answered : false
   };
@@ -6183,7 +6314,7 @@ function answerQuestion(shownIndex) {
   showFeedbackExplanation(question, isCorrect);
   const streakReaction = isCorrect ? getCorrectStreakLine(current.correctStreak || 0) : null;
   animateCreatureReaction(streakReaction?.milestone ? "streak" : isCorrect ? "correct" : "wrong");
-  speakCreature(isCorrect ? streakReaction.kind : "wrong", streakReaction?.line || "");
+  speakCreature(isCorrect ? streakReaction.kind : "wrong", streakReaction?.line || getWrongReactionLine(question));
   els.nextQuestion.disabled = false;
 }
 
@@ -7249,6 +7380,8 @@ function renderStats() {
       .join("")}
   `;
 
+  renderTodayReviewList(els.todayReview, els.startTodayReview, 5);
+
   const subjectBTypeRows = getSubjectBTypeStatRows();
   els.subjectBTypeStats.innerHTML = subjectBTypeRows.length
     ? `
@@ -7494,6 +7627,13 @@ els.openExamNavigator.addEventListener("click", () => {
   els.examNavigator.classList.remove("hidden");
 });
 els.closeExamNavigator.addEventListener("click", () => els.examNavigator.classList.add("hidden"));
+els.examNavigatorFilters.addEventListener("click", (event) => {
+  const filter = event.target.closest("[data-exam-filter]")?.dataset.examFilter;
+  if (!filter || !isFullExamMode()) return;
+  current.examNavigatorFilter = filter;
+  renderExamNavigator();
+  saveActiveExam();
+});
 els.examQuestionGrid.addEventListener("click", (event) => {
   const index = Number(event.target.closest("[data-exam-question-index]")?.dataset.examQuestionIndex);
   if (Number.isInteger(index)) jumpToExamQuestion(index);
@@ -7573,6 +7713,12 @@ els.restoreDataFile.addEventListener("change", () => {
 });
 els.reviewTopWeakQuestions.addEventListener("click", () => {
   startRankedQuestionReview(getRankedWeakQuestions(10).map((question) => question.id));
+});
+els.startHomeTodayReview.addEventListener("click", () => {
+  startRankedQuestionReview(getRankedWeakQuestions(5).map((question) => question.id));
+});
+els.startTodayReview.addEventListener("click", () => {
+  startRankedQuestionReview(getRankedWeakQuestions(5).map((question) => question.id));
 });
 els.weakQuestionRanking.addEventListener("click", (event) => {
   const questionIdToReview = event.target.dataset.reviewQuestion;
@@ -7692,6 +7838,9 @@ setView("stage");
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+    navigator.serviceWorker
+      .register("./service-worker.js", { updateViaCache: "none" })
+      .then((registration) => registration.update())
+      .catch(() => {});
   });
 }
