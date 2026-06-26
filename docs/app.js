@@ -3432,6 +3432,7 @@ const els = {
   historyList: document.querySelector("#historyList"),
   historyDetail: document.querySelector("#historyDetail"),
   historyDetailSummary: document.querySelector("#historyDetailSummary"),
+  historyNextReview: document.querySelector("#historyNextReview"),
   historyDetailList: document.querySelector("#historyDetailList"),
   reviewHistoryWrong: document.querySelector("#reviewHistoryWrong"),
   closeHistoryDetail: document.querySelector("#closeHistoryDetail"),
@@ -3495,7 +3496,7 @@ gameState.completedMissions = gameState.completedMissions || [];
 let current = null;
 let quizTimer = null;
 let pendingEvolutionChoice = null;
-const ASSET_VERSION = "v145";
+const ASSET_VERSION = "v150";
 
 const DIFFICULTY_LABELS = {
   basic: "基礎",
@@ -4966,6 +4967,36 @@ function getSubjectBTypeStatus(row) {
   return { id: "improving", label: "改善中" };
 }
 
+function getQuestionSetStats(questionIds) {
+  const ids = [...new Set(questionIds.filter(Boolean))];
+  const totals = ids.reduce(
+    (summary, id) => {
+      const stats = questionStats[id];
+      if (!stats) return summary;
+      summary.attempts += stats.attempts || 0;
+      summary.correct += stats.correct || 0;
+      summary.wrong += stats.wrong || 0;
+      return summary;
+    },
+    { attempts: 0, correct: 0, wrong: 0 }
+  );
+  return {
+    ...totals,
+    questionCount: ids.length,
+    percentage: totals.attempts ? Math.round((totals.correct / totals.attempts) * 100) : 0
+  };
+}
+
+function buildReviewImpact(label, questions, source = "review") {
+  const questionIds = questions.map((question) => question.id);
+  return {
+    label,
+    source,
+    questionIds,
+    before: getQuestionSetStats(questionIds)
+  };
+}
+
 function todayKey(date = new Date()) {
   return new Date(date).toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" });
 }
@@ -5235,9 +5266,10 @@ function finishExamOnTimeout() {
 
 function startStage(stageId) {
   const stage = stages.find((item) => item.id === stageId);
+  const questions = sampleQuestions(stage);
   current = {
     stage,
-    questions: sampleQuestions(stage),
+    questions,
     index: 0,
     score: 0,
     timeBonus: 0,
@@ -5246,7 +5278,8 @@ function startStage(stageId) {
     records: [],
     correctStreak: 0,
     maxCorrectStreak: 0,
-    mode: "stage"
+    mode: "stage",
+    reviewImpact: buildReviewImpact(`${stage.name} 演習`, questions, "stage")
   };
   setView("quiz");
   renderQuestion();
@@ -5270,7 +5303,8 @@ function startWeakMode() {
     records: [],
     correctStreak: 0,
     maxCorrectStreak: 0,
-    mode: "weakness"
+    mode: "weakness",
+    reviewImpact: buildReviewImpact("弱点克服モード", weakQuestions, "weakness")
   };
   setView("quiz");
   renderQuestion();
@@ -5300,7 +5334,8 @@ function startWrongReview() {
     correctStreak: 0,
     maxCorrectStreak: 0,
     mode: "wrong-review",
-    reviewSourceName: sourceName
+    reviewSourceName: sourceName,
+    reviewImpact: buildReviewImpact(`${sourceName} 誤答復習`, questions, "wrong-review")
   };
   setView("quiz");
   renderQuestion();
@@ -5391,7 +5426,8 @@ function startRankedQuestionReview(questionIds) {
     correctStreak: 0,
     maxCorrectStreak: 0,
     mode: "wrong-review",
-    reviewSourceName: "苦手問題ランキング"
+    reviewSourceName: "苦手問題ランキング",
+    reviewImpact: buildReviewImpact(questions.length === 1 ? "苦手問題 個別復習" : "苦手問題 まとめて復習", questions, "ranked")
   };
   setView("quiz");
   renderQuestion();
@@ -6662,10 +6698,20 @@ function buildResultAdvice(percentage, examAssessment = current.examAssessment |
         .map((type) => `<span class="weak-chip weakness-type-chip">${type.name} ${type.correct}/${type.total} (${type.percentage}%)</span>`)
         .join("")
     : "";
+  const nextReviewMenu = buildExamNextReviewMenu(examAssessment, wrongRecords);
   const typeReview = current.subjectBTypeReview;
   const typeReviewSummary = typeReview?.before && typeReview?.after
     ? {
         delta: typeReview.after.percentage - typeReview.before.percentage,
+        sessionRate: Math.round((current.score / current.questions.length) * 100)
+      }
+    : null;
+  const generalReviewImpact = current.reviewImpact?.before && current.reviewImpact?.after
+    ? {
+        label: current.reviewImpact.label || "復習",
+        before: current.reviewImpact.before.percentage,
+        after: current.reviewImpact.after.percentage,
+        delta: current.reviewImpact.after.percentage - current.reviewImpact.before.percentage,
         sessionRate: Math.round((current.score / current.questions.length) * 100)
       }
     : null;
@@ -6704,6 +6750,17 @@ function buildResultAdvice(percentage, examAssessment = current.examAssessment |
         </div>
       </div>
     ` : ""}
+    ${generalReviewImpact ? `
+      <div class="advice-card subject-b-type-improvement ${generalReviewImpact.delta >= 0 ? "improved" : "declined"}">
+        <span>Review Impact</span>
+        <strong>${escapeHtml(generalReviewImpact.label)} 復習効果</strong>
+        <p>今回の演習は ${current.score}/${current.questions.length}問正解（${generalReviewImpact.sessionRate}%）です。</p>
+        <div class="weak-chip-list">
+          <span class="weak-chip">対象正答率 ${generalReviewImpact.before}% → ${generalReviewImpact.after}%</span>
+          <span class="weak-chip">${generalReviewImpact.delta >= 0 ? "+" : ""}${generalReviewImpact.delta}pt</span>
+        </div>
+      </div>
+    ` : ""}
     ${examAssessment ? `
       <div class="advice-card exam-assessment ${examAssessment.level}">
         <span>Estimated Score</span>
@@ -6715,6 +6772,7 @@ function buildResultAdvice(percentage, examAssessment = current.examAssessment |
     ${examBreakdown ? `<div class="advice-card"><span>Breakdown</span><strong>分野別内訳</strong><div class="weak-chip-list">${examBreakdown}</div></div>` : ""}
     ${difficultyBreakdown ? `<div class="advice-card"><span>Difficulty</span><strong>難易度別内訳</strong><div class="weak-chip-list">${difficultyBreakdown}</div></div>` : ""}
     ${subjectBWeaknessBreakdown ? `<div class="advice-card"><span>Subject B</span><strong>弱点タイプ分析</strong><p>誤答が多いタイプを優先表示しています。次の復習では上位タイプを重点的に確認しましょう。</p><div class="weak-chip-list">${subjectBWeaknessBreakdown}</div></div>` : ""}
+    ${nextReviewMenu}
     <div class="advice-card">
       <span>Weak Point</span>
       <strong>今回の弱点</strong>
@@ -6732,6 +6790,158 @@ function buildResultAdvice(percentage, examAssessment = current.examAssessment |
 
   els.startRecommendation.textContent = recommendation.button;
   els.startRecommendation.classList.remove("hidden");
+}
+
+function buildExamNextReviewMenu(examAssessment, wrongRecords) {
+  if (!examAssessment) return "";
+  const subjectBItems = examAssessment.subject === "B"
+    ? (examAssessment.weaknessTypes || [])
+        .filter((type) => type.wrong > 0)
+        .slice(0, 3)
+        .map((type) => ({
+          label: `${type.name}を復習`,
+          detail: `${type.correct}/${type.total}問正解 (${type.percentage}%)`,
+          action: `data-result-subject-b-type="${escapeHtml(type.name)}"`
+        }))
+    : [];
+
+  const stageItems = examAssessment.subject === "A"
+    ? getTopEntries(countRecords(wrongRecords, (record) => record.stageId), 3)
+        .filter(([stageId]) => stageId)
+        .map(([stageId, count]) => ({
+          label: `${getStageNameById(stageId)}を復習`,
+          detail: `誤答 ${count}問`,
+          action: `data-result-stage-id="${escapeHtml(stageId)}"`
+        }))
+    : [];
+
+  const items = [...subjectBItems, ...stageItems];
+  if (!items.length && !wrongRecords.length) {
+    items.push({
+      label: "ランダム模試で確認",
+      detail: "弱点が目立たないため混合演習へ進む",
+      action: `data-result-action="random"`
+    });
+  } else if (wrongRecords.length) {
+    items.push({
+      label: "誤答だけを復習",
+      detail: `${wrongRecords.length}問をまとめて確認`,
+      action: `data-result-action="wrong"`
+    });
+  }
+
+  return `
+    <div class="advice-card next-review-menu">
+      <span>Next Review</span>
+      <strong>次の復習メニュー</strong>
+      <p>模試結果から優先度の高い復習先を選びました。</p>
+      <div class="next-review-actions">
+        ${items.map((item) => `
+          <button class="secondary-button compact" type="button" ${item.action}>
+            <strong>${escapeHtml(item.label)}</strong>
+            <small>${escapeHtml(item.detail)}</small>
+          </button>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function buildHistoryNextReviewMenu(attempt) {
+  const assessment = attempt.examAssessment;
+  const records = Array.isArray(attempt.answerRecords) ? attempt.answerRecords : [];
+  const wrongRecords = records.filter((record) => !record.correct);
+  if (!assessment && !wrongRecords.length) return "";
+
+  const subjectBItems = assessment?.subject === "B"
+    ? (assessment.weaknessTypes || [])
+        .filter((type) => type.wrong > 0)
+        .slice(0, 3)
+        .map((type) => ({
+          label: `${type.name}を復習`,
+          detail: `${type.correct}/${type.total}問正解 (${type.percentage}%)`,
+          action: `data-history-subject-b-type="${escapeHtml(type.name)}"`
+        }))
+    : [];
+
+  const stageItems = assessment?.subject === "A"
+    ? getTopEntries(countRecords(wrongRecords, (record) => record.stageId), 3)
+        .filter(([stageId]) => stageId)
+        .map(([stageId, count]) => ({
+          label: `${getStageNameById(stageId)}を復習`,
+          detail: `誤答 ${count}問`,
+          action: `data-history-stage-id="${escapeHtml(stageId)}"`
+        }))
+    : [];
+
+  const items = [...subjectBItems, ...stageItems];
+  if (wrongRecords.length) {
+    items.push({
+      label: "誤答だけを復習",
+      detail: `${wrongRecords.length}問をまとめて確認`,
+      action: `data-history-action="wrong"`
+    });
+  } else if (assessment) {
+    items.push({
+      label: "ランダム模試で確認",
+      detail: "弱点が目立たないため混合演習へ進む",
+      action: `data-history-action="random"`
+    });
+  }
+
+  if (!items.length) return "";
+  return `
+    <div class="advice-card next-review-menu history-review-menu">
+      <span>Next Review</span>
+      <strong>この結果から復習</strong>
+      <p>保存済みの模試結果から、優先して戻る復習先を選べます。</p>
+      <div class="next-review-actions">
+        ${items.map((item) => `
+          <button class="secondary-button compact" type="button" data-history-attempt-id="${escapeHtml(attempt.id)}" ${item.action}>
+            <strong>${escapeHtml(item.label)}</strong>
+            <small>${escapeHtml(item.detail)}</small>
+          </button>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function getAttemptReviewImpact(attempt) {
+  if (attempt.reviewImpact?.before && attempt.reviewImpact?.after) {
+    const impact = attempt.reviewImpact;
+    return {
+      type: impact.label || "復習",
+      before: impact.before.percentage,
+      after: impact.after.percentage,
+      delta: Number.isInteger(impact.delta) ? impact.delta : impact.after.percentage - impact.before.percentage,
+      status: { label: `${impact.after.correct}/${impact.after.attempts}正解` },
+      source: impact.source || "review",
+      sessionPercentage: impact.sessionPercentage
+    };
+  }
+  const typeReview = attempt.subjectBTypeReview;
+  if (!typeReview?.before || !typeReview?.after) return null;
+  const delta = typeReview.after.percentage - typeReview.before.percentage;
+  return {
+    type: typeReview.type,
+    before: typeReview.before.percentage,
+    after: typeReview.after.percentage,
+    delta,
+    status: typeReview.after.status || getSubjectBTypeStatus(typeReview.after)
+  };
+}
+
+function buildAttemptReviewImpactCard(attempt) {
+  const impact = getAttemptReviewImpact(attempt);
+  if (!impact) return "";
+  return `
+    <div class="review-impact-card ${impact.delta >= 0 ? "improved" : "declined"}">
+      <span>復習効果</span>
+      <strong>${escapeHtml(impact.type)} ${impact.before}% → ${impact.after}%</strong>
+      <small>${impact.delta >= 0 ? "+" : ""}${impact.delta}pt / ${escapeHtml(impact.status.label)}</small>
+    </div>
+  `;
 }
 
 function renderResultReview() {
@@ -6839,6 +7049,14 @@ function showResult() {
   });
   history = history.slice(0, 100);
   updateQuestionStats(current.records, current.questions);
+  if (current.reviewImpact?.questionIds?.length) {
+    current.reviewImpact.after = getQuestionSetStats(current.reviewImpact.questionIds);
+    current.reviewImpact.delta = current.reviewImpact.after.percentage - current.reviewImpact.before.percentage;
+    current.reviewImpact.sessionPercentage = percentage;
+    if (history[0]) {
+      history[0].reviewImpact = current.reviewImpact;
+    }
+  }
   if (current.subjectBTypeReview?.type) {
     const afterStats = getSubjectBTypeStat(current.subjectBTypeReview.type);
     current.subjectBTypeReview.after = {
@@ -6848,6 +7066,9 @@ function showResult() {
       percentage: afterStats.percentage,
       status: getSubjectBTypeStatus(afterStats)
     };
+    if (history[0]) {
+      history[0].subjectBTypeReview = current.subjectBTypeReview;
+    }
   }
   const evolutionMessages = autoAdvanceCreature();
   current.evolutionMessages = evolutionMessages;
@@ -7255,17 +7476,20 @@ function renderHistoryDetail(attemptId) {
   const records = Array.isArray(attempt.answerRecords) ? attempt.answerRecords : [];
   const wrongIds = [...new Set(attempt.wrongQuestionIds || [])];
   const domainRows = attempt.examAssessment?.domains || [];
+  const reviewImpact = getAttemptReviewImpact(attempt);
   els.historyDetailSummary.innerHTML = `
     <div class="metric"><span>受験モード</span><strong>${escapeHtml(attempt.stageName)}</strong></div>
     <div class="metric"><span>得点</span><strong>${attempt.score}/${attempt.total}</strong></div>
     <div class="metric"><span>正答率</span><strong>${attempt.percentage}%</strong></div>
     <div class="metric"><span>誤答数</span><strong>${attempt.total - attempt.score}</strong></div>
+    ${reviewImpact ? `<div class="metric review-impact-metric"><span>復習効果</span><strong>${reviewImpact.delta >= 0 ? "+" : ""}${reviewImpact.delta}pt</strong></div>` : ""}
     ${domainRows
       .map((domain) => `<div class="metric"><span>${escapeHtml(domain.name)}</span><strong>${domain.correct}/${domain.total} (${domain.percentage}%)</strong></div>`)
       .join("")}
   `;
   els.reviewHistoryWrong.classList.toggle("hidden", wrongIds.length === 0);
   els.reviewHistoryWrong.dataset.attemptId = attempt.id;
+  els.historyNextReview.innerHTML = `${buildAttemptReviewImpactCard(attempt)}${buildHistoryNextReviewMenu(attempt)}`;
 
   if (!records.length) {
     els.historyDetailList.innerHTML = `
@@ -7455,11 +7679,15 @@ function renderStats() {
           const examScore = attempt.examAssessment
             ? ` / 推定${attempt.examAssessment.estimatedScore}点 / ${attempt.examAssessment.label}`
             : "";
+          const reviewImpact = getAttemptReviewImpact(attempt);
+          const reviewImpactLabel = reviewImpact
+            ? ` / 復習効果 ${reviewImpact.delta >= 0 ? "+" : ""}${reviewImpact.delta}pt`
+            : "";
           return `
             <div class="history-item">
               <strong>${attempt.stageName}</strong>
               <span>${attempt.score}/${attempt.total} (${attempt.percentage}%)${examScore}</span>
-              <span>${date} / ${weak}</span>
+              <span>${date} / ${weak}${reviewImpactLabel}</span>
               <button class="secondary-button compact" type="button" data-history-detail="${escapeHtml(attempt.id)}">詳細を見る</button>
             </div>
           `;
@@ -7642,6 +7870,24 @@ els.finishExam.addEventListener("click", requestFinishFullExam);
 els.cancelFinishExam.addEventListener("click", cancelFinishFullExam);
 els.confirmFinishExam.addEventListener("click", finishFullExam);
 els.reviewWrongAnswers.addEventListener("click", startWrongReview);
+els.resultAdvice.addEventListener("click", (event) => {
+  const type = event.target.closest("[data-result-subject-b-type]")?.dataset.resultSubjectBType;
+  if (type) {
+    startSubjectBTypeReview(type);
+    return;
+  }
+  const stageId = event.target.closest("[data-result-stage-id]")?.dataset.resultStageId;
+  if (stageId) {
+    startStage(stageId);
+    return;
+  }
+  const action = event.target.closest("[data-result-action]")?.dataset.resultAction;
+  if (action === "wrong") {
+    startWrongReview();
+    return;
+  }
+  if (action === "random") startRandomMode();
+});
 els.startRecommendation.addEventListener("click", () => {
   const recommendation = current?.recommendation;
   if (!recommendation) return;
@@ -7735,6 +7981,29 @@ els.historyList.addEventListener("click", (event) => {
 els.reviewHistoryWrong.addEventListener("click", () => {
   const attempt = history.find((item) => item.id === els.reviewHistoryWrong.dataset.attemptId);
   if (attempt) startRankedQuestionReview([...new Set(attempt.wrongQuestionIds || [])]);
+});
+els.historyNextReview.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-history-attempt-id]");
+  if (!button) return;
+  const attempt = history.find((item) => item.id === button.dataset.historyAttemptId);
+  if (!attempt) return;
+  const subjectBType = button.dataset.historySubjectBType;
+  if (subjectBType) {
+    startSubjectBTypeReview(subjectBType);
+    return;
+  }
+  const stageId = button.dataset.historyStageId;
+  if (stageId) {
+    startStage(stageId);
+    return;
+  }
+  if (button.dataset.historyAction === "wrong") {
+    startRankedQuestionReview([...new Set(attempt.wrongQuestionIds || [])]);
+    return;
+  }
+  if (button.dataset.historyAction === "random") {
+    startRandomMode();
+  }
 });
 els.closeHistoryDetail.addEventListener("click", () => {
   selectedHistoryAttemptId = null;
