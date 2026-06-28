@@ -1,0 +1,35 @@
+{
+  "generatedAt": "2026-06-28T14:53:18.155Z",
+  "scenarioCount": 2,
+  "assertionCount": 21,
+  "findingCount": 0,
+  "scenarios": [
+    {
+      "subject": "A",
+      "questionCount": 60,
+      "checks": {
+        "changedAnswerReplaced": true,
+        "secondAnswerPreserved": true,
+        "currentIndexPreserved": true,
+        "reviewMarkPreserved": true,
+        "remainingTimePreserved": true,
+        "deadlineRestarted": true,
+        "unansweredCountCorrect": true
+      }
+    },
+    {
+      "subject": "B",
+      "questionCount": 20,
+      "checks": {
+        "changedAnswerReplaced": true,
+        "secondAnswerPreserved": true,
+        "currentIndexPreserved": true,
+        "reviewMarkPreserved": true,
+        "remainingTimePreserved": true,
+        "deadlineRestarted": true,
+        "unansweredCountCorrect": true
+      }
+    }
+  ],
+  "findings": []
+}

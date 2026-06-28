@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-26T12:38:03.555Z",
+  "generatedAt": "2026-06-28T14:53:27.352Z",
   "checkedFiles": [
     "index.html",
     "styles.css",
@@ -7,7 +7,7 @@
     "service-worker.js",
     "manifest.webmanifest"
   ],
-  "referenceCount": 14,
+  "referenceCount": 15,
   "runtimeAssetReferences": 6,
   "runtimeAssetsNotPrecached": [],
   "findingCount": 0,

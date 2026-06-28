@@ -9,10 +9,11 @@
     <title>基本情報 ステージ模試</title>
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
-    <link rel="stylesheet" href="styles.css?v150" />
+    <link rel="stylesheet" href="styles.css?v177" />
   </head>
   <body>
-    <main class="app-shell">
+    <a class="skip-link" href="#mainContent">メインコンテンツへ移動</a>
+    <main id="mainContent" class="app-shell">
       <section class="topbar" aria-label="アプリ情報">
         <div>
           <p class="eyebrow">FE Practice</p>
@@ -59,12 +60,13 @@
         </div>
       </section>
 
-      <section id="stageView" class="stage-view">
+      <section id="stageView" class="stage-view" tabindex="-1" aria-label="ステージ選択">
         <div class="section-heading">
           <h2>ステージを選択</h2>
           <p>分野ごとのステージからランダムに出題されます。</p>
         </div>
         <div id="suspendedExamBoard" class="suspended-exam-board hidden"></div>
+        <section id="passReadiness" class="pass-readiness" aria-label="合格準備度"></section>
         <button id="weakMode" class="weak-mode-button" type="button">
           <span>
             <strong>弱点克服モード</strong>
@@ -76,6 +78,13 @@
           <span>
             <strong>ランダム模試</strong>
             <small>全分野700問超から5〜10問を完全ランダム出題</small>
+          </span>
+          <b>開始 →</b>
+        </button>
+        <button id="reinforcementExam" class="reinforcement-exam-button" type="button">
+          <span>
+            <strong>合格補強模試</strong>
+            <small>全5分野を含み、成績が低い分野と未定着問題を優先した20問</small>
           </span>
           <b>開始 →</b>
         </button>
@@ -105,12 +114,21 @@
           </div>
           <div id="homeTodayReview" class="today-review compact"></div>
         </section>
+        <section class="study-plan-section home-focus-section" aria-labelledby="studyPlanTitle">
+          <div class="section-heading compact-heading">
+            <div>
+              <p class="eyebrow">3-Day Plan</p>
+              <h3 id="studyPlanTitle">次の3日間の学習プラン</h3>
+            </div>
+          </div>
+          <div id="studyPlan" class="study-plan"></div>
+        </section>
         <div id="missionBoard" class="mission-board"></div>
         <div id="badgeBoard" class="badge-board"></div>
         <div id="stageGrid" class="stage-grid"></div>
       </section>
 
-      <section id="quizView" class="quiz-view hidden" aria-live="polite">
+      <section id="quizView" class="quiz-view hidden" tabindex="-1" aria-label="問題回答">
         <div class="quiz-panel">
           <div class="quiz-header">
             <button class="ghost-button" id="backToStages" type="button">← ステージ</button>
@@ -166,16 +184,16 @@
           <article class="question-card">
             <div class="question-topline">
               <p id="questionTag" class="question-tag"></p>
-              <div class="timer" aria-live="polite">
+              <div class="timer" role="timer" aria-live="polite" aria-atomic="true">
                 <span>残り</span>
                 <strong id="timeRemaining">--秒</strong>
               </div>
             </div>
             <h2 id="questionText"></h2>
-            <div id="choiceList" class="choice-list"></div>
+            <div id="choiceList" class="choice-list" role="group" aria-labelledby="questionText"></div>
           </article>
 
-          <div id="feedback" class="feedback hidden"></div>
+          <div id="feedback" class="feedback hidden" role="status" aria-live="polite"></div>
 
           <div class="quiz-actions">
             <button class="secondary-button" id="showAnswer" type="button">解説を見る</button>
@@ -184,7 +202,7 @@
         </div>
       </section>
 
-      <section id="resultView" class="result-view hidden">
+      <section id="resultView" class="result-view hidden" tabindex="-1" aria-label="試験結果">
         <div class="result-panel">
           <p class="eyebrow">Result</p>
           <h2 id="resultTitle"></h2>
@@ -211,7 +229,7 @@
         </div>
       </section>
 
-      <section id="statsView" class="stats-view hidden">
+      <section id="statsView" class="stats-view hidden" tabindex="-1" aria-label="成績と履歴">
         <div class="stats-panel">
           <div class="quiz-header">
             <div>
@@ -245,6 +263,15 @@
                 </div>
                 <canvas id="examScoreTrendChart" aria-label="科目Aと科目Bの推定評価点推移グラフ"></canvas>
                 <p id="examScoreTrendEmpty" class="chart-empty hidden">本番模試を受験すると表示されます。</p>
+              </article>
+              <article class="learning-chart-card readiness-trend-card">
+                <div class="chart-title">
+                  <strong>合格準備度</strong>
+                  <span><i class="legend-line readiness"></i>直近7回 / 目安90</span>
+                </div>
+                <canvas id="readinessTrendChart" aria-label="合格準備度の推移グラフ"></canvas>
+                <p id="readinessTrendEmpty" class="chart-empty hidden">分野演習または本番模試を受験すると表示されます。</p>
+                <div id="readinessTrendSummary" class="readiness-trend-summary"></div>
               </article>
             </div>
           </section>
@@ -298,7 +325,7 @@
         </div>
       </section>
 
-      <section id="evolutionView" class="evolution-view hidden">
+      <section id="evolutionView" class="evolution-view hidden" tabindex="-1" aria-label="進化図鑑">
         <div class="stats-panel">
           <div class="quiz-header">
             <div>
@@ -313,14 +340,17 @@
         </div>
       </section>
 
-      <section id="auditView" class="audit-view hidden">
+      <section id="auditView" class="audit-view hidden" tabindex="-1" aria-label="問題監査">
         <div class="stats-panel">
           <div class="quiz-header">
             <div>
               <p class="eyebrow">Question Audit</p>
               <h2>問題監査</h2>
             </div>
-            <button class="ghost-button" id="closeAudit" type="button">← 戻る</button>
+            <div class="audit-header-actions">
+              <button class="secondary-button compact" id="exportAudit" type="button">監査結果を書き出す</button>
+              <button class="ghost-button" id="closeAudit" type="button">← 戻る</button>
+            </div>
           </div>
           <div id="auditSummary" class="stats-summary"></div>
           <div id="auditFilters" class="audit-toolbar"></div>
@@ -329,11 +359,11 @@
       </section>
     </main>
 
-    <script src="improvement-questions.js?v150"></script>
-    <script src="subject-b-case-questions.js?v150"></script>
-    <script src="subject-b-case-questions-2.js?v150"></script>
-    <script src="sample-derived-questions.js?v150"></script>
-    <script src="question-choice-sets.js?v150"></script>
-    <script src="app.js?v150"></script>
+    <script src="improvement-questions.js?v177"></script>
+    <script src="subject-b-case-questions.js?v177"></script>
+    <script src="subject-b-case-questions-2.js?v177"></script>
+    <script src="sample-derived-questions.js?v177"></script>
+    <script src="question-choice-sets.js?v177"></script>
+    <script src="app.js?v177"></script>
   </body>
 </html>

@@ -525,7 +525,7 @@ function expandTrendQuestions() {
     ["OS", "スケジューリング", "CPUを割り当てるプロセスの順序を決める処理", "OSは優先度や待ち時間を考慮してCPUを割り当てます。"],
     ["OS", "タイムスライス", "プロセスに割り当てる短いCPU使用時間", "一定時間ごとに実行プロセスを切り替えます。"],
     ["OS", "デッドロック", "複数の処理が互いに資源解放を待って停止する状態", "資源の占有と待ちが循環すると発生します。"],
-    ["OS", "スプーリング", "低速な入出力装置への処理を補助記憶に一時保存して行う方式", "印刷処理などでCPU待ちを減らします。"],
+    ["OS", "印刷スプーリング", "印刷データを補助記憶へ一時保存し、CPUが印刷完了を待たず次の処理へ進める方式", "低速な印刷装置とCPUの速度差を吸収します。"],
     ["OS", "ファイルシステム", "ファイルを階層や属性で管理するOSの仕組み", "名前、場所、権限などを管理します。"],
     ["ネットワーク", "TCP", "信頼性のあるコネクション型通信を提供するプロトコル", "再送制御や順序制御で信頼性を高めます。"],
     ["ネットワーク", "UDP", "軽量でコネクションレスな通信を行うプロトコル", "リアルタイム性重視の通信で使われます。"],
@@ -1192,7 +1192,7 @@ function addDoubleSizeQuestionPack() {
     ["INNER JOIN", "両方の表で条件に一致する行を結合する操作です。", "一致行だけを結合する", "内部結合とも呼ばれます。"],
     ["LEFT OUTER JOIN", "左表の行を残し右表の一致行を結合する操作です。", "左表を残す", "一致しない右表側はNULLになります。"],
     ["主キー", "表の行を一意に識別するための項目です。", "行を一意に識別する", "NULLや重複は許されません。"],
-    ["外部キー", "他の表の主キーなどを参照する項目です。", "他表を参照する", "参照整合性に関係します。"],
+    ["外部キー", "他の表の主キーなどを参照する項目です。", "他表の主キーや候補キーを参照する", "参照整合性に関係します。"],
     ["候補キー", "行を一意に識別でき主キー候補になる項目です。", "主キー候補になる", "複数存在することがあります。"],
     ["複合キー", "複数列の組合せで行を一意に識別するキーです。", "複数列で識別する", "注文IDと商品IDの組などが例です。"],
     ["UNIQUE制約", "列の値の重複を防ぐための制約です。", "重複を防ぐ", "主キー以外にも一意性を持たせられます。"],
@@ -2919,6 +2919,92 @@ function applyExternalQuestionChoiceSets() {
 
 applyExternalQuestionChoiceSets();
 
+function applyManualAuditRoundOneFixes() {
+  const dynamicProgrammingOldText = "「部分問題の結果を利用して全体の解を求める手法」に該当する用語はどれか。";
+  const dynamicProgrammingNewText = "「重複する部分問題の結果を保存・再利用して全体の解を求める手法」に該当する用語はどれか。";
+  const explanations = new Map([
+    ["SQLインジェクションを見分ける特徴として最も適切なものはどれか。", "SQLインジェクションは、入力値へSQLの断片を混入してデータベースを不正操作する攻撃です。スクリプトをページへ埋め込むのはXSS、ログイン中の利用者へ意図しない要求を送るのはCSRF、候補を繰り返し試すのはブルートフォース攻撃です。偽画面への誘導はフィッシング、大量通信はDoS攻撃、通信の読み取りは盗聴を指します。"],
+    ["RAID1を見分ける特徴として最も適切なものはどれか。", "RAID1は同じデータを複数ディスクへ書き込むミラーリングで、1台が故障しても処理を継続しやすくします。RAID0は冗長性なしのストライピング、RAID5は一つ、RAID6は二つの分散パリティを使います。RAID10はミラーリングとストライピングを組み合わせます。"],
+    ["マルチタスクの説明として最も適切なものはどれか。", "マルチタスクは、OSが複数の処理を切り替えながら実行する仕組みです。スケジューリングはCPUを割り当てる順序の決定、タイムスライスは各処理へ割り当てる短いCPU時間、デッドロックは互いの資源解放を待って停止する状態です。スプーリングと仮想記憶は入出力と記憶管理の仕組みです。"],
+    ["WAFを見分ける特徴として最も適切なものはどれか。", "WAFはHTTP通信を検査し、SQLインジェクションやXSSなどWebアプリケーションへの攻撃を防ぎます。IDSは侵入兆候の検知・通知、IPSは検知と遮断、ファイアウォールは通信ルールによる許可・拒否、VPNは暗号化通信路を提供します。"],
+    ["外部公開APIで、利用者ごとの呼出し回数制限がなく、短時間に大量の要求を受けてサービスが遅延した。改善策として最も適切なものはどれか。", "APIキーや利用者単位のレート制限とクォータを設け、超過要求を監視・遮断します。サーバ増強、ログ取得、キャッシュ、タイムアウト延長だけでは利用者別の過剰利用を止められません。送信元IPだけの制限では共有回線やIP変更に対応しにくく、利用者単位の管理が必要です。"],
+    ["同じ計算を何度も行う再帰を高速化するため、計算済み結果を保存して再利用する考え方はどれか。", "メモ化は、同じ引数の計算結果を保存して再利用し、再帰の重複計算を減らします。貪欲法は各段階の最良候補を選び、分割統治法は独立した部分問題へ分割し、バックトラックは条件に合わない候補から一つ前の状態へ戻る手法です。"],
+    [dynamicProgrammingNewText, "動的計画法は、重複する部分問題の結果を表などへ保存し、それを再利用して全体の解を求めます。メモ化はその実装方法の一つです。分割統治法は主に独立した部分問題を統合し、貪欲法は各段階で局所的な最良候補を選びます。"],
+    ["表に新しい行を追加するSQL命令はどれか。", "INSERTは表へ新しい行を追加します。SELECTは検索、UPDATEは既存行の更新、DELETEは行の削除、MERGEは条件に応じた追加・更新、CREATEとDROPは表などの作成と削除を行います。"],
+    ["「表から行を削除するSQL命令」に該当する用語はどれか。", "DELETEは条件に合う行を表から削除します。SELECTは検索、INSERTは行の追加、UPDATEは既存行の更新、MERGEは条件に応じた追加・更新、CREATEとDROPは表などの作成と削除を行います。"],
+    ["商品名が商品IDに依存し、注文IDには依存しない。注文IDと商品IDの複合キー表で起きる問題はどれか。", "商品名が複合キー全体ではなく商品IDだけに依存するため、部分関数従属です。推移的関数従属は非キー属性を経由した依存、完全関数従属は複合キー全体への依存、多値従属は一つの属性に対して独立した複数の値集合が対応する関係です。"],
+    ["部署ごとの平均給与を求めるときに使う句の組合せとして適切なものはどれか。", "部署ごとに行をまとめるGROUP BYと、各グループの平均を求めるAVGを組み合わせます。SUMは合計、COUNTは件数、MAXは最大値を求めます。ORDER BYは並べ替え、WHEREは集計前の行、HAVINGは集計後のグループを絞り込みます。"],
+    ["「表へ新しい行を追加するSQL命令」に該当する用語はどれか。", "INSERTは表へ新しい行を追加します。UPDATEは既存行の更新、DELETEは削除、SELECTは検索、MERGEは条件に応じた追加・更新、CREATEとDROPは表などの作成・削除を行います。"],
+    ["複合キーを見分ける特徴として最も適切なものはどれか。", "複合キーは、複数の列を組み合わせて行を一意に識別するキーです。一つの列だけで識別するキーとは構成列数が異なり、外部キーは他表の参照、NOT NULLはNULL禁止、DEFAULTは既定値設定、インデックスは検索高速化が目的です。"],
+    ["外部キーを見分ける特徴として最も適切なものはどれか。", "外部キーは、他の表の主キーや候補キーを参照して表同士の関連と参照整合性を保ちます。主キー・複合キー・代理キーは同じ表の行を識別し、UNIQUEは重複禁止、NOT NULLはNULL禁止、インデックスは検索高速化が目的です。"],
+    ["監査で職務分掌を確認する目的はどれか。", "職務分掌は、申請・承認・実行・記録などを別の担当者へ分け、権限集中による不正や誤りを防ぐ統制です。一人で開発から承認まで行うこと、ID共有、自己承認、記録を残さない運用は、いずれも相互けん制を弱めます。"],
+    ["「販売量に応じて増減する費用」に該当する用語はどれか。", "変動費は販売量や生産量に応じて総額が増減する費用です。固定費は販売量にかかわらず発生し、埋没費用は既に回収不能な費用、機会費用は選ばなかった案から得られたはずの利益を指します。限界費用は生産量を追加したときに増える費用です。"],
+    ["「ある時点の資産・負債・純資産を示す財務諸表」に該当する用語はどれか。", "貸借対照表は、ある時点の資産・負債・純資産を示します。損益計算書は一定期間の収益・費用・利益、キャッシュフロー計算書は資金の流れ、株主資本等変動計算書は純資産の変動を示します。製造原価報告書は製造原価の内訳を示す資料です。"],
+    ["「売上と費用が等しく利益が0になる点」に該当する用語はどれか。", "損益分岐点は売上高と総費用が等しく、利益が0になる売上高や販売数量です。安全余裕率は実際の売上が損益分岐点をどれだけ上回るか、限界利益は売上高から変動費を引いた額、ROIは投資に対する利益率を表します。"],
+    ["売上高800万円、変動費500万円、固定費200万円の利益はどれか。", "利益は売上高から変動費と固定費を引くため、800-500-200=100万円です。300万円は固定費を引く前の限界利益、500万円は変動費、200万円は固定費、800万円は売上高そのものです。400万円は変動費を固定費と取り違えて計算した値、0万円は誤って損益分岐点と判断した値です。"],
+    ["Webサーバのログに同一IPから短時間で大量のログイン失敗がある。適切な対策はどれか。", "総当たりで認証を突破するブルートフォース攻撃が疑われます。試行回数の制限やアカウントロックに加え、MFA（知識・所持・生体など複数要素を使う多要素認証）を導入すると、パスワードが漏れても別要素で防御できます。最小文字数の短縮、ログ停止、パスワード共有、試行無制限はいずれも安全性や検知能力を低下させます。"],
+    ["社内PCへUSBメモリを接続した直後、不審なプログラムが自動実行された。被害拡大を防ぐ対応として最も適切なものはどれか。", "感染した可能性のある端末をネットワークから隔離し、USBメモリの利用を停止した上でログなどの証拠を保全し、影響範囲を調査します。別端末への接続は感染を広げ、ファイル名変更では無害化できません。初期化やログ削除を先に行うと原因調査に必要な証拠を失います。"],
+    ["データと分散パリティを複数ディスクへ配置し、1台の故障に耐えるRAID方式はどれか。", "RAID5はデータと一つのパリティを複数ディスクへ分散し、1台の故障時に復旧できます。RAID0は冗長性のないストライピング、RAID1はミラーリング、RAID6は二重分散パリティで2台の故障に耐える方式です。専用パリティディスクを使う方式は書込みが集中しやすい点が異なります。"],
+    ["ハッシュ表の説明として最も適切なものはどれか。", "ハッシュ表は、ハッシュ関数でキーから格納位置を計算し、平均O(1)で探索します。異なるキーが同じ位置になる衝突には別の処理が必要です。先頭から比較するのは線形探索、整列済みデータを半分ずつ絞るのは二分探索、最後に入れた値から取り出すのはスタックです。"],
+    ["動的計画法の説明として最も適切なものはどれか。", "動的計画法は、重複する部分問題の結果を保存・再利用して全体の解を求めます。各段階で局所的な最良を選ぶのは貪欲法、全候補を調べるのは全探索です。同じ部分問題を毎回計算し直す方法は、動的計画法の利点を失います。"],
+    ["探索範囲を毎回半分にする処理で、要素数が2倍になったとき比較回数は概ねどうなるか。", "探索範囲を毎回半分にする処理の計算量はO(log2 n)です。要素数nを2nにするとlog2(2n)=log2 n+1となるため、比較回数は概ね1回増えます。2倍になるのは線形時間に近い増え方で、半分や不変にはなりません。"],
+    ["「出来高を使って進捗とコストを統合管理する手法」に該当する用語はどれか。", "EVM（Earned Value Management、出来高管理）は、PV（計画価値）、EV（出来高）、AC（実コスト）で進捗とコストを統合管理します。CPIはコスト効率、SPIはスケジュール効率の指標です。WBSは作業分解、ガントチャートは日程表示、クリティカルパスは全体工期を左右する作業経路を指します。"],
+    ["「障害後に復旧するまでの目標時間」に該当する用語はどれか。", "RTO（Recovery Time Objective、目標復旧時間）は、障害発生からサービスを復旧するまでの目標時間です。RPO（Recovery Point Objective、目標復旧時点）は、どの時点のデータまで戻せればよいかを示します。インシデント管理は早期復旧、問題管理は根本原因の除去を目的とします。"],
+    ["売上高500万円、変動費300万円、固定費120万円の利益はどれか。", "利益は売上高から変動費と固定費を引くため、500-300-120=80万円です。200万円は固定費を引く前の限界利益、120万円は固定費そのものです。20万円は変動費を誤って360万円とした場合などの計算誤りで、500万円は売上高です。"],
+    ["市場成長率が高く、自社の市場占有率も高い事業をPPMで何と呼ぶか。", "PPM（Product Portfolio Management）では、高成長・高占有率を花形、高成長・低占有率を問題児、低成長・高占有率を金のなる木、低成長・低占有率を負け犬と分類します。導入期・成長期・成熟期は製品ライフサイクルの区分です。"],
+    ["社外から社内システムへ安全に接続させたい。適切な構成はどれか。", "VPN（Virtual Private Network、仮想専用線）で通信経路を暗号化し、MFA（知識・所持・生体など複数要素を使う多要素認証）で本人確認を強化します。認証なしの公開、共通パスワード、平文通信、管理ポートの無制限公開はいずれも不正アクセスや盗聴の危険を高めます。"],
+    ["Webアプリケーションが、利用者の入力を文字列連結してSQL文へ組み込んでいる。入力欄へ特殊な文字列を入れると、本来見えないデータが表示された。最も適切な対策はどれか。", "SQLインジェクションです。プレースホルダを使うパラメータ化クエリでは、入力値とSQL命令を分離して不正な命令の実行を防ぎます。DB（データベース）権限の最小化も被害範囲を抑えます。詳細なエラー表示は内部情報を漏らし、入力値のメール送信は対策にならず、全権限の付与は被害を拡大します。"],
+    ["Webサービスのログで、短時間に多数のログイン失敗があり、その直後に別地域からログイン成功が記録された。被害拡大を防ぎつつ調査する初動として最も適切なものはどれか。", "認証情報の悪用が疑われるため、該当セッションを失効してパスワード変更と多要素認証を求め、ログを保全して影響範囲を調査します。放置は不正利用を継続させ、ログ削除は証拠を失わせます。全利用者を同じパスワードにすると、別アカウントへの被害も広げます。"],
+    ["変数 a=3, b=5 とし、aとbを入れ替えた後のaはどれか。", "入替え後のaには元のbの値5が入ります。3は入替え前のaをそのまま答えた値、8はaとbを加算した値です。4、6、7、10はいずれも入替え操作では生じません。"],
+    ["次の処理でキューを操作する。キューは先入れ先出しである。\n\n1. A、B、Cをこの順に追加する。\n2. 先頭から1個取り出す。\n3. Dを追加する。\n4. 先頭から2個取り出す。\n\n手順4で取り出される二つの値はどれか。", "キューはFIFO（First In, First Out、先入れ先出し）です。手順2でAを取り出すとB、Cが残り、Dの追加後はB、C、Dの順です。したがって手順4ではB、Cを取り出します。C、DはBを飛ばした並び、A、Bは既に取り出したAを含み、D、Cは取出し順が逆です。"],
+    ["次の処理は、文字列を左から読み、数字の文字だけを順に連結する。\n\n入力文字列 = A1B23C4\n数字ならresultの末尾へ追加し、それ以外は何もしない。\n\n処理終了時のresultはどれか。", "入力を左から調べると、数字は1、2、3、4の順に現れるためresultは1234です。123は末尾の4を見落とし、1243と1324は入力順を入れ替えています。数字を抽出しても出現順は変わりません。"],
+    ["共有ロックの説明として最も適切なものはどれか。", "共有ロックは他トランザクションの参照を許しますが、対象の更新を制限します。参照も更新も制限するのは専有ロック、互いにロック解放を待って進めない状態はデッドロック、未確定の更新を読む現象はダーティリードです。"],
+    ["CPIを求める式として適切なものはどれか。", "CPI（Cost Performance Index、コスト効率指数）はEV（Earned Value、出来高）をAC（Actual Cost、実コスト）で割り、EV/ACで求めます。EV/PVはSPI（スケジュール効率指数）です。AC/EVやPV/EVは分子と分母を逆にした式です。"],
+    ["「作業を階層的に分解して管理する手法」に該当する用語はどれか。", "WBS（Work Breakdown Structure、作業分解構成図）は、成果物や作業を階層的に分解して範囲を明確にします。ガントチャートは作業期間、クリティカルパスは工期を左右する経路、EVMは出来高による進捗・コスト管理を表します。"],
+    ["変更管理を見分ける特徴として最も適切なものはどれか。", "変更管理は、本番環境などへの変更を評価・承認・実施・記録し、障害や手戻りのリスクを抑えます。構成品目の状態を管理するのは構成管理、サービス水準の合意はSLA、復旧時間の目標はRTO、早期復旧はインシデント管理の目的です。"],
+    ["RPOを見分ける特徴として最も適切なものはどれか。", "RPO（Recovery Point Objective、目標復旧時点）は、障害時にどの時点のデータまで復旧するかという目標です。復旧までの時間目標はRTO、早期復旧はインシデント管理、再発防止は問題管理、変更リスクの抑制は変更管理です。"],
+    ["発注者が作業者へ直接指揮命令する形態として適切なのはどれか。", "派遣契約では、派遣先である発注者が派遣労働者へ直接指揮命令します。請負契約は成果物の完成、準委任契約は業務の遂行を受託者が自ら管理して行います。売買契約は物品の所有権移転、ライセンス契約は知的財産などの利用許諾が目的です。"],
+    ["ターゲティングの説明として適切なものはどれか。", "ターゲティングは、細分化した市場から自社が狙う市場を選ぶことです。STPはSegmentation（市場細分化）、Targeting（標的市場の選定）、Positioning（競合と異なる位置付け）の順で考えます。Product・Price・Place・Promotionは4Pによる施策の整理です。"],
+    ["ROIの説明として適切なものはどれか。", "ROI（Return on Investment、投資利益率）は、利益を投資額で割って投資効率を示す指標です。損益計算書は一定期間の収益・費用・利益、貸借対照表はある時点の資産・負債・純資産、キャッシュフロー計算書は一定期間の資金の流れを示します。"],
+    ["印刷スプーリングの説明として最も適切なものはどれか。", "印刷スプーリングは、印刷データを補助記憶へ一時保存し、CPUが低速な印刷装置の完了を待たず次の処理へ進める方式です。仮想記憶は記憶空間の拡張、ページフォールトは必要ページが主記憶にない事象、デッドロックは処理同士が資源を待ち続ける状態です。"],
+    ["社内Webシステムの検索欄へ入力した文字列が、そのまま検索結果画面のHTMLへ出力される。第三者が作成したURLを開くとスクリプトが実行された。最も有効な恒久対策はどれか。", "反射型XSS（クロスサイトスクリプティング）の状況です。出力先がHTML本文、属性、スクリプトコードなどのどの文脈かに応じてエスケープし、CSP（Content Security Policy、コンテンツセキュリティポリシー）も被害軽減に併用します。背景色、DB索引、ブラウザ履歴の削除はスクリプト実行を防ぎません。"],
+    ["システム開発で利用する外部ライブラリに、既知の重大な脆弱性が含まれていることが判明した。適切な対応はどれか。", "ライブラリの利用箇所と脆弱性の影響を確認し、安全な版へ更新して回帰試験を行います。ファイル名変更では脆弱性は消えず、推測だけで影響調査を省くと見落としが生じます。情報を記録せず現状維持する対応では、リスクを管理できません。"],
+    ["電子メールへ暗号化や電子署名を適用するための規格はどれか。", "S/MIME（Secure/Multipurpose Internet Mail Extensions）は電子メールの暗号化と電子署名に使う規格です。SMTPはメール送信・中継、IMAPはサーバ上でのメール管理、POP3はメールを端末へ取得するためのプロトコルです。"],
+    ["次の処理は、配列dataからしきい値以上の値だけをresultへ追加する。\n\n【データ】data = [12, 7, 18, 5, 10]、しきい値 = 10\n【処理】dataを先頭から順に調べ、要素がしきい値以上ならresultの末尾へ追加する。\n\n処理終了時のresultはどれか。", "条件は10以上なので12、18、10を入力順に追加し、結果は[12, 18, 10]です。[12, 7, 18, 10]は7を誤って含み、[7, 5]は条件を逆にしています。[12, 18]は境界値10を除外する誤りです。"],
+    ["部署名が部署IDに依存し、社員IDから部署IDが決まるとき、社員IDから部署名が間接的に決まる関係はどれか。", "社員ID→部署ID、部署ID→部署名なので、社員ID→部署名は部署IDを経由する推移的関数従属です。部分関数従属は複合キーの一部への依存、完全関数従属は複合キー全体への依存、多値従属は一つの属性に独立した複数の値集合が対応する関係です。"],
+    ["CDの説明として最も適切なものはどれか。", "CD（Continuous Delivery、継続的デリバリー）は、自動テストや配備手順を整えてソフトウェアを継続的にリリース可能な状態へ保つ仕組みです。CIは変更の頻繁な統合、DevOpsは開発と運用の連携、アジャイル開発は短い反復による開発・改善を重視します。"],
+    ["計画価値をPV、出来高をEV、実コストをACとして管理する手法はどれか。", "EVM（Earned Value Management、出来高管理）は、PV（計画価値）、EV（出来高）、AC（実コスト）を使って進捗とコストを統合管理します。ガントチャートは日程表示、WBSは作業分解、クリティカルパス法は工期を左右する作業経路の分析です。"],
+    ["作業Aが3日、作業Bが5日で並行実施できる。両方完了までの最短日数はどれか。", "並行実施では開始を同時にできるため、両方の完了には長い方の5日が必要です。8日は直列に3+5とした値、3日は短い作業だけの期間、2日は期間の差、4日は平均を取った誤りです。"],
+    ["CPIの説明として適切なものはどれか。", "CPI（Cost Performance Index、コスト効率指数）はEV（出来高）/AC（実コスト）で求め、1未満なら予算超過傾向です。EV/PVはSPI（スケジュール効率指数）、WBSは作業分解、ガントチャートは作業期間の表示に使います。"],
+    ["変更管理の説明として適切なものはどれか。", "変更管理は変更内容を評価・承認し、実施と結果を記録して障害リスクを抑えます。IT資産や構成項目の関係を扱うのは構成管理、合意したサービス水準はSLA、障害後の目標復旧時間はRTOです。"],
+    ["RPOの説明として適切なものはどれか。", "RPO（Recovery Point Objective、目標復旧時点）は、障害時にどの時点のデータまで戻せればよいかを示します。早期復旧はインシデント管理、根本原因の除去は問題管理、変更リスクの抑制は変更管理の目的です。"],
+    ["一つのモジュールが一つの明確な役割へ集中している状態として望ましいものはどれか。", "凝集度が高いモジュールは内部の処理が一つの役割へまとまり、理解・変更・再利用がしやすくなります。結合度が高い、循環参照が多い、共有変数が多い状態はモジュール間の依存を強め、変更の影響範囲を広げます。"],
+    ["他社の登録商標を自社商品名として無断使用した場合に問題となる権利はどれか。", "商品名やロゴなど、商品・サービスを識別する標識は商標権で保護されます。著作権は創作的表現、特許権は発明、意匠権は物品などのデザインを保護するため、登録商標の無断使用とは保護対象が異なります。"],
+    ["PPMを見分ける特徴として最も適切なものはどれか。", "PPM（Product Portfolio Management）は、市場成長率と相対的市場占有率で事業を4象限に分類します。ファイブフォース分析は競争要因、バリューチェーンは主活動と支援活動、コアコンピタンスは他社が模倣しにくい中核能力を分析します。"],
+    ["「細分化した市場から狙う市場を選ぶこと」に該当する用語はどれか。", "ターゲティングは、細分化した市場から狙う市場を選ぶことです。STPでは、セグメンテーションで市場を分け、ターゲティングで対象を選び、ポジショニングで競合と異なる位置付けを定めます。4Pは製品・価格・流通・販促の施策です。"],
+    ["ソフトウェアを利用する権利を定める契約として最も適切なものはどれか。", "ソフトウェアライセンス契約は、利用できる人数・端末数・期間・複製範囲などを定める利用許諾です。派遣契約は労働者の派遣、請負契約は仕事の完成、売買契約は物品などの所有権移転、秘密保持契約は機密情報の取扱いを目的とします。"]
+  ]);
+
+  stages.forEach((stage) => {
+    stage.questions.forEach((question) => {
+      if (question.text === dynamicProgrammingOldText) {
+        question.text = dynamicProgrammingNewText;
+        const definition = globalThis.QUESTION_CHOICE_SETS?.[dynamicProgrammingNewText];
+        if (definition) {
+          question.correctChoice = definition.correct;
+          question.choicePool = [...definition.distractors];
+          question.choices = [definition.correct, ...definition.distractors.slice(0, 3)];
+          question.answer = 0;
+        }
+      }
+      const explanation = explanations.get(question.text);
+      if (explanation) question.explanation = explanation;
+    });
+  });
+}
+
+applyManualAuditRoundOneFixes();
+
 function improveAlgorithmExplanations() {
   const algorithmStage = stages.find((stage) => stage.id === "algorithm");
   if (!algorithmStage) return;
@@ -3355,6 +3441,28 @@ function enrichCaseDistractorNotes() {
 
 enrichCaseDistractorNotes();
 
+function selectBalancedReinforcementCandidates(ranked, stageIds, total = 20, minimumPerStage = 2) {
+  const selected = [];
+  const selectedIds = new Set();
+
+  stageIds.forEach((stageId) => {
+    ranked
+      .filter((question) => question.stageId === stageId)
+      .slice(0, minimumPerStage)
+      .forEach((question) => {
+        selected.push(question);
+        selectedIds.add(question.id);
+      });
+  });
+
+  ranked
+    .filter((question) => !selectedIds.has(question.id))
+    .slice(0, Math.max(0, total - selected.length))
+    .forEach((question) => selected.push(question));
+
+  return selected.slice(0, total);
+}
+
 const els = {
   stageView: document.querySelector("#stageView"),
   quizView: document.querySelector("#quizView"),
@@ -3373,9 +3481,11 @@ const els = {
   closeStats: document.querySelector("#closeStats"),
   weakMode: document.querySelector("#weakMode"),
   randomMode: document.querySelector("#randomMode"),
+  reinforcementExam: document.querySelector("#reinforcementExam"),
   subjectAExam: document.querySelector("#subjectAExam"),
   subjectBExam: document.querySelector("#subjectBExam"),
   suspendedExamBoard: document.querySelector("#suspendedExamBoard"),
+  passReadiness: document.querySelector("#passReadiness"),
   resetProgress: document.querySelector("#resetProgress"),
   missionBoard: document.querySelector("#missionBoard"),
   badgeBoard: document.querySelector("#badgeBoard"),
@@ -3421,8 +3531,12 @@ const els = {
   accuracyTrendEmpty: document.querySelector("#accuracyTrendEmpty"),
   examScoreTrendChart: document.querySelector("#examScoreTrendChart"),
   examScoreTrendEmpty: document.querySelector("#examScoreTrendEmpty"),
+  readinessTrendChart: document.querySelector("#readinessTrendChart"),
+  readinessTrendEmpty: document.querySelector("#readinessTrendEmpty"),
+  readinessTrendSummary: document.querySelector("#readinessTrendSummary"),
   statsTable: document.querySelector("#statsTable"),
   homeTodayReview: document.querySelector("#homeTodayReview"),
+  studyPlan: document.querySelector("#studyPlan"),
   todayReview: document.querySelector("#todayReview"),
   startHomeTodayReview: document.querySelector("#startHomeTodayReview"),
   startTodayReview: document.querySelector("#startTodayReview"),
@@ -3452,6 +3566,7 @@ const els = {
   ultimateProgress: document.querySelector("#ultimateProgress"),
   evolutionDexGrid: document.querySelector("#evolutionDexGrid"),
   closeAudit: document.querySelector("#closeAudit"),
+  exportAudit: document.querySelector("#exportAudit"),
   auditSummary: document.querySelector("#auditSummary"),
   auditFilters: document.querySelector("#auditFilters"),
   auditList: document.querySelector("#auditList"),
@@ -3463,7 +3578,9 @@ let history = JSON.parse(localStorage.getItem("fe-score-history") || "[]");
 let selectedHistoryAttemptId = null;
 let questionStats = JSON.parse(localStorage.getItem("fe-question-stats") || "{}");
 let suspendedExams = JSON.parse(localStorage.getItem("fe-suspended-exams") || "{}");
+let studyPlanState = JSON.parse(localStorage.getItem("fe-three-day-plan") || "null");
 let auditMarks = JSON.parse(localStorage.getItem("fe-question-audit") || "{}");
+let auditViewState = { filter: "priority", stageId: "all", page: 0, search: "" };
 let gameState = JSON.parse(localStorage.getItem("fe-game-state") || "null") || {
   unlockedBadges: [],
   unlockedEvolutions: [],
@@ -3496,7 +3613,8 @@ gameState.completedMissions = gameState.completedMissions || [];
 let current = null;
 let quizTimer = null;
 let pendingEvolutionChoice = null;
-const ASSET_VERSION = "v150";
+let viewInitialized = false;
+const ASSET_VERSION = "v177";
 
 const DIFFICULTY_LABELS = {
   basic: "基礎",
@@ -3516,6 +3634,10 @@ const ACRONYM_EXPLANATIONS = {
   CLI: "Command Line Interface、コマンド入力で操作する方式",
   DB: "Database、データベース",
   SQL: "Structured Query Language、データベースを操作する言語",
+  CREATE: "SQLで表などのデータベースオブジェクトを作成する命令",
+  DROP: "SQLで表などのデータベースオブジェクトを削除する命令",
+  MERGE: "SQLで条件に応じて行の追加や更新を行う命令",
+  DEFAULT: "SQLで列の値が未指定のときに使用する既定値を定める制約",
   RDBMS: "Relational Database Management System、関係データベース管理システム",
   ACID: "Atomicity・Consistency・Isolation・Durability、トランザクションの四特性",
   CRUD: "Create・Read・Update・Delete、基本的なデータ操作",
@@ -3607,6 +3729,8 @@ const ACRONYM_EXPLANATIONS = {
   RAID1: "RAID 1、同じデータを複数ディスクに書くミラーリング",
   RAID2: "RAID 2、ビット単位で分散し誤り訂正符号を使うRAID方式",
   RAID5: "RAID 5、パリティを分散して耐障害性と容量効率を両立する方式",
+  RAID6: "RAID 6、二つの分散パリティで2台のディスク障害に耐える方式",
+  RAID10: "RAID 10、ミラーリングとストライピングを組み合わせる方式",
   ALU: "Arithmetic Logic Unit、算術演算や論理演算を行う装置",
   DMA: "Direct Memory Access、CPUを介さず入出力装置と主記憶の間で転送する方式",
   BCNF: "Boyce-Codd Normal Form、全ての決定項が候補キーになる正規形",
@@ -4049,6 +4173,10 @@ function saveSuspendedExams() {
   localStorage.setItem("fe-suspended-exams", JSON.stringify(suspendedExams));
 }
 
+function saveStudyPlanState() {
+  localStorage.setItem("fe-three-day-plan", JSON.stringify(studyPlanState));
+}
+
 function getExamSubjectFromMode(mode = current?.mode) {
   return mode === "subject-a-exam" ? "A" : mode === "subject-b-exam" ? "B" : null;
 }
@@ -4134,7 +4262,8 @@ const BACKUP_KEYS = {
   "fe-question-audit": "object",
   "fe-game-state": "object",
   "fe-creature": "object",
-  "fe-suspended-exams": "object"
+  "fe-suspended-exams": "object",
+  "fe-three-day-plan": "object"
 };
 
 function isPlainObject(value) {
@@ -4175,6 +4304,9 @@ function validateBackup(backup) {
     throw new Error("このアプリで作成した対応形式のバックアップではありません。");
   }
   Object.entries(BACKUP_KEYS).forEach(([key, expectedType]) => {
+    if (key === "fe-three-day-plan" && backup.data[key] === undefined) {
+      backup.data[key] = {};
+    }
     const value = backup.data[key];
     const valid = expectedType === "array" ? Array.isArray(value) : isPlainObject(value);
     if (!valid) throw new Error(`バックアップ内の「${key}」が壊れています。`);
@@ -5006,6 +5138,23 @@ function getTodayAttempts() {
   return history.filter((attempt) => attempt.date && todayKey(attempt.date) === today);
 }
 
+function getStudyStreak() {
+  const studyDates = [...new Set(history.filter((attempt) => attempt.date).map((attempt) => todayKey(attempt.date)))]
+    .sort((a, b) => b.localeCompare(a));
+  if (!studyDates.length) return 0;
+
+  const dayNumber = (dateKey) => Math.floor(new Date(`${dateKey}T00:00:00+09:00`).getTime() / 86400000);
+  const latestAge = dayNumber(todayKey()) - dayNumber(studyDates[0]);
+  if (latestAge > 1) return 0;
+
+  let streak = 1;
+  for (let index = 1; index < studyDates.length; index += 1) {
+    if (dayNumber(studyDates[index - 1]) - dayNumber(studyDates[index]) !== 1) break;
+    streak += 1;
+  }
+  return streak;
+}
+
 function getTodayQuestionCount() {
   return getTodayAttempts().reduce((sum, attempt) => sum + attempt.total, 0);
 }
@@ -5082,6 +5231,9 @@ function getBadgeDefinitions() {
     { id: "perfect", name: "満点の証", detail: "100%を1回達成", done: perfectCount >= 1 },
     { id: "speedster", name: "スピードスター", detail: "時間内正解ボーナス累計30個", done: totalTimeBonus >= 30 },
     { id: "balanced-learner", name: "全分野入門", detail: "全5分野を1回以上プレイ", done: stats.every((stage) => stage.attempts > 0) },
+    { id: "three-day-planner", name: "三日計画達成", detail: "3日間学習プランをすべて完了", done: studyPlanState?.completedDays?.length === 3 },
+    { id: "streak-three", name: "学習習慣3日", detail: "3日連続で問題に挑戦", done: getStudyStreak() >= 3 },
+    { id: "streak-seven", name: "一週間継続", detail: "7日連続で問題に挑戦", done: getStudyStreak() >= 7 },
     { id: "pass-ready", name: "合格圏の気配", detail: "全分野平均70%以上", done: stats.every((stage) => stage.attempts > 0 && stage.average >= 70) },
     { id: "evolution-hunter", name: "進化観測者", detail: "進化先を3種類解放", done: unlockedEvolutionCount >= 3 },
     { id: "ultimate-candidate", name: "神話候補", detail: "神進化条件をすべて達成", done: getUltimateChecklist(stats).every((item) => item.done) }
@@ -5144,12 +5296,242 @@ function renderMissionsAndBadges() {
   `;
 }
 
+function buildThreeDayStudyPlan() {
+  const latestExam = history.find((attempt) => attempt.examAssessment);
+  const latestSubjectA = history.find((attempt) => attempt.examSubject === "A" && attempt.examAssessment);
+  const latestSubjectB = history.find((attempt) => attempt.examSubject === "B" && attempt.examAssessment);
+  const weakQuestionIds = latestExam?.wrongQuestionIds?.length
+    ? [...new Set(latestExam.wrongQuestionIds)].slice(0, 10)
+    : getRankedWeakQuestions(10).map((question) => question.id);
+
+  const dayOne = weakQuestionIds.length
+    ? {
+        title: "誤答を解き直す",
+        detail: `${weakQuestionIds.length}問で直近の取りこぼしを確認`,
+        action: "questions",
+        value: weakQuestionIds.join(",")
+      }
+    : {
+        title: "全分野を確認する",
+        detail: "10問のランダム演習で弱点候補を集める",
+        action: "random"
+      };
+
+  let dayTwo;
+  const latestAssessment = latestExam?.examAssessment;
+  const subjectBWeakType = latestAssessment?.subject === "B"
+    ? latestAssessment.weaknessTypes?.find((type) => type.wrong > 0)
+    : null;
+  const stageWeakness = latestAssessment?.subject === "A"
+    ? getTopEntries(countRecords((latestExam.answerRecords || []).filter((record) => !record.correct), (record) => record.stageId), 1)[0]
+    : null;
+
+  if (subjectBWeakType) {
+    dayTwo = {
+      title: `${subjectBWeakType.name}を集中演習`,
+      detail: `直近正解率 ${subjectBWeakType.percentage}% のタイプを補強`,
+      action: "subject-b-type",
+      value: subjectBWeakType.name
+    };
+  } else if (stageWeakness?.[0]) {
+    dayTwo = {
+      title: `${getStageNameById(stageWeakness[0])}を集中演習`,
+      detail: `直近の模試で${stageWeakness[1]}問誤答した分野を補強`,
+      action: "stage",
+      value: stageWeakness[0]
+    };
+  } else {
+    const weakestStage = [...getStageStats()].sort((a, b) => {
+      if (!a.attempts && b.attempts) return -1;
+      if (a.attempts && !b.attempts) return 1;
+      return a.average - b.average;
+    })[0];
+    dayTwo = {
+      title: `${weakestStage.name}を集中演習`,
+      detail: weakestStage.attempts ? `現在の平均正解率 ${weakestStage.average}%` : "未挑戦分野を優先",
+      action: "stage",
+      value: weakestStage.stageId
+    };
+  }
+
+  const confirmSubject = !latestSubjectA
+    ? "A"
+    : !latestSubjectB
+      ? "B"
+      : latestSubjectA.examAssessment.estimatedScore <= latestSubjectB.examAssessment.estimatedScore ? "A" : "B";
+  const dayThree = {
+    title: `科目${confirmSubject} 本番模試`,
+    detail: latestSubjectA && latestSubjectB ? "低い方の推定評価点を再確認" : "未受験科目の現在地を測定",
+    action: "exam",
+    value: confirmSubject
+  };
+
+  return [dayOne, dayTwo, dayThree];
+}
+
+function ensureThreeDayStudyPlan() {
+  const today = todayKey();
+  const createdAt = studyPlanState?.createdAt;
+  const age = createdAt ? Math.floor((new Date(`${today}T00:00:00`) - new Date(`${createdAt}T00:00:00`)) / 86400000) : 99;
+  if (!studyPlanState || !Array.isArray(studyPlanState.items) || age < 0 || age >= 3) {
+    createThreeDayStudyPlan();
+  }
+  if (!studyPlanState.id) studyPlanState.id = `${studyPlanState.createdAt}-${Date.now()}`;
+  studyPlanState.completedDays = Array.isArray(studyPlanState.completedDays) ? studyPlanState.completedDays : [];
+  saveStudyPlanState();
+  return studyPlanState;
+}
+
+function createThreeDayStudyPlan() {
+  studyPlanState = {
+    id: `${todayKey()}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    createdAt: todayKey(),
+    items: buildThreeDayStudyPlan(),
+    completedDays: [],
+    rewardClaimed: false
+  };
+  saveStudyPlanState();
+  return studyPlanState;
+}
+
+function completeStudyPlanDay() {
+  const day = current?.studyPlanDay;
+  if (!Number.isInteger(day) || current.studyPlanId !== studyPlanState?.id) return 0;
+  if (!studyPlanState.completedDays.includes(day)) {
+    studyPlanState.completedDays.push(day);
+    studyPlanState.completedDays.sort((a, b) => a - b);
+  }
+  let reward = 0;
+  if (studyPlanState.completedDays.length === 3 && !studyPlanState.rewardClaimed) {
+    studyPlanState.rewardClaimed = true;
+    reward = 15;
+  }
+  saveStudyPlanState();
+  return reward;
+}
+
+function renderThreeDayStudyPlan() {
+  if (!els.studyPlan) return;
+  const state = ensureThreeDayStudyPlan();
+  els.studyPlan.innerHTML = state.items.map((item, index) => {
+    const day = index + 1;
+    const completed = state.completedDays.includes(day);
+    return `
+    <article class="study-plan-item ${completed ? "completed" : ""}">
+      <span>${completed ? "達成" : `Day ${day}`}</span>
+      <div>
+        <strong>${escapeHtml(item.title)}</strong>
+        <p>${escapeHtml(item.detail)}</p>
+      </div>
+      <button class="secondary-button compact" type="button" data-study-plan-day="${day}" data-study-plan-id="${state.id}" data-study-plan-action="${item.action}" data-study-plan-value="${escapeHtml(item.value || "")}">${completed ? "もう一度" : "開始"}</button>
+    </article>
+  `;
+  }).join("");
+  if (state.completedDays.length === 3) {
+    els.studyPlan.insertAdjacentHTML("beforeend", `
+      <div class="study-plan-complete">
+        <div>
+          <strong>3日間プラン達成</strong>
+          <span>${state.rewardClaimed ? "ボーナス15進化ポイントを獲得済み" : "最後の演習完了時にボーナスを獲得"}</span>
+        </div>
+        <button class="primary-button compact" type="button" data-study-plan-reset="true">次のプランを作成</button>
+      </div>
+    `);
+  }
+}
+
+function getPassReadiness() {
+  const latestSubjectA = history.find((attempt) => attempt.examSubject === "A" && attempt.examAssessment);
+  const latestSubjectB = history.find((attempt) => attempt.examSubject === "B" && attempt.examAssessment);
+  const stageStats = getStageStats();
+  const attemptedStages = stageStats.filter((stage) => stage.attempts > 0);
+  const stageAverage = attemptedStages.length
+    ? Math.round(attemptedStages.reduce((sum, stage) => sum + stage.average, 0) / attemptedStages.length)
+    : 0;
+  const subjectAScore = latestSubjectA?.examAssessment.estimatedScore || 0;
+  const subjectBScore = latestSubjectB?.examAssessment.estimatedScore || 0;
+  const subjectAMinimumDomainRate = latestSubjectA?.examAssessment.minimumDomainRate || 0;
+  const subjectBMinimumDomainRate = latestSubjectB?.examAssessment.minimumDomainRate || 0;
+  const score = calculatePassReadinessScore(
+    subjectAScore,
+    subjectBScore,
+    subjectAMinimumDomainRate,
+    subjectBMinimumDomainRate,
+    stageAverage,
+    attemptedStages.length
+  );
+  const status = score >= 90
+    ? "合格圏を確認中"
+    : score >= 70
+      ? "合格圏に接近"
+      : score >= 40
+        ? "合格準備中"
+        : "基礎データを収集中";
+
+  let action = "reinforcement";
+  let button = "合格補強模試を開始";
+  if (!latestSubjectA) {
+    action = "exam-a";
+    button = "科目Aを受験";
+  } else if (!latestSubjectB) {
+    action = "exam-b";
+    button = "科目Bを受験";
+  } else if (score >= 90) {
+    const subject = subjectAScore <= subjectBScore ? "A" : "B";
+    action = `exam-${subject.toLowerCase()}`;
+    button = `科目${subject}を再確認`;
+  }
+
+  return {
+    score,
+    status,
+    subjectAScore,
+    subjectBScore,
+    subjectAMinimumDomainRate,
+    subjectBMinimumDomainRate,
+    attemptedStageCount: attemptedStages.length,
+    stageAverage,
+    action,
+    button
+  };
+}
+
+function renderPassReadiness() {
+  if (!els.passReadiness) return;
+  const readiness = getPassReadiness();
+  const trend = getPassReadinessTrend();
+  const previous = trend.length > 1 ? trend.at(-2).value : null;
+  const delta = previous === null ? null : readiness.score - previous;
+  els.passReadiness.innerHTML = `
+    <div class="readiness-score" style="--readiness:${readiness.score}%">
+      <strong>${readiness.score}</strong>
+      <span>/ 100</span>
+    </div>
+    <div class="readiness-content">
+      <span>Pass Readiness</span>
+      <h3>合格準備度: ${readiness.status}</h3>
+      <div class="readiness-metrics">
+        <small>科目A ${readiness.subjectAScore ? `${readiness.subjectAScore}点` : "未受験"}</small>
+        <small>科目B ${readiness.subjectBScore ? `${readiness.subjectBScore}点` : "未受験"}</small>
+        <small>最低分野 A ${readiness.subjectAMinimumDomainRate}% / B ${readiness.subjectBMinimumDomainRate}%</small>
+        <small>分野演習 ${readiness.attemptedStageCount}/5</small>
+        <small>分野平均 ${readiness.stageAverage}%</small>
+        <small>連続学習 ${getStudyStreak()}日</small>
+        ${delta === null ? "" : `<small>前回比 ${delta >= 0 ? "+" : ""}${delta}</small>`}
+      </div>
+    </div>
+    <button class="primary-button compact" type="button" data-readiness-action="${readiness.action}">${readiness.button}</button>
+  `;
+}
+
 function renderStages() {
   els.stageCount.textContent = stages.length;
   els.clearedCount.textContent = Object.values(progress).filter(Boolean).length;
   renderSuspendedExamBoard();
+  renderPassReadiness();
   renderMissionsAndBadges();
   renderTodayReviewList(els.homeTodayReview, els.startHomeTodayReview, 5);
+  renderThreeDayStudyPlan();
   els.stageGrid.innerHTML = "";
 
   stages.forEach((stage) => {
@@ -5181,6 +5563,18 @@ function setView(view) {
   els.statsView.classList.toggle("hidden", view !== "stats");
   els.evolutionView.classList.toggle("hidden", view !== "evolution");
   els.auditView.classList.toggle("hidden", view !== "audit");
+  if (viewInitialized) {
+    const focusTarget = {
+      stage: els.stageView,
+      quiz: els.quizView,
+      result: els.resultView,
+      stats: els.statsView,
+      evolution: els.evolutionView,
+      audit: els.auditView
+    }[view];
+    requestAnimationFrame(() => focusTarget?.focus({ preventScroll: true }));
+  }
+  viewInitialized = true;
 }
 
 function getQuestionTimeLimit(question) {
@@ -5507,6 +5901,31 @@ function startRandomMode() {
   renderQuestion();
 }
 
+function startReinforcementExam() {
+  const questions = buildReinforcementQuestions();
+  current = {
+    stage: {
+      id: "reinforcement",
+      name: "合格補強模試",
+      min: 20,
+      max: 20
+    },
+    questions,
+    index: 0,
+    score: 0,
+    timeBonus: 0,
+    answered: false,
+    selectedIndex: null,
+    records: [],
+    correctStreak: 0,
+    maxCorrectStreak: 0,
+    mode: "reinforcement",
+    reviewImpact: buildReviewImpact("合格補強模試", questions, "reinforcement")
+  };
+  setView("quiz");
+  renderQuestion();
+}
+
 function examQuestion(question, stage) {
   return {
     ...question,
@@ -5680,6 +6099,7 @@ function toggleCurrentExamReview() {
   current.reviewQuestionIds = [...reviewIds];
   renderExamNavigator();
   els.toggleExamReview.classList.toggle("active", reviewIds.has(questionIdToToggle));
+  els.toggleExamReview.setAttribute("aria-pressed", String(reviewIds.has(questionIdToToggle)));
   els.toggleExamReview.textContent = reviewIds.has(questionIdToToggle) ? "見直し対象 ✓" : "見直す";
   saveActiveExam();
 }
@@ -5882,6 +6302,36 @@ function buildRandomQuestions() {
     );
 }
 
+function buildReinforcementQuestions() {
+  const stageStats = new Map(getStageStats().map((stage) => [stage.stageId, stage]));
+  const now = new Date();
+  const candidates = uniqueQuestionsByText(stages.flatMap((stage) =>
+    stage.questions.map((question) => {
+      const item = {
+        ...question,
+        id: questionId(stage.id, question),
+        stageId: stage.id,
+        sourceStageName: stage.name
+      };
+      const stats = questionStats[item.id];
+      const stageStat = stageStats.get(stage.id);
+      const stagePriority = stageStat?.attempts ? Math.max(0, 100 - stageStat.average) * 5 : 260;
+      const masteryPriority = stats && getQuestionMastery(stats, now).id === "review" ? 700 : 0;
+      const questionPriority = stats
+        ? masteryPriority + (stats.wrong || 0) * 90 - (stats.correctStreak || 0) * 35
+        : 180;
+      return { ...item, reinforcementPriority: stagePriority + questionPriority + Math.random() * 80 };
+    })
+  ));
+
+  const ranked = candidates.sort((a, b) => b.reinforcementPriority - a.reinforcementPriority);
+  const selected = selectBalancedReinforcementCandidates(ranked, stages.map((stage) => stage.id));
+  return shuffle(selected).map((question) => withQuestionOrder({
+    ...question,
+    tag: `${question.sourceStageName} / ${question.tag}`
+  }));
+}
+
 function buildWeakQuestions() {
   const allQuestions = stages.flatMap((stage) =>
     stage.questions.map((question) => ({
@@ -5984,6 +6434,7 @@ function renderQuestion() {
   els.examNavigator.classList.add("hidden");
   const isReviewTarget = isFullExamMode() && (current.reviewQuestionIds || []).includes(question.id);
   els.toggleExamReview.classList.toggle("active", isReviewTarget);
+  els.toggleExamReview.setAttribute("aria-pressed", String(isReviewTarget));
   els.toggleExamReview.textContent = isReviewTarget ? "見直し対象 ✓" : "見直す";
   els.nextQuestion.disabled = isFullExamMode() ? false : true;
   els.nextQuestion.textContent = current.index === current.questions.length - 1 && isFullExamMode() ? "問題一覧へ" : "次へ";
@@ -6342,6 +6793,7 @@ function answerQuestion(shownIndex) {
 
   [...els.choiceList.children].forEach((choiceEl, index) => {
     choiceEl.disabled = true;
+    choiceEl.setAttribute("aria-pressed", String(index === shownIndex));
     const originalIndex = question.order[index].index;
     if (originalIndex === question.answer) choiceEl.classList.add("correct");
     if (index === shownIndex && !isCorrect) choiceEl.classList.add("wrong");
@@ -6486,6 +6938,26 @@ function getExamDomainName(record, subject) {
     return record.stageId === "technology" ? "情報セキュリティ" : "アルゴリズム・プログラミング";
   }
   return getStageNameById(record.stageId);
+}
+
+function buildPracticeDomainBreakdown(records) {
+  return Object.values(records.reduce((summary, record) => {
+    const stageId = record.stageId || "other";
+    summary[stageId] = summary[stageId] || {
+      stageId,
+      name: getStageNameById(stageId),
+      correct: 0,
+      total: 0
+    };
+    summary[stageId].total += 1;
+    summary[stageId].correct += record.correct ? 1 : 0;
+    return summary;
+  }, {}))
+    .map((domain) => ({
+      ...domain,
+      percentage: Math.round((domain.correct / domain.total) * 100)
+    }))
+    .sort((a, b) => a.percentage - b.percentage || b.total - a.total);
 }
 
 function buildCreatureResultComment(percentage, examAssessment = null, weakTags = []) {
@@ -6633,6 +7105,9 @@ function buildResultAdvice(percentage, examAssessment = current.examAssessment |
   const weakTags = wrongTagEntries.length
     ? wrongTagEntries.map(([tag, count]) => ({ tag, count }))
     : [{ tag: "大きな弱点なし", count: 0 }];
+  const reinforcementBreakdown = current.mode === "reinforcement"
+    ? buildPracticeDomainBreakdown(current.records)
+    : [];
 
   let recommendation = {
     type: "random",
@@ -6678,6 +7153,17 @@ function buildResultAdvice(percentage, examAssessment = current.examAssessment |
       label: getStageNameById(stageId),
       button: `${getStageNameById(stageId)}を開始`,
       reason: "ランダム模試で落とした分野を先に固めると、次回の得点が伸びやすくなります。"
+    };
+  }
+
+  if (current.mode === "reinforcement" && reinforcementBreakdown.length) {
+    const weakestDomain = reinforcementBreakdown[0];
+    recommendation = {
+      type: "stage",
+      stageId: weakestDomain.stageId,
+      label: weakestDomain.name,
+      button: `${weakestDomain.name}を復習`,
+      reason: `補強模試では${weakestDomain.name}が${weakestDomain.percentage}%でした。この分野を先に復習すると総合点を上げやすくなります。`
     };
   }
 
@@ -6772,6 +7258,22 @@ function buildResultAdvice(percentage, examAssessment = current.examAssessment |
     ${examBreakdown ? `<div class="advice-card"><span>Breakdown</span><strong>分野別内訳</strong><div class="weak-chip-list">${examBreakdown}</div></div>` : ""}
     ${difficultyBreakdown ? `<div class="advice-card"><span>Difficulty</span><strong>難易度別内訳</strong><div class="weak-chip-list">${difficultyBreakdown}</div></div>` : ""}
     ${subjectBWeaknessBreakdown ? `<div class="advice-card"><span>Subject B</span><strong>弱点タイプ分析</strong><p>誤答が多いタイプを優先表示しています。次の復習では上位タイプを重点的に確認しましょう。</p><div class="weak-chip-list">${subjectBWeaknessBreakdown}</div></div>` : ""}
+    ${reinforcementBreakdown.length ? `
+      <div class="advice-card reinforcement-breakdown">
+        <span>Reinforcement</span>
+        <strong>合格補強模試の分野別結果</strong>
+        <p>正解率が低い順です。最下位分野を次の復習先に設定しました。</p>
+        <div class="domain-result-list">
+          ${reinforcementBreakdown.map((domain) => `
+            <div class="domain-result-row ${domain === reinforcementBreakdown[0] ? "weakest" : ""}">
+              <strong>${escapeHtml(domain.name)}</strong>
+              <span>${domain.correct}/${domain.total}問</span>
+              <b>${domain.percentage}%</b>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    ` : ""}
     ${nextReviewMenu}
     <div class="advice-card">
       <span>Weak Point</span>
@@ -6874,7 +7376,18 @@ function buildHistoryNextReviewMenu(attempt) {
         }))
     : [];
 
-  const items = [...subjectBItems, ...stageItems];
+  const reinforcementDomains = attempt.mode === "reinforcement"
+    ? buildPracticeDomainBreakdown(records)
+    : [];
+  const reinforcementItems = reinforcementDomains.length
+    ? [{
+        label: `${reinforcementDomains[0].name}を復習`,
+        detail: `最弱分野 ${reinforcementDomains[0].percentage}%`,
+        action: `data-history-stage-id="${escapeHtml(reinforcementDomains[0].stageId)}"`
+      }]
+    : [];
+
+  const items = [...subjectBItems, ...stageItems, ...reinforcementItems];
   if (wrongRecords.length) {
     items.push({
       label: "誤答だけを復習",
@@ -7048,6 +7561,11 @@ function showResult() {
     })
   });
   history = history.slice(0, 100);
+  const studyPlanReward = completeStudyPlanDay();
+  if (studyPlanReward) {
+    creature.food += studyPlanReward;
+    creature.totalFood += studyPlanReward;
+  }
   updateQuestionStats(current.records, current.questions);
   if (current.reviewImpact?.questionIds?.length) {
     current.reviewImpact.after = getQuestionSetStats(current.reviewImpact.questionIds);
@@ -7093,16 +7611,16 @@ function showResult() {
         : `${current.stage.name}: ${current.questions.length}問中 ${current.score}問正解。結果は履歴に保存されました。`;
   els.scoreRing.textContent = isFullExam ? `${current.examAssessment.estimatedScore}点` : `${percentage}%`;
   els.scoreRing.style.setProperty("--score", `${percentage}%`);
-  els.earnedFood.textContent = isWrongReview
+  els.earnedFood.textContent = isWrongReview && !studyPlanReward
     ? "誤答復習では進化ポイントは増えません。正解できるまで繰り返して定着させましょう。"
-    : `進化ポイントを${earnedFood}獲得しました。内訳: 基本${baseFood} + 時間内正解ボーナス${timeBonus}。条件を満たすと自動で成長・進化します。`;
+    : `進化ポイントを${earnedFood + studyPlanReward}獲得しました。内訳: 基本${baseFood} + 時間内正解ボーナス${timeBonus}${studyPlanReward ? ` + 3日間プラン達成${studyPlanReward}` : ""}。条件を満たすと自動で成長・進化します。`;
   buildResultAdvice(percentage, current.examAssessment);
   renderResultReview();
   els.reviewWrongAnswers.classList.toggle("hidden", current.records.every((record) => record.correct));
   renderEvolutionChoice();
   setView("result");
   renderStages();
-  renderCreature(evolutionMessages.at(-1) || `進化ポイントを${earnedFood}獲得しました。`, evolutionMessages.length ? "evolving" : "happy");
+  renderCreature(evolutionMessages.at(-1) || `進化ポイントを${earnedFood + studyPlanReward}獲得しました。`, evolutionMessages.length ? "evolving" : "happy");
   clearSuspendedExam(completedExamSubject);
 }
 
@@ -7366,6 +7884,71 @@ function getExamScoreTrend() {
     }));
 }
 
+function calculatePassReadinessScore(subjectAScore, subjectBScore, subjectAMinimumDomainRate, subjectBMinimumDomainRate, stageAverage, attemptedStageCount) {
+  return Math.round(
+    Math.min(subjectAScore / 600, 1) * 25
+    + Math.min(subjectBScore / 600, 1) * 25
+    + Math.min(subjectAMinimumDomainRate / 50, 1) * 10
+    + Math.min(subjectBMinimumDomainRate / 50, 1) * 10
+    + Math.min(stageAverage / 70, 1) * 20
+    + (attemptedStageCount / stages.length) * 10
+  );
+}
+
+function getPassReadinessTrend() {
+  const latestExams = {
+    A: { score: 0, minimumDomainRate: 0 },
+    B: { score: 0, minimumDomainRate: 0 }
+  };
+  const stageAttempts = new Map(stages.map((stage) => [stage.id, []]));
+  const points = [];
+
+  history.slice().reverse().forEach((attempt) => {
+    if (attempt.examSubject && attempt.examAssessment) {
+      latestExams[attempt.examSubject] = {
+        score: attempt.examAssessment.estimatedScore || 0,
+        minimumDomainRate: attempt.examAssessment.minimumDomainRate || 0
+      };
+    }
+    if (attempt.mode === "stage" && stageAttempts.has(attempt.stageId)) {
+      stageAttempts.get(attempt.stageId).push(attempt.percentage || 0);
+    }
+
+    const attempted = [...stageAttempts.values()].filter((values) => values.length);
+    const stageAverage = attempted.length
+      ? Math.round(attempted.reduce((sum, values) => sum + values.reduce((a, b) => a + b, 0) / values.length, 0) / attempted.length)
+      : 0;
+    const value = calculatePassReadinessScore(
+      latestExams.A.score,
+      latestExams.B.score,
+      latestExams.A.minimumDomainRate,
+      latestExams.B.minimumDomainRate,
+      stageAverage,
+      attempted.length
+    );
+    if (!points.length || points.at(-1).value !== value) {
+      points.push({
+        label: new Date(attempt.date).toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" }),
+        value
+      });
+    }
+  });
+
+  return points.slice(-7);
+}
+
+function getPassReadinessGaps() {
+  const readiness = getPassReadiness();
+  const gaps = [];
+  if (readiness.subjectAScore < 600) gaps.push(`科目A ${Math.max(0, 600 - readiness.subjectAScore)}点分`);
+  if (readiness.subjectBScore < 600) gaps.push(`科目B ${Math.max(0, 600 - readiness.subjectBScore)}点分`);
+  if (readiness.subjectAMinimumDomainRate < 40) gaps.push(`科目A 最低分野あと${40 - readiness.subjectAMinimumDomainRate}pt`);
+  if (readiness.subjectBMinimumDomainRate < 40) gaps.push(`科目B 最低分野あと${40 - readiness.subjectBMinimumDomainRate}pt`);
+  if (readiness.attemptedStageCount < stages.length) gaps.push(`未挑戦 ${stages.length - readiness.attemptedStageCount}分野`);
+  if (readiness.stageAverage < 70) gaps.push(`分野平均 あと${70 - readiness.stageAverage}pt`);
+  return gaps;
+}
+
 function drawTrendChart(canvas, series, options = {}) {
   if (!canvas || !series.some((item) => item.points.length)) return;
   const width = Math.max(320, Math.floor(canvas.clientWidth));
@@ -7465,6 +8048,23 @@ function renderLearningCharts() {
       { labels: exams.map((item) => item.label), min: 0, max: 1000, reference: 600 }
     );
   }
+
+  const readiness = getPassReadinessTrend();
+  els.readinessTrendChart.classList.toggle("hidden", !readiness.length);
+  els.readinessTrendEmpty.classList.toggle("hidden", Boolean(readiness.length));
+  if (readiness.length) {
+    drawTrendChart(
+      els.readinessTrendChart,
+      [{ color: "#2563eb", points: readiness.map((item, index) => ({ index, value: item.value })) }],
+      { labels: readiness.map((item) => item.label), min: 0, max: 100, reference: 90 }
+    );
+  }
+  const gaps = getPassReadinessGaps();
+  const delta = readiness.length > 1 ? readiness.at(-1).value - readiness.at(-2).value : null;
+  els.readinessTrendSummary.innerHTML = `
+    <strong>${delta === null ? "準備度の変化を記録中" : `前回比 ${delta >= 0 ? "+" : ""}${delta}`}</strong>
+    <span>${gaps.length ? `不足条件: ${gaps.join(" / ")}` : "基準条件を満たしています。本番形式で安定性を確認しましょう。"}</span>
+  `;
 }
 
 function renderHistoryDetail(attemptId) {
@@ -7475,7 +8075,7 @@ function renderHistoryDetail(attemptId) {
 
   const records = Array.isArray(attempt.answerRecords) ? attempt.answerRecords : [];
   const wrongIds = [...new Set(attempt.wrongQuestionIds || [])];
-  const domainRows = attempt.examAssessment?.domains || [];
+  const domainRows = attempt.examAssessment?.domains || (attempt.mode === "reinforcement" ? buildPracticeDomainBreakdown(records) : []);
   const reviewImpact = getAttemptReviewImpact(attempt);
   els.historyDetailSummary.innerHTML = `
     <div class="metric"><span>受験モード</span><strong>${escapeHtml(attempt.stageName)}</strong></div>
@@ -7484,7 +8084,7 @@ function renderHistoryDetail(attemptId) {
     <div class="metric"><span>誤答数</span><strong>${attempt.total - attempt.score}</strong></div>
     ${reviewImpact ? `<div class="metric review-impact-metric"><span>復習効果</span><strong>${reviewImpact.delta >= 0 ? "+" : ""}${reviewImpact.delta}pt</strong></div>` : ""}
     ${domainRows
-      .map((domain) => `<div class="metric"><span>${escapeHtml(domain.name)}</span><strong>${domain.correct}/${domain.total} (${domain.percentage}%)</strong></div>`)
+      .map((domain, index) => `<div class="metric ${attempt.mode === "reinforcement" && index === 0 ? "weakest-domain-metric" : ""}"><span>${attempt.mode === "reinforcement" && index === 0 ? "最弱: " : ""}${escapeHtml(domain.name)}</span><strong>${domain.correct}/${domain.total} (${domain.percentage}%)</strong></div>`)
       .join("")}
   `;
   els.reviewHistoryWrong.classList.toggle("hidden", wrongIds.length === 0);
@@ -7574,6 +8174,7 @@ function renderStats() {
 
   els.statsSummary.innerHTML = `
     <div class="metric"><span>受験回数</span><strong>${totalAttempts}</strong></div>
+    <div class="metric"><span>連続学習</span><strong>${getStudyStreak()}日</strong></div>
     <div class="metric"><span>平均点</span><strong>${overallAverage}%</strong></div>
     <div class="metric"><span>最高点</span><strong>${overallBest}%</strong></div>
     <div class="metric"><span>最新 科目A推定</span><strong>${latestSubjectA ? `${latestSubjectA.estimatedScore}点` : "未受験"}</strong></div>
@@ -7766,7 +8367,8 @@ function getAuditItems() {
     .sort((a, b) => b.priority - a.priority || a.stageName.localeCompare(b.stageName, "ja"));
 }
 
-function renderAudit(filter = "priority") {
+function renderAudit(filter = auditViewState.filter) {
+  auditViewState.filter = filter;
   const items = getAuditItems();
   const counts = {
     all: items.length,
@@ -7776,11 +8378,26 @@ function renderAudit(filter = "priority") {
     ok: items.filter((item) => item.status === "ok").length
   };
 
-  const filtered = items.filter((item) => {
+  const statusFiltered = items.filter((item) => {
     if (filter === "all") return true;
     if (filter === "priority") return item.priority >= 6 && item.status !== "ok";
     return item.status === filter;
   });
+  const searchKey = auditViewState.search.normalize("NFKC").toLowerCase().replace(/\s+/g, "");
+  const filtered = statusFiltered.filter((item) => {
+    if (auditViewState.stageId !== "all" && item.stageId !== auditViewState.stageId) return false;
+    if (!searchKey) return true;
+    const target = [item.text, item.tag, item.explanation, ...(item.choices || [])]
+      .join(" ")
+      .normalize("NFKC")
+      .toLowerCase()
+      .replace(/\s+/g, "");
+    return target.includes(searchKey);
+  });
+  const pageSize = 50;
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+  auditViewState.page = Math.min(Math.max(0, auditViewState.page), pageCount - 1);
+  const pageItems = filtered.slice(auditViewState.page * pageSize, (auditViewState.page + 1) * pageSize);
 
   els.auditSummary.innerHTML = `
     <div class="metric"><span>総問題数</span><strong>${counts.all}</strong></div>
@@ -7796,13 +8413,29 @@ function renderAudit(filter = "priority") {
     ["ok", "確認済み"],
     ["all", "全件"]
   ];
-  els.auditFilters.innerHTML = filters
-    .map(([key, label]) => `<button class="audit-filter ${filter === key ? "active" : ""}" type="button" data-filter="${key}">${label} ${counts[key]}</button>`)
-    .join("");
+  els.auditFilters.innerHTML = `
+    <form class="audit-search" data-audit-search-form>
+      <label for="auditSearchInput">問題を検索</label>
+      <input id="auditSearchInput" name="search" type="search" value="${escapeHtml(auditViewState.search)}" placeholder="問題文・タグ・選択肢・解説">
+      <button class="secondary-button compact" type="submit">検索</button>
+      ${auditViewState.search ? `<button class="ghost-button compact" type="button" data-audit-search-clear>解除</button>` : ""}
+    </form>
+    <div class="audit-filter-group" role="group" aria-label="確認状態">
+      ${filters.map(([key, label]) => `<button class="audit-filter ${filter === key ? "active" : ""}" type="button" data-filter="${key}" aria-pressed="${filter === key}">${label} ${counts[key]}</button>`).join("")}
+    </div>
+    <div class="audit-filter-group" role="group" aria-label="分野">
+      <button class="audit-filter ${auditViewState.stageId === "all" ? "active" : ""}" type="button" data-audit-stage="all" aria-pressed="${auditViewState.stageId === "all"}">全分野</button>
+      ${stages.map((stage) => `<button class="audit-filter ${auditViewState.stageId === stage.id ? "active" : ""}" type="button" data-audit-stage="${stage.id}" aria-pressed="${auditViewState.stageId === stage.id}">${escapeHtml(stage.name)}</button>`).join("")}
+    </div>
+    <div class="audit-pagination" aria-label="監査ページ">
+      <button class="ghost-button compact" type="button" data-audit-page="${auditViewState.page - 1}" ${auditViewState.page === 0 ? "disabled" : ""}>前の50件</button>
+      <strong>${filtered.length ? auditViewState.page * pageSize + 1 : 0}〜${Math.min((auditViewState.page + 1) * pageSize, filtered.length)} / ${filtered.length}件</strong>
+      <button class="ghost-button compact" type="button" data-audit-page="${auditViewState.page + 1}" ${auditViewState.page >= pageCount - 1 ? "disabled" : ""}>次の50件</button>
+    </div>
+  `;
 
-  els.auditList.innerHTML = filtered.length
-    ? filtered
-        .slice(0, 120)
+  els.auditList.innerHTML = pageItems.length
+    ? pageItems
         .map((item) => {
           const statusLabel = item.status === "ok" ? "確認済み" : item.status === "needs" ? "要確認" : "未確認";
           return `
@@ -7926,6 +8559,10 @@ els.retryStage.addEventListener("click", () => {
     startWeakMode();
     return;
   }
+  if (current.mode === "reinforcement") {
+    startReinforcementExam();
+    return;
+  }
   if (current.mode === "subject-a-exam") {
     startFullExam("A");
     return;
@@ -7962,6 +8599,46 @@ els.reviewTopWeakQuestions.addEventListener("click", () => {
 });
 els.startHomeTodayReview.addEventListener("click", () => {
   startRankedQuestionReview(getRankedWeakQuestions(5).map((question) => question.id));
+});
+els.studyPlan.addEventListener("click", (event) => {
+  if (event.target.closest("[data-study-plan-reset]")) {
+    createThreeDayStudyPlan();
+    renderThreeDayStudyPlan();
+    return;
+  }
+  const button = event.target.closest("[data-study-plan-action]");
+  if (!button) return;
+  const { studyPlanAction: action, studyPlanValue: value, studyPlanId } = button.dataset;
+  const day = Number(button.dataset.studyPlanDay);
+  const attachPlanProgress = () => {
+    if (!current) return;
+    current.studyPlanDay = day;
+    current.studyPlanId = studyPlanId;
+  };
+  if (action === "questions") {
+    startRankedQuestionReview(value.split(",").filter(Boolean));
+    attachPlanProgress();
+    return;
+  }
+  if (action === "subject-b-type") {
+    startSubjectBTypeReview(value);
+    attachPlanProgress();
+    return;
+  }
+  if (action === "stage") {
+    startStage(value);
+    attachPlanProgress();
+    return;
+  }
+  if (action === "exam") {
+    startFullExam(value);
+    attachPlanProgress();
+    return;
+  }
+  if (action === "random") {
+    startRandomMode();
+    attachPlanProgress();
+  }
 });
 els.startTodayReview.addEventListener("click", () => {
   startRankedQuestionReview(getRankedWeakQuestions(5).map((question) => question.id));
@@ -8016,9 +8693,66 @@ els.showAudit.addEventListener("click", () => {
   setView("audit");
 });
 els.closeAudit.addEventListener("click", () => setView("stage"));
+els.exportAudit.addEventListener("click", () => {
+  const allItems = getAuditItems();
+  const items = allItems.filter((item) => item.status !== "pending");
+  const payload = {
+    generatedAt: new Date().toISOString(),
+    totalQuestions: allItems.length,
+    reviewedCount: items.length,
+    needsReviewCount: items.filter((item) => item.status === "needs").length,
+    items: items.map((item) => ({
+      id: item.id,
+      stage: item.stageName,
+      tag: item.tag,
+      question: item.text,
+      choices: item.choices,
+      correctChoice: item.choices[item.answer],
+      explanation: item.explanation || "",
+      status: item.status,
+      updatedAt: auditMarks[item.id]?.updatedAt || null
+    }))
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `fe-question-audit-${todayKey()}.json`;
+  link.click();
+  URL.revokeObjectURL(url);
+});
 els.auditFilters.addEventListener("click", (event) => {
-  const filter = event.target.dataset.filter;
-  if (filter) renderAudit(filter);
+  const button = event.target.closest("button");
+  if (!button) return;
+  if (button.dataset.filter) {
+    auditViewState.page = 0;
+    renderAudit(button.dataset.filter);
+    return;
+  }
+  if (button.dataset.auditStage) {
+    auditViewState.stageId = button.dataset.auditStage;
+    auditViewState.page = 0;
+    renderAudit();
+    return;
+  }
+  if (button.dataset.auditPage !== undefined && !button.disabled) {
+    auditViewState.page = Number(button.dataset.auditPage);
+    renderAudit();
+    return;
+  }
+  if (button.dataset.auditSearchClear !== undefined) {
+    auditViewState.search = "";
+    auditViewState.page = 0;
+    renderAudit();
+  }
+});
+els.auditFilters.addEventListener("submit", (event) => {
+  const form = event.target.closest("[data-audit-search-form]");
+  if (!form) return;
+  event.preventDefault();
+  auditViewState.search = new FormData(form).get("search")?.trim() || "";
+  auditViewState.page = 0;
+  renderAudit();
 });
 els.auditList.addEventListener("click", (event) => {
   const status = event.target.dataset.auditStatus;
@@ -8027,8 +8761,7 @@ els.auditList.addEventListener("click", (event) => {
   auditMarks[id] = { status, updatedAt: new Date().toISOString() };
   if (status === "pending") delete auditMarks[id];
   saveAuditMarks();
-  const activeFilter = els.auditFilters.querySelector(".audit-filter.active")?.dataset.filter || "priority";
-  renderAudit(activeFilter);
+  renderAudit();
 });
 els.showEvolutionDex.addEventListener("click", () => {
   clearQuizTimer();
@@ -8038,6 +8771,19 @@ els.showEvolutionDex.addEventListener("click", () => {
 els.closeEvolutionDex.addEventListener("click", () => setView("stage"));
 els.weakMode.addEventListener("click", startWeakMode);
 els.randomMode.addEventListener("click", startRandomMode);
+els.reinforcementExam.addEventListener("click", startReinforcementExam);
+els.passReadiness.addEventListener("click", (event) => {
+  const action = event.target.closest("[data-readiness-action]")?.dataset.readinessAction;
+  if (action === "exam-a") {
+    startFullExam("A");
+    return;
+  }
+  if (action === "exam-b") {
+    startFullExam("B");
+    return;
+  }
+  if (action === "reinforcement") startReinforcementExam();
+});
 els.subjectAExam.addEventListener("click", () => startFullExam("A"));
 els.subjectBExam.addEventListener("click", () => startFullExam("B"));
 els.suspendedExamBoard.addEventListener("click", (event) => {
@@ -8067,6 +8813,7 @@ els.resetProgress.addEventListener("click", () => {
   selectedHistoryAttemptId = null;
   questionStats = {};
   suspendedExams = {};
+  studyPlanState = {};
   gameState = {
     unlockedBadges: [],
     unlockedEvolutions: [],
@@ -8090,6 +8837,7 @@ els.resetProgress.addEventListener("click", () => {
   saveHistory();
   saveQuestionStats();
   saveSuspendedExams();
+  saveStudyPlanState();
   saveGameState();
   saveCreature();
   renderStages();
@@ -8103,7 +8851,13 @@ recordEvolutionUnlock(creature.branchId);
 syncGameAchievements();
 renderStages();
 renderCreature();
-setView("stage");
+const initialView = new URLSearchParams(window.location.search).get("view");
+if (initialView === "audit") {
+  renderAudit("priority");
+  setView("audit");
+} else {
+  setView("stage");
+}
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {

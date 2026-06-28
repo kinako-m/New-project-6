@@ -14,7 +14,10 @@ const files = [
   "sample-derived-questions.js",
   "question-choice-sets.js",
   "manifest.webmanifest",
-  "service-worker.js"
+  "service-worker.js",
+  "qa-checklist.html",
+  "qa-checklist.css",
+  "qa-checklist.js"
 ];
 
 function removeDir(dir) {

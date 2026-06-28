@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FE模試 実機テスト</title>
+  <link rel="stylesheet" href="qa-checklist.css?v177">
+</head>
+<body>
+  <header>
+    <div>
+      <p class="eyebrow">Device QA</p>
+      <h1>実機テストチェックリスト</h1>
+      <p>端末ごとの確認状況と不具合を、このブラウザに保存します。</p>
+    </div>
+    <nav aria-label="開発用ページ">
+      <a href="index.html">アプリへ戻る</a>
+      <a href="index.html?view=audit">問題監査を開く</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="toolbar" aria-label="テスト対象端末">
+      <label>テスト対象</label>
+      <div class="device-switch" id="deviceSwitch">
+        <button type="button" data-device="smartphone">スマートフォン</button>
+        <button type="button" data-device="pc">PC</button>
+      </div>
+      <div id="progressSummary" class="progress-summary"></div>
+    </section>
+
+    <section>
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Checklist</p>
+          <h2>確認項目</h2>
+        </div>
+        <button id="resetChecklist" class="ghost" type="button">この端末の結果をリセット</button>
+      </div>
+      <div id="checklist" class="checklist"></div>
+    </section>
+
+    <section>
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Issue Log</p>
+          <h2>不具合を記録</h2>
+        </div>
+        <button id="exportIssues" class="secondary" type="button">JSONで書き出す</button>
+      </div>
+      <form id="issueForm" class="issue-form">
+        <label>概要<input name="summary" required maxlength="120" placeholder="例: 回答選択後に枠線が見えない"></label>
+        <label>画面<select name="screen"><option>ホーム</option><option>通常演習</option><option>本番模試</option><option>結果</option><option>成績・履歴</option><option>進化図鑑</option><option>その他</option></select></label>
+        <label>重要度<select name="severity"><option value="high">高</option><option value="medium" selected>中</option><option value="low">低</option></select></label>
+        <label class="wide">再現手順<textarea name="steps" rows="4" required placeholder="1. 科目A模試を開始&#10;2. 選択肢Aを選ぶ&#10;3. 表示を確認"></textarea></label>
+        <button class="primary" type="submit">記録する</button>
+      </form>
+      <div id="issueList" class="issue-list"></div>
+    </section>
+  </main>
+
+  <script src="qa-checklist.js?v177"></script>
+</body>
+</html>

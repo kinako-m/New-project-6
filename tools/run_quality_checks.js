@@ -101,11 +101,32 @@ check(
   `A counts ${exam.subjectAQuestionCounts.join("/")}, B counts ${exam.subjectBQuestionCounts.join("/")}, findings ${exam.findingCount}`
 );
 
+const examStateFlow = runJson("exam state flow", ["tools/audit_exam_state_flow.js"]);
+check(
+  "exam state flow",
+  examStateFlow.findingCount === 0,
+  `${examStateFlow.scenarioCount} scenarios, ${examStateFlow.assertionCount} assertions, findings ${examStateFlow.findingCount}`
+);
+
 const subjectBDifficulty = runJson("subject B difficulty", ["tools/audit_subject_b_difficulty.js", "--iterations=100"]);
 check(
   "subject B difficulty",
   subjectBDifficulty.findingCount === 0,
   `${subjectBDifficulty.subjectBPool} candidates, basic ${subjectBDifficulty.difficultyCounts.basic || 0}, standard ${subjectBDifficulty.difficultyCounts.standard || 0}, advanced ${subjectBDifficulty.difficultyCounts.advanced || 0}`
+);
+
+const reinforcement = runJson("reinforcement generation", ["tools/audit_reinforcement_generation.js"]);
+check(
+  "reinforcement generation",
+  reinforcement.findingCount === 0,
+  `${reinforcement.expectedQuestionCount} questions, minimum ${reinforcement.minimumPerStage} per stage, findings ${reinforcement.findingCount}`
+);
+
+const readiness = runJson("pass readiness", ["tools/audit_pass_readiness.js"]);
+check(
+  "pass readiness",
+  readiness.findingCount === 0,
+  `${readiness.caseCount} calibration cases, findings ${readiness.findingCount}`
 );
 
 check(
