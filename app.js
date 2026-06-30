@@ -3614,7 +3614,7 @@ let current = null;
 let quizTimer = null;
 let pendingEvolutionChoice = null;
 let viewInitialized = false;
-const ASSET_VERSION = "v177";
+const ASSET_VERSION = "v181";
 
 const DIFFICULTY_LABELS = {
   basic: "基礎",
@@ -4866,11 +4866,28 @@ function uniqueQuestionsByText(questions) {
   });
 }
 
+function choiceUniqueKey(choice) {
+  return String(choice || "")
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/\s+/g, "")
+    .replace(/[。、，,.・:：;；!?！？「」『』（）()[\]{}]/g, "")
+    .replace(/(?:です|である)$/g, "");
+}
+
 function selectQuestionChoices(question) {
   const correctChoice = question.correctChoice || question.choices[question.answer];
   const choicePool = question.choicePool ||
     question.choices.filter((_, index) => index !== question.answer);
-  const distractors = shuffle([...new Set(choicePool.filter((choice) => choice !== correctChoice))]).slice(0, 3);
+  const correctKey = choiceUniqueKey(correctChoice);
+  const seen = new Set();
+  const uniqueDistractors = choicePool.filter((choice) => {
+    const key = choiceUniqueKey(choice);
+    if (!key || key === correctKey || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  const distractors = shuffle(uniqueDistractors).slice(0, 3);
   return {
     ...question,
     correctChoice,

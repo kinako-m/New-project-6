@@ -108,6 +108,20 @@ check(
   `${examStateFlow.scenarioCount} scenarios, ${examStateFlow.assertionCount} assertions, findings ${examStateFlow.findingCount}`
 );
 
+const examResultFlow = runJson("exam result flow", ["tools/audit_exam_result_flow.js"]);
+check(
+  "exam result flow",
+  examResultFlow.findingCount === 0,
+  `${examResultFlow.scenarioCount} scenarios, ${examResultFlow.assertionCount} assertions, findings ${examResultFlow.findingCount}`
+);
+
+const responsiveLayout = runJson("responsive layout", ["tools/audit_responsive_layout.js"]);
+check(
+  "responsive layout",
+  responsiveLayout.findingCount === 0,
+  `${responsiveLayout.assertionCount} assertions, findings ${responsiveLayout.findingCount}`
+);
+
 const subjectBDifficulty = runJson("subject B difficulty", ["tools/audit_subject_b_difficulty.js", "--iterations=100"]);
 check(
   "subject B difficulty",

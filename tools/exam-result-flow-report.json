@@ -1,0 +1,93 @@
+{
+  "generatedAt": "2026-06-30T13:49:09.669Z",
+  "scenarioCount": 2,
+  "assertionCount": 30,
+  "findingCount": 0,
+  "scenarios": [
+    {
+      "subject": "A",
+      "total": 60,
+      "score": 38,
+      "percentage": 63,
+      "domains": [
+        {
+          "stageId": "technology",
+          "correct": 18,
+          "total": 18,
+          "percentage": 100
+        },
+        {
+          "stageId": "algorithm",
+          "correct": 12,
+          "total": 12,
+          "percentage": 100
+        },
+        {
+          "stageId": "database",
+          "correct": 8,
+          "total": 10,
+          "percentage": 80
+        },
+        {
+          "stageId": "management",
+          "correct": 0,
+          "total": 10,
+          "percentage": 0
+        },
+        {
+          "stageId": "strategy",
+          "correct": 0,
+          "total": 10,
+          "percentage": 0
+        }
+      ],
+      "checks": {
+        "recordCountMatchesTotal": true,
+        "scoreMatchesCorrectRecords": true,
+        "unansweredCountedWrong": true,
+        "domainTotalsMatchExam": true,
+        "domainCorrectMatchesScore": true,
+        "historyScoreMatches": true,
+        "answerRecordsSaved": true,
+        "weakStatsRegistered": true,
+        "wrongReviewAvailable": true
+      }
+    },
+    {
+      "subject": "B",
+      "total": 20,
+      "score": 13,
+      "percentage": 65,
+      "domains": [
+        {
+          "stageId": "algorithm",
+          "correct": 13,
+          "total": 14,
+          "percentage": 93
+        },
+        {
+          "stageId": "technology",
+          "correct": 0,
+          "total": 6,
+          "percentage": 0
+        }
+      ],
+      "checks": {
+        "recordCountMatchesTotal": true,
+        "scoreMatchesCorrectRecords": true,
+        "unansweredCountedWrong": true,
+        "domainTotalsMatchExam": true,
+        "domainCorrectMatchesScore": true,
+        "historyScoreMatches": true,
+        "answerRecordsSaved": true,
+        "weakStatsRegistered": true,
+        "wrongReviewAvailable": true
+      }
+    }
+  ],
+  "historyChecks": {
+    "averageCorrect": true,
+    "bestCorrect": true
+  },
+  "findings": []
+}

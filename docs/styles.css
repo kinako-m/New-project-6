@@ -1654,6 +1654,7 @@ body[data-view="quiz"] .choice {
   margin: 0 0 20px;
   font-size: clamp(1.2rem, 3vw, 1.8rem);
   line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .choice-list {
@@ -1674,6 +1675,11 @@ body[data-view="quiz"] .choice {
   background: var(--surface);
   color: var(--ink);
   text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.choice > span:not(.choice-marker) {
+  min-width: 0;
 }
 
 .choice:disabled {

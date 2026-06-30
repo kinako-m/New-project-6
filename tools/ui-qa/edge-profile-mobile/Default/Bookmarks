@@ -1,0 +1,139 @@
+{
+   "checksum": "c1debf3dbffc85392093e64252220fc4",
+   "roots": {
+      "bookmark_bar": {
+         "children": [ {
+            "date_added": "13404650492043555",
+            "date_last_used": "13426688753177266",
+            "guid": "449f7259-e450-4ac8-b809-b6361958c3a0",
+            "id": "7",
+            "name": "ChatGPT",
+            "show_icon": false,
+            "source": "sync",
+            "type": "url",
+            "url": "https://chatgpt.com/",
+            "visit_count": 58
+         }, {
+            "date_added": "13404669262276985",
+            "date_last_used": "13427123051067537",
+            "guid": "0b088e53-74e0-46ad-9148-60b2414de0ab",
+            "id": "8",
+            "name": "YouTube",
+            "show_icon": false,
+            "source": "sync",
+            "type": "url",
+            "url": "https://www.youtube.com/",
+            "visit_count": 4
+         }, {
+            "date_added": "13404758016350347",
+            "date_last_used": "13426789769529611",
+            "guid": "b0fd1db0-4275-4ebd-94a9-2278ad15d45a",
+            "id": "9",
+            "name": "Opal [Experiment]",
+            "show_icon": false,
+            "source": "sync",
+            "type": "url",
+            "url": "https://opal.withgoogle.com/?mode=canvas",
+            "visit_count": 1
+         }, {
+            "date_added": "13408035877110473",
+            "date_last_used": "13423237228280914",
+            "guid": "605b76d0-6a4b-4abf-9ec4-1d57a63db6a5",
+            "id": "10",
+            "name": "DCのトビラ｜第一生命保険株式会社",
+            "show_icon": false,
+            "source": "sync",
+            "type": "url",
+            "url": "https://selfs.dai-ichi-life.co.jp/dc/",
+            "visit_count": 1
+         }, {
+            "date_added": "13408984524225590",
+            "date_last_used": "13426388583058520",
+            "guid": "62f365ac-3f0d-441a-b163-de0c2227c167",
+            "id": "11",
+            "name": "Amazon.co.jp: KTC 24インチ ゲーミングモニター WQHD(2560x1440) Fast IPS/185Hz/1ms sRGB127% DCI-P3 99% 400cd/㎡ HDR400 ΔE\u003C3 低ブルーライト フリッカーフリー Adaptive sync HDMI2.0×2 DP1.4×1 USB2.0*1 3年保証 前後チルト・高さ調整・ピボット回転 工具不要 三年保証付き H24T7 : パソコン・周辺機器",
+            "show_icon": false,
+            "source": "sync",
+            "type": "url",
+            "url": "https://www.amazon.co.jp/KTC-%E3%82%B2%E3%83%BC%E3%83%9F%E3%83%B3%E3%82%B0%E3%83%A2%E3%83%8B%E3%82%BF%E3%83%BC-2560x1440-%E6%8C%81%E3%81%A1%E4%B8%8A%E3%81%92%E3%81%8A%E3%82%88%E3%81%B3%E5%9B%9E%E8%BB%A2%E3%83%96%E3%83%A9%E3%82%B1%E3%83%83%E3%83%88-H24T7/dp/B0DR7RNVQ3/ref=sr_1_1_sspa?crid=18FGO7MMY335S&dib=eyJ2IjoiMSJ9.4Z4hIRCK51I2p15t8Pv1tetmlBSm0peYJfQ-1qC3E8fzg9nl6gUS8INv8sroc3DiBBOlEg2UmgIM-0u3jfBY2djMlNxIWtVGyMULhiSphPTYD1O7o_JuM_IMezcfTGNMKRlC0ksYYKmXg6v3SQGAA8aXBBHfGkIxYVJXc5qJftY7FdRSjipELYbtcDHiW34qlgmxCn81mrI6O4VMF5DZAij_X35CxEggWrOy8Yphj8Ih9l98qSy72N-7JeUeWMxxUdlmCOTMCJhWwlYv88DsV-pIdvUM3bm6-BQeBcdB_l8.uOP_2lN323cYBzT7ec71v8aI4i8Kcqwb3LTtbMOoRdk&dib_tag=se&keywords=%E3%83%A2%E3%83%8B%E3%82%BF%E3%83%BC%2Bwqhd%2B24%E3%82%A4%E3%83%B3%E3%83%81&qid=1764510909&sprefix=%E3%83%A2%E3%83%8B%E3%82%BF%E3%83%BC%E3%80%80%EF%BD%97%EF%BD%91%EF%BD%88%EF%BD%84%2Caps%2C179&sr=8-1-spons&ufe=app_do%3Aamzn1.fos.d8e7ee72-073f-4b97-8ec0-59c18d6dfebe&sp_csd=d2lkZ2V0TmFtZT1zcF9hdGY&th=1",
+            "visit_count": 11
+         }, {
+            "date_added": "13417616640391099",
+            "date_last_used": "13426872644768150",
+            "guid": "f8f7ac1b-bae3-422e-9631-63e369d17083",
+            "id": "12",
+            "name": "Models – Hugging Face",
+            "show_icon": false,
+            "source": "sync",
+            "type": "url",
+            "url": "https://huggingface.co/models",
+            "visit_count": 2
+         }, {
+            "date_added": "13417616648304227",
+            "date_last_used": "13426873569051500",
+            "guid": "88104f2d-d182-420e-92e6-9743e743a478",
+            "id": "13",
+            "name": "Civitai | Share your models",
+            "show_icon": false,
+            "source": "sync",
+            "type": "url",
+            "url": "https://civitai.com/search/models?sortBy=models_v9%3Ametrics.downloadCount%3Adesc&query=real",
+            "visit_count": 4
+         }, {
+            "date_added": "13426388799026087",
+            "date_last_used": "0",
+            "guid": "dc60e79f-768e-4033-8600-c1a5317ce5f3",
+            "id": "14",
+            "name": "Amazon.co.jp : 2TB Gen4 NVMe",
+            "show_icon": false,
+            "source": "sync",
+            "type": "url",
+            "url": "https://www.amazon.co.jp/s?k=2TB+Gen4+NVMe&__mk_ja_JP=%E3%82%AB%E3%82%BF%E3%82%AB%E3%83%8A&crid=2POP8YCDGM3MN&sprefix=2tb+gen4+nvme%2Caps%2C202&ref=nb_sb_noss_1",
+            "visit_count": 1
+         } ],
+         "date_added": "13427299572996689",
+         "date_last_used": "0",
+         "date_modified": "13426388799026087",
+         "guid": "0bc5d13f-2cba-5d74-951f-3f233fe6c908",
+         "id": "1",
+         "name": "お気に入りバー",
+         "source": "unknown",
+         "type": "folder"
+      },
+      "other": {
+         "children": [  ],
+         "date_added": "13427299572996689",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "82b081ec-3dd3-529c-8475-ab6c344590dd",
+         "id": "2",
+         "name": "その他のお気に入り",
+         "source": "unknown",
+         "type": "folder"
+      },
+      "synced": {
+         "children": [  ],
+         "date_added": "13427299572996689",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "4cf2e351-0e85-532b-bb37-df045d8f8d0f",
+         "id": "3",
+         "name": "モバイルのお気に入り",
+         "source": "unknown",
+         "type": "folder"
+      },
+      "workspaces_v2": {
+         "children": [  ],
+         "date_added": "13427299572996689",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "75aa6670-344f-549d-b742-660f029506ab",
+         "id": "5",
+         "name": "ワークスペース",
+         "source": "unknown",
+         "type": "folder"
+      }
+   },
+   "sync_metadata": "CjEKDgiIgQISCBD6Lw6fAQAAEgAqGCtTbTk4TG5jb251QlpVdjJObmJFbnc9PUgDoAYHEo4BCAUSiQEKHHdSQnJaTCs2UEE5YXZLZ2pOUDdKWERMY2Z2cz0SJGZiOTQ5NzJmLWM2ZWItNWRkNC1hOTU2LWRjZTM2ZDBlMjgwYRgAIAAoADC9sdX0mzM43bPV9JszQN2z1fSbM0ocbm14NjVzUUR2eEk4VGdFZXYrQStudHRvU240PVoAZQAAAADCPgJgABKOAQgBEokBChx5eEovNmZ2a2VjcjdrcDVFUXpCNHRXTHBkYkU9EiRhNDc2NzllOS02NTA3LTVmODUtYWU1Yi0xNGMxNDZlMGJkNGEYACAAKAAwyrH1iLsvOIiWgsj/L0CIloLI/y9KHGFSQ1dMZ2hGOWI1SW5xS0lEdnVKL2p2UWtGYz1aAGUAAAAAwj4CYAASrQEIDhKoAQocRVhOMFVvQWRQLzY4OGhMckZUVTBvZ1h6bmZBPRIkZGM2MGU3OWYtNzY4ZS00MDMzLTg2MDAtYzFhNTMxN2NlNWYzGAAgACgAMNbfsJPuMziw67CT7jNAsOuwk+4zShwwY1NuendlbVgyY2owekxsNG1nRjgrZUU4YTQ9Wh8iHftFaHNNSkJWMzB0K3RhMW95VGo3UUFHT2dTTnM9ZS7LzWDCPgJgBRKOAQgDEokBChxuamdEdTg4ZUNydlhwODZwRDdmSEdjcUZwODg9EiRjMWViNjZjNi03OTc3LTU2NzEtODhlNC0xYTgwNmFmOTMyYTcYACAAKAAwyrH1iLsvOKiWgsj/L0ColoLI/y9KHHl6TkIwMWNuNTRBN2NSVTB1VCsvUGdtVHRVbz1aAGUAAAAAwj4CYAASrQEIDBKoAQocRjcwNFkzekRUQjczL243bmxEZGpBTDF5dkZRPRIkZjhmN2FjMWItYmFlMy00MjJlLTk2MzEtNjNlMzY5ZDE3MDgzGAAgACgAMOWwjPrvMzj+0768zTNA/tO+vM0zShx6K0RSSVhTZTlZaEdVbm1xU2ZtNmJyOUJ3cU09Wh8iHe5uczVLMlBJcHZnQUFacHlLZjNkRnBmaXZvRVk9ZVaBsfPCPgJgBRKtAQgKEqgBChxzZ3JHWXRreTlOeGM1SmdtbHcrRnZhZTFSVUU9EiQ2MDViNzZkMC02YTRiLTRhYmYtOWVjNC0xZDU3YTYzZGI2YTUYACAAKAAw9o3MtOIzOKKzg+SpM0Cis4PkqTNKHEx2QUtYMTFMcVh3c3pZNWxIYXo2YW05QVJkYz1aHyIdu3JyRW1rc0xVU0dXYXJoYzFsblpYOTFTR1d5Zz1lVcwbs8I+AmAFEqwBCAkSpwEKHEhCOC94U2tqZXZ4cERuNFd1djJLbnZmd2R3cz0SJGIwZmQxZGIwLTQyNzUtNGViZC05NGE5LTIyNzhhZDE1ZDQ1YRgAIAAoADDngsrS7zM4kMWCyZ0zQJDFgsmdM0ocK0x4TGVYUlgxOVV6VTl1TzdqdmNVNHNhY0dVPVoeIhx2MlRmVVkyaXJRcmdwWFY3M1dvNGhoRGFDNEU9ZaAn0b7CPgJgBRKsAQgIEqcBChxpczZrWUpydVJxalBGaWhVVk1vdithbDFnRVE9EiQwYjA4OGU1My03NGUwLTQ2YWQtOTE0OC02MGIyNDE0ZGUwYWIYACAAKAAwj/S/8fAzOMq32Z6dM0DKt9menTNKHGFyQ2lGNUJtZUM5WTA3b2tyMnNrNGxnVDA0ST1aHiIcTEsySnN5NUVUMjFoaThPQmpFTUN5amIvYklBPWVQQsPSwj4CYAUSrAEIBxKnAQocUGtJVGhwcC9VWGU2WnBtcDQ0QXZoMXhZbGRZPRIkNDQ5ZjcyNTktZTQ1MC00YWM4LWI4MDktYjYzNjE5NThjM2EwGAAgACgAMOS/tKLvMzi769+VnTNAu+vflZ0zShxlNTZoR0RwUkRCOElVSmtrL05KTFA1UllDVVE9Wh4iHDlTL1VCbk1ISERJYVpaY1A3cmJ4S3V2K0NmYz1lhqXYyMI+AmAFEo4BCAISiQEKHFljU1RvbnZFU1B3cUNzNEwyY3JWaHY2OEw5OD0SJDE0YzFhMTAwLWU2ZTktNWM5Ny05YjkwLTFlNThmMjNjYTA1MRgAIAAoADDKsfWIuy84ypWCyP8vQMqVgsj/L0ocb1BWa2h3QlJiVjY1S0NXUjIrSU9OSFdvT3U4PVoAZQAAAADCPgJgABKtAQgNEqgBChxNTmQ2RkJPMFBCbDVObDZIRDBvMEY3dlVETEE9EiQ4ODEwNGYyZC1kMTgyLTQyMGUtOTJlNi05NzQzZTc0M2E0NzgYACAAKAAw3tPE+u8zOPmPv7zNM0D5j7+8zTNKHFZydWRQTVlvL1ZRTFVZSXlhYys1TFhXZm5Wdz1aHyId900wZWROQmdhc3FGNnN0U1lKM2hRSUk5Q254VT1lzOE5WsI+AmAFEq0BCAsSqAEKHG9reW55Q1FnOFRjZUZielREUk1DUzRnLzBDdz0SJDYyZjM2NWFjLTNmMGQtNDQxYS1iMTYzLWRlMGMyMjI3YzE2NxgAIAAoADCDx6OT7jM40ImwqK0zQNCJsKitM0ocMG5YbW93WVZxOFZ0dk95L09KS0VWYnZ5WVhRPVofIh3dOU5xcHdnN0xVazNiWHRsbW1oQjJlTGZsa21VPWUuy81gwj4CYAUwADgA",
+   "version": 1
+}

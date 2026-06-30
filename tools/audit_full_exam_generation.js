@@ -24,7 +24,8 @@ function compact(value) {
     .normalize("NFKC")
     .toLowerCase()
     .replace(/\s+/g, "")
-    .replace(/[。、，,.・:：?？「」『』()[\]{}]/g, "");
+    .replace(/[。、，,.・:：?？「」『』()[\]{}]/g, "")
+    .replace(/(?:です|である)$/g, "");
 }
 
 function inspectExam(subject, questions, iteration) {
@@ -172,7 +173,14 @@ function questionId(stageId, question) {
 function selectQuestionChoices(question) {
   const correctChoice = question.correctChoice || question.choices[question.answer];
   const choicePool = question.choicePool || question.choices.filter((_, index) => index !== question.answer);
-  const distractors = shuffle([...new Set(choicePool.filter((choice) => choice !== correctChoice))]).slice(0, 3);
+  const correctKey = compact(correctChoice);
+  const seen = new Set();
+  const distractors = shuffle(choicePool.filter((choice) => {
+    const key = compact(choice);
+    if (!key || key === correctKey || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  })).slice(0, 3);
   return {
     ...question,
     correctChoice,

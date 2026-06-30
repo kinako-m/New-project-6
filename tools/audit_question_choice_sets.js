@@ -6,14 +6,25 @@ function clean(value) {
   return String(value || "").normalize("NFKC").replace(/\s+/g, "").toLowerCase();
 }
 
+function semanticClean(value) {
+  return String(value || "")
+    .normalize("NFKC")
+    .replace(/\s+/g, "")
+    .toLowerCase()
+    .replace(/[。、，,.・:：;；!?！？「」『』（）()[\]{}]/g, "")
+    .replace(/(?:です|である)$/g, "");
+}
+
 const findings = [];
 Object.entries(choiceSets).forEach(([text, definition]) => {
   const distractors = Array.isArray(definition.distractors) ? definition.distractors : [];
   const normalized = distractors.map(clean);
+  const semanticNormalized = distractors.map(semanticClean);
   if (!String(definition.correct || "").trim()) findings.push({ type: "missing-correct", text });
   if (distractors.length < 3) findings.push({ type: "insufficient-distractors", text, count: distractors.length });
   if (distractors.length < 6) findings.push({ type: "recommended-pool-shortage", text, count: distractors.length });
   if (new Set(normalized).size !== normalized.length) findings.push({ type: "duplicate-distractors", text });
+  if (new Set(semanticNormalized).size !== semanticNormalized.length) findings.push({ type: "semantic-duplicate-distractors", text });
   if (normalized.includes(clean(definition.correct))) findings.push({ type: "correct-in-distractors", text });
 });
 
@@ -52,7 +63,7 @@ console.log(
     {
       questionChoiceSets: Object.keys(choiceSets).length,
       appQuestions: appQuestions.length,
-      hardErrors: findings.filter((finding) => finding.type !== "recommended-pool-shortage").length,
+      hardErrors: findings.filter((finding) => !["recommended-pool-shortage", "semantic-duplicate-distractors"].includes(finding.type)).length,
       counts,
       samples: findings.filter((finding) => finding.type !== "recommended-pool-shortage").slice(0, 20)
     },
