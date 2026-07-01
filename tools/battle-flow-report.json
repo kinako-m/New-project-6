@@ -1,0 +1,105 @@
+{
+  "generatedAt": "2026-07-01T13:21:02.708Z",
+  "scenarioCount": 5,
+  "assertionCount": 71,
+  "findingCount": 0,
+  "scenarios": [
+    {
+      "name": "normal-perfect",
+      "expected": {
+        "result": "won",
+        "answered": 4,
+        "hp": 0,
+        "damage": 5,
+        "maxCombo": 4
+      },
+      "actual": {
+        "maxHp": 5,
+        "hp": 0,
+        "damage": 5,
+        "combo": 4,
+        "maxCombo": 4,
+        "correct": 4,
+        "answered": 4,
+        "result": "won"
+      }
+    },
+    {
+      "name": "normal-limit",
+      "expected": {
+        "result": "lost",
+        "answered": 10,
+        "hp": 1,
+        "maxCombo": 1
+      },
+      "actual": {
+        "maxHp": 5,
+        "hp": 1,
+        "damage": 4,
+        "combo": 0,
+        "maxCombo": 1,
+        "correct": 4,
+        "answered": 10,
+        "result": "lost"
+      }
+    },
+    {
+      "name": "boss-clear",
+      "expected": {
+        "result": "won",
+        "answered": 10,
+        "hp": 0,
+        "maxCombo": 2
+      },
+      "actual": {
+        "maxHp": 7,
+        "hp": 0,
+        "damage": 7,
+        "combo": 2,
+        "maxCombo": 2,
+        "correct": 7,
+        "answered": 10,
+        "result": "won"
+      }
+    },
+    {
+      "name": "elite-perfect",
+      "expected": {
+        "result": "won",
+        "answered": 6,
+        "hp": 0,
+        "maxCombo": 6
+      },
+      "actual": {
+        "maxHp": 7,
+        "hp": 0,
+        "damage": 8,
+        "combo": 6,
+        "maxCombo": 6,
+        "correct": 6,
+        "answered": 6,
+        "result": "won"
+      }
+    },
+    {
+      "name": "master-perfect",
+      "expected": {
+        "result": "won",
+        "answered": 7,
+        "hp": 0,
+        "maxCombo": 7
+      },
+      "actual": {
+        "maxHp": 9,
+        "hp": 0,
+        "damage": 9,
+        "combo": 7,
+        "maxCombo": 7,
+        "correct": 7,
+        "answered": 7,
+        "result": "won"
+      }
+    }
+  ],
+  "findings": []
+}

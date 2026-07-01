@@ -122,6 +122,13 @@ check(
   `${responsiveLayout.assertionCount} assertions, findings ${responsiveLayout.findingCount}`
 );
 
+const battleFlow = runJson("battle flow", ["tools/audit_battle_flow.js"]);
+check(
+  "battle flow",
+  battleFlow.findingCount === 0,
+  `${battleFlow.scenarioCount} scenarios, ${battleFlow.assertionCount} assertions, findings ${battleFlow.findingCount}`
+);
+
 const subjectBDifficulty = runJson("subject B difficulty", ["tools/audit_subject_b_difficulty.js", "--iterations=100"]);
 check(
   "subject B difficulty",

@@ -9,7 +9,7 @@
     <title>基本情報 ステージ模試</title>
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
-    <link rel="stylesheet" href="styles.css?v181" />
+    <link rel="stylesheet" href="styles.css?v191" />
   </head>
   <body>
     <a class="skip-link" href="#mainContent">メインコンテンツへ移動</a>
@@ -22,6 +22,7 @@
         <div class="stats" aria-label="学習状況">
           <span><strong id="clearedCount">0</strong> / <span id="stageCount">0</span> cleared</span>
           <button class="secondary-button compact" id="showStats" type="button">成績</button>
+          <button class="secondary-button compact" id="showEffectsSettings" type="button">演出設定</button>
           <div class="data-actions" aria-label="学習データ管理">
             <button class="secondary-button compact" id="backupData" type="button">バックアップ</button>
             <button class="secondary-button compact" id="restoreData" type="button">復元</button>
@@ -54,6 +55,7 @@
             <div class="creature-actions">
               <button class="primary-button" id="feedCreature" type="button">自動進化</button>
               <button class="secondary-button compact" id="showEvolutionDex" type="button">進化図鑑</button>
+              <button class="secondary-button compact" id="showEnemyDex" type="button">敵図鑑</button>
               <span id="evolutionLog"></span>
             </div>
           </div>
@@ -178,7 +180,24 @@
 
           <div class="quiz-creature-companion" aria-hidden="true">
             <div id="quizCreatureVisual" class="creature-visual quiz-creature-visual"></div>
-            <div id="quizCreatureSpeech" class="quiz-creature-speech"></div>
+            <div>
+              <div id="quizCreatureSpeech" class="quiz-creature-speech"></div>
+              <div id="battleSupportStatus" class="battle-support-status hidden"></div>
+            </div>
+            <div id="battleEnemy" class="battle-enemy hidden">
+              <span id="battleEnemyName" class="battle-enemy-name"></span>
+              <div id="battleEnemyVisual" class="battle-enemy-visual">
+                <img id="battleEnemyImage" src="" alt="" />
+                <span id="battleDamage" class="battle-damage" aria-hidden="true"></span>
+              </div>
+              <div class="battle-hp-row">
+                <span>HP</span>
+                <div class="battle-hp-track"><div id="battleHpBar" class="battle-hp-bar"></div></div>
+                <strong id="battleHpText"></strong>
+              </div>
+              <strong id="battleCombo" class="battle-combo"></strong>
+              <p id="battleEnemySpeech" class="battle-enemy-speech"></p>
+            </div>
           </div>
 
           <article class="question-card">
@@ -340,6 +359,47 @@
         </div>
       </section>
 
+      <dialog id="effectsSettingsDialog" class="settings-dialog" aria-labelledby="effectsSettingsTitle">
+        <form method="dialog">
+          <div class="settings-dialog-header">
+            <h2 id="effectsSettingsTitle">演出設定</h2>
+            <button class="icon-button" value="close" type="submit" aria-label="閉じる">×</button>
+          </div>
+          <label class="settings-toggle">
+            <span><strong>効果音</strong><small>正解・コンボ・撃破</small></span>
+            <input id="soundEffectsEnabled" type="checkbox" />
+          </label>
+          <label class="settings-range">
+            <span>音量</span>
+            <input id="soundEffectsVolume" type="range" min="0" max="100" step="10" value="50" />
+            <output id="soundEffectsVolumeValue">50%</output>
+          </label>
+          <label class="settings-toggle">
+            <span><strong>振動</strong><small>対応するスマートフォンのみ</small></span>
+            <input id="vibrationEffectsEnabled" type="checkbox" />
+          </label>
+          <label class="settings-toggle">
+            <span><strong>動きの演出</strong><small>攻撃・ダメージ・進化</small></span>
+            <input id="motionEffectsEnabled" type="checkbox" />
+          </label>
+          <button class="primary-button" value="close" type="submit">完了</button>
+        </form>
+      </dialog>
+
+      <section id="enemyDexView" class="enemy-dex-view hidden" tabindex="-1" aria-label="敵図鑑">
+        <div class="stats-panel">
+          <div class="quiz-header">
+            <div>
+              <p class="eyebrow">Battle Dex</p>
+              <h2>敵図鑑</h2>
+            </div>
+            <button class="ghost-button" id="closeEnemyDex" type="button">← 戻る</button>
+          </div>
+          <div id="enemyDexSummary" class="enemy-dex-summary"></div>
+          <div id="enemyDexGrid" class="enemy-dex-grid"></div>
+        </div>
+      </section>
+
       <section id="auditView" class="audit-view hidden" tabindex="-1" aria-label="問題監査">
         <div class="stats-panel">
           <div class="quiz-header">
@@ -359,11 +419,11 @@
       </section>
     </main>
 
-    <script src="improvement-questions.js?v181"></script>
-    <script src="subject-b-case-questions.js?v181"></script>
-    <script src="subject-b-case-questions-2.js?v181"></script>
-    <script src="sample-derived-questions.js?v181"></script>
-    <script src="question-choice-sets.js?v181"></script>
-    <script src="app.js?v181"></script>
+    <script src="improvement-questions.js?v191"></script>
+    <script src="subject-b-case-questions.js?v191"></script>
+    <script src="subject-b-case-questions-2.js?v191"></script>
+    <script src="sample-derived-questions.js?v191"></script>
+    <script src="question-choice-sets.js?v191"></script>
+    <script src="app.js?v191"></script>
   </body>
 </html>

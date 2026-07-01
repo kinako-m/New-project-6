@@ -22,10 +22,16 @@ check("answer text wraps", /\.choice\s*\{[\s\S]*?overflow-wrap:\s*anywhere/, css
 check("question text wraps", /\.question-card h2\s*\{[\s\S]*?overflow-wrap:\s*anywhere/, css);
 check("quiz creature keeps flexible speech width", /\.quiz-creature-companion\s*\{[\s\S]*?minmax\(0,\s*1fr\)/, css);
 check("reduced motion supported", /@media\s*\(prefers-reduced-motion:\s*reduce\)/, css);
+check("phone rank controls use touch targets", /@media\s*\(max-width:\s*480px\)[\s\S]*?\.battle-rank-control button,[\s\S]*?min-height:\s*44px/, css);
+check("phone stage start uses touch target", /@media\s*\(max-width:\s*480px\)[\s\S]*?\.stage-start-button[\s\S]*?min-height:\s*44px/, css);
+check("phone battle result actions stack", /@media\s*\(max-width:\s*480px\)[\s\S]*?\.battle-result-actions[\s\S]*?flex-direction:\s*column/, css);
+check("phone enemy dex uses one column", /@media\s*\(max-width:\s*480px\)[\s\S]*?\.enemy-dex-grid\s*\{[\s\S]*?grid-template-columns:\s*1fr/, css);
+check("settings dialog stays within viewport", /\.settings-dialog\s*\{[\s\S]*?width:\s*min\(420px,\s*calc\(100vw\s*-\s*28px\)\)/, css);
+check("battle support can wrap", /\.battle-support-status\s*\{[\s\S]*?flex-wrap:\s*wrap/, css);
 
 const report = {
   generatedAt: new Date().toISOString(),
-  assertionCount: 14,
+  assertionCount: 20,
   findingCount: findings.length,
   findings
 };

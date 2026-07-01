@@ -3469,11 +3469,19 @@ const els = {
   resultView: document.querySelector("#resultView"),
   statsView: document.querySelector("#statsView"),
   evolutionView: document.querySelector("#evolutionView"),
+  enemyDexView: document.querySelector("#enemyDexView"),
   auditView: document.querySelector("#auditView"),
   stageGrid: document.querySelector("#stageGrid"),
   clearedCount: document.querySelector("#clearedCount"),
   stageCount: document.querySelector("#stageCount"),
   showStats: document.querySelector("#showStats"),
+  showEffectsSettings: document.querySelector("#showEffectsSettings"),
+  effectsSettingsDialog: document.querySelector("#effectsSettingsDialog"),
+  soundEffectsEnabled: document.querySelector("#soundEffectsEnabled"),
+  soundEffectsVolume: document.querySelector("#soundEffectsVolume"),
+  soundEffectsVolumeValue: document.querySelector("#soundEffectsVolumeValue"),
+  vibrationEffectsEnabled: document.querySelector("#vibrationEffectsEnabled"),
+  motionEffectsEnabled: document.querySelector("#motionEffectsEnabled"),
   backupData: document.querySelector("#backupData"),
   restoreData: document.querySelector("#restoreData"),
   restoreDataFile: document.querySelector("#restoreDataFile"),
@@ -3560,8 +3568,22 @@ const els = {
   creatureSpeech: document.querySelector("#creatureSpeech"),
   quizCreatureVisual: document.querySelector("#quizCreatureVisual"),
   quizCreatureSpeech: document.querySelector("#quizCreatureSpeech"),
+  battleSupportStatus: document.querySelector("#battleSupportStatus"),
+  battleEnemy: document.querySelector("#battleEnemy"),
+  battleEnemyName: document.querySelector("#battleEnemyName"),
+  battleEnemyVisual: document.querySelector("#battleEnemyVisual"),
+  battleEnemyImage: document.querySelector("#battleEnemyImage"),
+  battleDamage: document.querySelector("#battleDamage"),
+  battleEnemySpeech: document.querySelector("#battleEnemySpeech"),
+  battleCombo: document.querySelector("#battleCombo"),
+  battleHpBar: document.querySelector("#battleHpBar"),
+  battleHpText: document.querySelector("#battleHpText"),
   showEvolutionDex: document.querySelector("#showEvolutionDex"),
   closeEvolutionDex: document.querySelector("#closeEvolutionDex"),
+  showEnemyDex: document.querySelector("#showEnemyDex"),
+  closeEnemyDex: document.querySelector("#closeEnemyDex"),
+  enemyDexSummary: document.querySelector("#enemyDexSummary"),
+  enemyDexGrid: document.querySelector("#enemyDexGrid"),
   evolutionSummary: document.querySelector("#evolutionSummary"),
   ultimateProgress: document.querySelector("#ultimateProgress"),
   evolutionDexGrid: document.querySelector("#evolutionDexGrid"),
@@ -3580,6 +3602,14 @@ let questionStats = JSON.parse(localStorage.getItem("fe-question-stats") || "{}"
 let suspendedExams = JSON.parse(localStorage.getItem("fe-suspended-exams") || "{}");
 let studyPlanState = JSON.parse(localStorage.getItem("fe-three-day-plan") || "null");
 let auditMarks = JSON.parse(localStorage.getItem("fe-question-audit") || "{}");
+let effectsSettings = JSON.parse(localStorage.getItem("fe-effects-settings") || "null") || {
+  sound: false,
+  vibration: false,
+  motion: true,
+  volume: 50
+};
+let audioContext = null;
+const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 let auditViewState = { filter: "priority", stageId: "all", page: 0, search: "" };
 let gameState = JSON.parse(localStorage.getItem("fe-game-state") || "null") || {
   unlockedBadges: [],
@@ -3610,11 +3640,42 @@ gameState.unlockedBadges = gameState.unlockedBadges || [];
 gameState.unlockedEvolutions = gameState.unlockedEvolutions || [];
 gameState.unlockedSpecialForms = gameState.unlockedSpecialForms || [];
 gameState.completedMissions = gameState.completedMissions || [];
+gameState.enemyDexRewardClaimed = Boolean(gameState.enemyDexRewardClaimed);
 let current = null;
 let quizTimer = null;
 let pendingEvolutionChoice = null;
 let viewInitialized = false;
-const ASSET_VERSION = "v181";
+const ASSET_VERSION = "v191";
+
+const BATTLE_ENEMIES = {
+  technology: { id: "machine", name: "暴走機械", image: "assets/enemies/enemy-machine.png" },
+  algorithm: { id: "golem", name: "パズルゴーレム", image: "assets/enemies/enemy-puzzle-golem.png" },
+  database: { id: "slime", name: "データスライム", image: "assets/enemies/enemy-data-slime.png" },
+  management: { id: "task-king", name: "タスクキング", image: "assets/enemies/enemy-task-king.png" },
+  strategy: { id: "mage", name: "戦略魔導士", image: "assets/enemies/enemy-strategy-mage.png" },
+  random: { id: "mimic", name: "知識のミミック", image: "assets/enemies/enemy-knowledge-mimic.png" },
+  weakness: { id: "shadow", name: "弱点シャドウ", image: "assets/enemies/enemy-weakness-shadow.png" },
+  reinforcement: { id: "guardian", name: "試験の番人", image: "assets/enemies/enemy-exam-guardian.png" }
+};
+
+const BATTLE_ENEMY_LINES = {
+  machine: { intro: "演算開始。実力を測定する。", hit: "処理に乱れが発生。", critical: "警告。機能低下。", attack: "その迷いを検出した。", defeat: "測定完了。合格だ。" },
+  golem: { intro: "この難問、崩せるかな。", hit: "一段、解かれたか。", critical: "答えが見えてきたようだな。", attack: "手順をもう一度確かめろ。", defeat: "見事な解法だ。" },
+  slime: { intro: "知識を全部取り込むよ。", hit: "データがこぼれちゃう。", critical: "容量がもう少ししかないよ。", attack: "その答え、保存していいの。", defeat: "正しいデータにはかなわないや。" },
+  "task-king": { intro: "すべての課題を管理してみせよ。", hit: "予定にない損害だ。", critical: "進捗が危険域に入った。", attack: "優先順位を見直すのだ。", defeat: "完了判定。よくやった。" },
+  mage: { intro: "最善の一手を示してみよ。", hit: "こちらの戦略を読んだか。", critical: "次の一手が勝負を分ける。", attack: "その選択では届かない。", defeat: "君の戦略が上回った。" },
+  mimic: { intro: "正しい知識だけ持っていけ。", hit: "中身を見抜いたな。", critical: "宝箱の底が見えてきた。", attack: "似た言葉に惑わされたね。", defeat: "知識の宝は君のものだ。" },
+  shadow: { intro: "苦手から目をそらすな。", hit: "弱点が一つ消えていく。", critical: "あと少しで克服される。", attack: "ここが君の迷うところだ。", defeat: "もう私は弱点ではない。" },
+  guardian: { intro: "積み重ねた力を示せ。", hit: "確かな一撃だ。", critical: "合格への道が開き始めた。", attack: "本番なら、ここで立て直せ。", defeat: "試練突破。合格は近い。" }
+};
+
+const BATTLE_RANKS = {
+  normal: { id: "normal", label: "通常", hp: 5, questionCount: 10, reward: 3 },
+  elite: { id: "elite", label: "強敵", hp: 7, questionCount: 12, reward: 5 },
+  master: { id: "master", label: "達人", hp: 9, questionCount: 15, reward: 8 }
+};
+const BATTLE_RANK_ORDER = ["normal", "elite", "master"];
+const selectedBattleRanks = {};
 
 const DIFFICULTY_LABELS = {
   basic: "基礎",
@@ -4253,6 +4314,73 @@ function saveCreature() {
   localStorage.setItem("fe-creature", JSON.stringify(creature));
 }
 
+function isMotionEffectsEnabled() {
+  return effectsSettings.motion && !reducedMotionQuery.matches;
+}
+
+function saveEffectsSettings() {
+  localStorage.setItem("fe-effects-settings", JSON.stringify(effectsSettings));
+}
+
+function applyEffectsSettings() {
+  effectsSettings.volume = Math.min(100, Math.max(0, Number(effectsSettings.volume) || 0));
+  document.body.classList.toggle("effects-motion-disabled", !isMotionEffectsEnabled());
+  if (!els.soundEffectsEnabled) return;
+  els.soundEffectsEnabled.checked = Boolean(effectsSettings.sound);
+  els.vibrationEffectsEnabled.checked = Boolean(effectsSettings.vibration);
+  els.motionEffectsEnabled.checked = Boolean(effectsSettings.motion) && !reducedMotionQuery.matches;
+  els.motionEffectsEnabled.disabled = reducedMotionQuery.matches;
+  els.soundEffectsVolume.value = String(effectsSettings.volume);
+  els.soundEffectsVolume.disabled = !effectsSettings.sound;
+  els.soundEffectsVolumeValue.value = `${effectsSettings.volume}%`;
+}
+
+function playTone(frequency, duration, delay = 0, wave = "sine") {
+  if (!effectsSettings.sound || effectsSettings.volume <= 0) return;
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return;
+  audioContext = audioContext || new AudioContextClass();
+  if (audioContext.state === "suspended") audioContext.resume().catch(() => {});
+  const start = audioContext.currentTime + delay;
+  const oscillator = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  oscillator.type = wave;
+  oscillator.frequency.setValueAtTime(frequency, start);
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(Math.max(0.001, effectsSettings.volume / 500), start + 0.015);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+  oscillator.connect(gain);
+  gain.connect(audioContext.destination);
+  oscillator.start(start);
+  oscillator.stop(start + duration + 0.02);
+}
+
+function triggerFeedbackEffect(kind) {
+  const vibrationPatterns = {
+    correct: 18,
+    wrong: [35, 30, 35],
+    combo: [18, 20, 28],
+    victory: [25, 35, 25, 35, 55]
+  };
+  if (effectsSettings.vibration && navigator.vibrate) navigator.vibrate(vibrationPatterns[kind] || 15);
+  if (kind === "wrong") {
+    playTone(220, 0.13, 0, "triangle");
+    return;
+  }
+  if (kind === "combo") {
+    playTone(620, 0.1);
+    playTone(880, 0.13, 0.08);
+    return;
+  }
+  if (kind === "victory") {
+    playTone(523, 0.12);
+    playTone(659, 0.12, 0.1);
+    playTone(784, 0.2, 0.2);
+    return;
+  }
+  playTone(660, 0.11);
+}
+
 const BACKUP_FORMAT = "fe-stage-practice-backup";
 const BACKUP_VERSION = 1;
 const BACKUP_KEYS = {
@@ -4370,6 +4498,7 @@ function speakCreature(kind = "idle", extraLine = "") {
 }
 
 function animateCreatureReaction(kind = "happy") {
+  if (!isMotionEffectsEnabled()) return;
   const className = kind === "streak" ? "happy correct streak" : kind === "correct" ? "happy correct" : kind === "wrong" ? "wrong" : kind === "timeout" ? "timeout" : kind;
   [els.creatureVisual, els.quizCreatureVisual].filter(Boolean).forEach((visual) => {
     visual.classList.remove("happy", "correct", "wrong", "timeout", "streak");
@@ -4764,7 +4893,7 @@ function resolveEvolutionChoice(useSpecial) {
   pendingEvolutionChoice = null;
   const followUp = autoAdvanceCreature();
   saveCreature();
-  buildResultAdvice(current ? Math.round((current.score / current.questions.length) * 100) : 0);
+  buildResultAdvice(current ? Math.round((current.score / getCurrentResultTotal()) * 100) : 0);
   renderCreature(followUp.at(-1) || message, "evolving");
   renderEvolutionChoice();
 }
@@ -4905,7 +5034,172 @@ function withQuestionOrder(question) {
   };
 }
 
-function sampleQuestions(stage) {
+function createBattleState(mode, stageId, questionCount, rankId = "normal") {
+  const enemyKey = mode === "stage" ? stageId : mode === "weakness" ? "weakness" : mode;
+  const enemy = BATTLE_ENEMIES[enemyKey] || BATTLE_ENEMIES.random;
+  const rank = mode === "stage" ? BATTLE_RANKS[rankId] || BATTLE_RANKS.normal : null;
+  const maxHp = mode === "reinforcement" ? 7 : rank?.hp || 5;
+  const lines = BATTLE_ENEMY_LINES[enemy.id] || BATTLE_ENEMY_LINES.mimic;
+  return {
+    enemyId: enemy.id,
+    enemyName: enemy.name,
+    enemyImage: enemy.image,
+    rankId: rank?.id || "normal",
+    rankLabel: rank?.label || (mode === "reinforcement" ? "強化" : "通常"),
+    rewardBonus: mode === "reinforcement" ? 5 : rank?.reward || 3,
+    maxHp,
+    hp: maxHp,
+    damage: 0,
+    combo: 0,
+    maxCombo: 0,
+    answered: 0,
+    maxQuestions: questionCount,
+    result: "playing",
+    message: lines.intro,
+    lines,
+    support: createBattleSupportState(stageId)
+  };
+}
+
+function createBattleSupportState(stageId) {
+  const speciesIndex = creature.speciesIndex || 0;
+  const domainMatch = creature.branchId === stageId;
+  return {
+    guardAvailable: speciesIndex >= 2,
+    guardUsed: false,
+    timeRecoveryAvailable: speciesIndex >= 3,
+    timeRecoveryUsed: false,
+    linkedAttack: speciesIndex >= 4,
+    domainBonus: speciesIndex >= 6 && domainMatch ? 2 : 0,
+    lastActivation: ""
+  };
+}
+
+function isBattleMode() {
+  return Boolean(current?.battle);
+}
+
+function getCurrentResultTotal() {
+  if (isBattleMode()) return Math.max(1, current.records.length);
+  return current?.questions?.length || 1;
+}
+
+function renderBattle() {
+  const battle = current?.battle;
+  const companion = els.quizCreatureVisual?.closest(".quiz-creature-companion");
+  companion?.classList.toggle("battle-active", Boolean(battle));
+  els.battleEnemy?.classList.toggle("hidden", !battle);
+  if (!battle) return;
+  els.battleEnemyName.textContent = `${battle.enemyName}（${battle.rankLabel}）`;
+  els.battleEnemyImage.src = assetUrl(battle.enemyImage);
+  const hpRate = battle.hp / battle.maxHp;
+  els.battleEnemyVisual.classList.toggle("defeated", battle.hp <= 0);
+  els.battleEnemyVisual.classList.toggle("wounded", battle.hp > 0 && hpRate <= 0.7);
+  els.battleEnemyVisual.classList.toggle("critical", battle.hp > 0 && hpRate <= 0.4);
+  els.battleHpBar.style.width = `${Math.round((battle.hp / battle.maxHp) * 100)}%`;
+  els.battleHpBar.classList.toggle("critical", battle.hp > 0 && hpRate <= 0.4);
+  els.battleHpText.textContent = `${battle.hp}/${battle.maxHp}`;
+  els.battleCombo.textContent = battle.combo >= 2 ? `${battle.combo} COMBO` : "";
+  els.battleCombo.classList.toggle("active", battle.combo >= 2);
+  els.battleEnemySpeech.textContent = battle.message;
+  renderBattleSupport();
+}
+
+function renderBattleSupport() {
+  const support = current?.battle?.support;
+  els.battleSupportStatus?.classList.toggle("hidden", !support);
+  if (!support || !els.battleSupportStatus) return;
+  const abilities = [
+    support.guardAvailable ? `ガード${support.guardUsed ? "済" : "1回"}` : null,
+    support.timeRecoveryAvailable ? `時間回復${support.timeRecoveryUsed ? "済" : "+5秒"}` : null,
+    support.linkedAttack ? "連携攻撃" : "通常攻撃",
+    support.domainBonus ? `得意分野+${support.domainBonus}Pt` : null
+  ].filter(Boolean);
+  els.battleSupportStatus.innerHTML = abilities.map((ability) => `<span>${ability}</span>`).join("");
+  els.battleSupportStatus.classList.toggle("activated", Boolean(support.lastActivation));
+}
+
+function animateCreatureBattleAttack(linked = false) {
+  if (!els.quizCreatureVisual || !isMotionEffectsEnabled()) return;
+  els.quizCreatureVisual.classList.remove("battle-strike", "linked-strike");
+  void els.quizCreatureVisual.offsetWidth;
+  els.quizCreatureVisual.classList.add(linked ? "linked-strike" : "battle-strike");
+  window.setTimeout(() => els.quizCreatureVisual?.classList.remove("battle-strike", "linked-strike"), 560);
+}
+
+function activateBattleSupport(message) {
+  if (!current?.battle?.support) return;
+  current.battle.support.lastActivation = message;
+  renderBattleSupport();
+  speakCreature("quiz", message);
+  window.setTimeout(() => {
+    if (!current?.battle?.support) return;
+    current.battle.support.lastActivation = "";
+    renderBattleSupport();
+  }, 1100);
+}
+
+function triggerBattleTimeRecovery() {
+  const support = current?.battle?.support;
+  if (!support?.timeRecoveryAvailable || support.timeRecoveryUsed) return 0;
+  support.timeRecoveryUsed = true;
+  current.timeExtensionSeconds = (current.timeExtensionSeconds || 0) + 5;
+  activateBattleSupport("時間回復を発動。あと5秒伸びたよ。");
+  animateCreatureReaction("streak");
+  return 5;
+}
+
+function animateBattleEnemy(kind, damage = 0) {
+  if (!isBattleMode() || !isMotionEffectsEnabled()) return;
+  els.battleEnemyVisual.classList.remove("hit", "attack");
+  els.battleDamage.classList.remove("show");
+  void els.battleEnemyVisual.offsetWidth;
+  els.battleEnemyVisual.classList.add(kind);
+  if (damage > 0) {
+    els.battleDamage.textContent = `${damage} DAMAGE`;
+    els.battleDamage.classList.add("show");
+  }
+  window.setTimeout(() => els.battleEnemyVisual?.classList.remove(kind), 520);
+  window.setTimeout(() => els.battleDamage?.classList.remove("show"), 760);
+}
+
+function updateBattleAfterAnswer(isCorrect) {
+  if (!isBattleMode() || current.battle.result !== "playing") return;
+  current.battle.answered += 1;
+  if (isCorrect) {
+    current.battle.combo += 1;
+    current.battle.maxCombo = Math.max(current.battle.maxCombo, current.battle.combo);
+    const comboBonus = current.battle.combo % 3 === 0 ? 1 : 0;
+    const damage = 1 + comboBonus;
+    current.battle.hp = Math.max(0, current.battle.hp - damage);
+    current.battle.damage += damage;
+    if (current.battle.hp === 0) {
+      current.battle.result = "won";
+      current.battle.message = current.battle.lines.defeat;
+    } else if (current.battle.hp / current.battle.maxHp <= 0.4) {
+      current.battle.message = current.battle.lines.critical;
+    } else {
+      current.battle.message = comboBonus ? `${current.battle.lines.hit} コンボ攻撃だ。` : current.battle.lines.hit;
+    }
+    renderBattle();
+    animateCreatureBattleAttack(current.battle.support.linkedAttack && current.battle.combo >= 2);
+    animateBattleEnemy("hit", damage);
+  } else {
+    const guarded = current.battle.support.guardAvailable && !current.battle.support.guardUsed && current.battle.combo >= 2;
+    if (guarded) {
+      current.battle.support.guardUsed = true;
+      activateBattleSupport("コンボガード。連続正解を守ったよ。");
+    } else {
+      current.battle.combo = 0;
+    }
+    current.battle.message = current.battle.lines.attack;
+    renderBattle();
+    animateBattleEnemy("attack");
+  }
+  if (current.battle.result === "won") els.nextQuestion.textContent = "勝利結果へ";
+}
+
+function sampleQuestions(stage, requestedCount = null) {
   const candidates = uniqueQuestionsByText(
     shuffle(stage.questions).map((question) => ({
       ...question,
@@ -4913,7 +5207,7 @@ function sampleQuestions(stage) {
       stageId: stage.id
     }))
   );
-  const count = Math.min(candidates.length, randomInt(stage.min, stage.max));
+  const count = Math.min(candidates.length, requestedCount || randomInt(stage.min, stage.max));
   return candidates.slice(0, count).map(withQuestionOrder);
 }
 
@@ -5253,8 +5547,70 @@ function getBadgeDefinitions() {
     { id: "streak-seven", name: "一週間継続", detail: "7日連続で問題に挑戦", done: getStudyStreak() >= 7 },
     { id: "pass-ready", name: "合格圏の気配", detail: "全分野平均70%以上", done: stats.every((stage) => stage.attempts > 0 && stage.average >= 70) },
     { id: "evolution-hunter", name: "進化観測者", detail: "進化先を3種類解放", done: unlockedEvolutionCount >= 3 },
+    { id: "battle-master", name: "バトルマスター", detail: "8種類すべての敵を撃破", done: getEnemyDexStats().every((enemy) => enemy.defeated) },
     { id: "ultimate-candidate", name: "神話候補", detail: "神進化条件をすべて達成", done: getUltimateChecklist(stats).every((item) => item.done) }
   ];
+}
+
+function getEnemyDexStats() {
+  const enemies = [...new Map(Object.values(BATTLE_ENEMIES).map((enemy) => [enemy.id, enemy])).values()];
+  return enemies.map((enemy) => {
+    const victories = history.filter((attempt) => attempt.battle?.enemyId === enemy.id && attempt.battle.result === "won");
+    const highestRankId = [...BATTLE_RANK_ORDER].reverse().find((rankId) => victories.some((attempt) => (attempt.battle.rankId || "normal") === rankId));
+    return {
+      ...enemy,
+      defeated: victories.length > 0,
+      victories: victories.length,
+      highestRank: highestRankId ? BATTLE_RANKS[highestRankId].label : "-",
+      maxCombo: victories.reduce((best, attempt) => Math.max(best, attempt.battle.maxCombo || 0), 0),
+      minimumAnswers: victories.length
+        ? Math.min(...victories.map((attempt) => attempt.battle.answered || attempt.total || 0).filter((count) => count > 0))
+        : 0
+    };
+  });
+}
+
+function claimEnemyDexReward(stats) {
+  if (gameState.enemyDexRewardClaimed || !stats.every((enemy) => enemy.defeated)) return 0;
+  gameState.enemyDexRewardClaimed = true;
+  creature.food += 20;
+  creature.totalFood += 20;
+  const evolutionMessages = autoAdvanceCreature();
+  saveGameState();
+  saveCreature();
+  syncGameAchievements();
+  renderCreature(evolutionMessages.at(-1) || "敵図鑑完成報酬として進化ポイントを20獲得しました。", evolutionMessages.length ? "evolving" : "happy");
+  return 20;
+}
+
+function renderEnemyDex() {
+  const stats = getEnemyDexStats();
+  const defeatedCount = stats.filter((enemy) => enemy.defeated).length;
+  const reward = claimEnemyDexReward(stats);
+  els.enemyDexSummary.innerHTML = `
+    <div>
+      <strong>${defeatedCount}/${stats.length}体 撃破</strong>
+      <span>${defeatedCount === stats.length ? "全敵制覇" : `あと${stats.length - defeatedCount}体で全敵制覇`}</span>
+    </div>
+    <p>${reward ? "称号「バトルマスター」と進化ポイント20を獲得しました。" : gameState.enemyDexRewardClaimed ? "全敵制覇報酬を獲得済みです。" : "全敵撃破で称号と進化ポイント20を獲得できます。"}</p>
+  `;
+  els.enemyDexGrid.innerHTML = stats.map((enemy) => `
+    <article class="enemy-dex-card ${enemy.defeated ? "unlocked" : "locked"}">
+      <div class="enemy-dex-image"><img src="${assetUrl(enemy.image)}" alt="" /></div>
+      <div>
+        <span>${enemy.defeated ? "討伐済み" : "未遭遇"}</span>
+        <h3>${enemy.defeated ? escapeHtml(enemy.name) : "？？？？"}</h3>
+        ${enemy.defeated ? `
+          <dl>
+            <div><dt>撃破</dt><dd>${enemy.victories}回</dd></div>
+            <div><dt>最高ランク</dt><dd>${enemy.highestRank}</dd></div>
+            <div><dt>最高コンボ</dt><dd>${enemy.maxCombo}</dd></div>
+            <div><dt>最少回答</dt><dd>${enemy.minimumAnswers}問</dd></div>
+          </dl>
+        ` : "<p>バトルで撃破すると記録が解放されます。</p>"}
+      </div>
+    </article>
+  `).join("");
 }
 
 function syncGameAchievements() {
@@ -5541,6 +5897,41 @@ function renderPassReadiness() {
   `;
 }
 
+function getUnlockedBattleRanks(stageId) {
+  const enemy = BATTLE_ENEMIES[stageId];
+  const victories = history.filter((attempt) => attempt.battle?.enemyId === enemy?.id && attempt.battle.result === "won");
+  const wonRanks = new Set(victories.map((attempt) => attempt.battle.rankId || "normal"));
+  return {
+    normal: true,
+    elite: wonRanks.has("normal") || wonRanks.has("elite") || wonRanks.has("master"),
+    master: wonRanks.has("elite") || wonRanks.has("master")
+  };
+}
+
+function getHighestUnlockedBattleRank(stageId) {
+  const unlocked = getUnlockedBattleRanks(stageId);
+  return [...BATTLE_RANK_ORDER].reverse().find((rankId) => unlocked[rankId]) || "normal";
+}
+
+function sampleBattleRankQuestions(stage, rankId) {
+  const rank = BATTLE_RANKS[rankId] || BATTLE_RANKS.normal;
+  const candidates = uniqueQuestionsByText(
+    shuffle(stage.questions).map((question) => ({
+      ...question,
+      id: questionId(stage.id, question),
+      stageId: stage.id
+    }))
+  );
+  const preferred = rankId === "master"
+    ? candidates.filter((question) => question.difficulty === "advanced")
+    : rankId === "elite"
+      ? candidates.filter((question) => question.difficulty !== "basic")
+      : candidates;
+  const preferredIds = new Set(preferred.map((question) => question.id));
+  const ordered = [...preferred, ...candidates.filter((question) => !preferredIds.has(question.id))];
+  return ordered.slice(0, Math.min(rank.questionCount, ordered.length)).map(withQuestionOrder);
+}
+
 function renderStages() {
   els.stageCount.textContent = stages.length;
   els.clearedCount.textContent = Object.values(progress).filter(Boolean).length;
@@ -5553,22 +5944,38 @@ function renderStages() {
 
   stages.forEach((stage) => {
     const cleared = Boolean(progress[stage.id]);
-    const button = document.createElement("button");
-    button.className = "stage-card";
-    button.type = "button";
-    button.innerHTML = `
+    const unlockedRanks = getUnlockedBattleRanks(stage.id);
+    const selectedRankId = unlockedRanks[selectedBattleRanks[stage.id]] ? selectedBattleRanks[stage.id] : getHighestUnlockedBattleRank(stage.id);
+    selectedBattleRanks[stage.id] = selectedRankId;
+    const selectedRank = BATTLE_RANKS[selectedRankId];
+    const card = document.createElement("article");
+    card.className = "stage-card";
+    card.innerHTML = `
       <div>
         <span class="pill ${cleared ? "cleared" : ""}">${cleared ? "クリア済み" : stage.label}</span>
         <h3>${stage.name}</h3>
         <p>${stage.description}</p>
       </div>
+      <div class="battle-rank-control" role="group" aria-label="${stage.name}の敵ランク">
+        ${BATTLE_RANK_ORDER.map((rankId) => {
+          const rank = BATTLE_RANKS[rankId];
+          const unlocked = unlockedRanks[rankId];
+          return `<button type="button" data-stage-rank="${rankId}" ${unlocked ? "" : "disabled"} class="${selectedRankId === rankId ? "selected" : ""}" title="${unlocked ? `${rank.label}ランクを選択` : "前のランクを撃破すると解放"}">${unlocked ? rank.label : "未解放"}</button>`;
+        }).join("")}
+      </div>
       <div class="stage-footer">
-        <span>${stage.min}〜${stage.max}問</span>
-        <strong>開始 →</strong>
+        <span>敵HP ${selectedRank.hp} / 最大${selectedRank.questionCount}問 / 報酬${selectedRank.reward}Pt</span>
+        <button class="stage-start-button" type="button">開始 →</button>
       </div>
     `;
-    button.addEventListener("click", () => startStage(stage.id));
-    els.stageGrid.append(button);
+    card.querySelectorAll("[data-stage-rank]").forEach((button) => {
+      button.addEventListener("click", () => {
+        selectedBattleRanks[stage.id] = button.dataset.stageRank;
+        renderStages();
+      });
+    });
+    card.querySelector(".stage-start-button").addEventListener("click", () => startStage(stage.id, selectedBattleRanks[stage.id]));
+    els.stageGrid.append(card);
   });
 }
 
@@ -5579,6 +5986,7 @@ function setView(view) {
   els.resultView.classList.toggle("hidden", view !== "result");
   els.statsView.classList.toggle("hidden", view !== "stats");
   els.evolutionView.classList.toggle("hidden", view !== "evolution");
+  els.enemyDexView.classList.toggle("hidden", view !== "enemy-dex");
   els.auditView.classList.toggle("hidden", view !== "audit");
   if (viewInitialized) {
     const focusTarget = {
@@ -5587,6 +5995,7 @@ function setView(view) {
       result: els.resultView,
       stats: els.statsView,
       evolution: els.evolutionView,
+      "enemy-dex": els.enemyDexView,
       audit: els.auditView
     }[view];
     requestAnimationFrame(() => focusTarget?.focus({ preventScroll: true }));
@@ -5640,6 +6049,7 @@ function startQuestionTimer(question) {
   }
   const limit = getQuestionTimeLimit(question);
   current.timeLimit = limit;
+  current.timeExtensionSeconds = 0;
   current.questionStartedAt = Date.now();
   updateTimerDisplay(limit, limit);
 
@@ -5649,8 +6059,9 @@ function startQuestionTimer(question) {
       return;
     }
     const elapsed = Math.floor((Date.now() - current.questionStartedAt) / 1000);
-    const remaining = Math.max(0, limit - elapsed);
-    updateTimerDisplay(remaining, limit);
+    let remaining = Math.max(0, limit + (current.timeExtensionSeconds || 0) - elapsed);
+    if (remaining > 0 && remaining <= 10) remaining += triggerBattleTimeRecovery();
+    updateTimerDisplay(remaining, limit + (current.timeExtensionSeconds || 0));
     if (remaining <= 0) timeOutQuestion();
   }, 250);
 }
@@ -5675,9 +6086,11 @@ function finishExamOnTimeout() {
   showResult();
 }
 
-function startStage(stageId) {
+function startStage(stageId, requestedRankId = "normal") {
   const stage = stages.find((item) => item.id === stageId);
-  const questions = sampleQuestions(stage);
+  const unlockedRanks = getUnlockedBattleRanks(stageId);
+  const rankId = unlockedRanks[requestedRankId] ? requestedRankId : "normal";
+  const questions = sampleBattleRankQuestions(stage, rankId);
   current = {
     stage,
     questions,
@@ -5690,6 +6103,7 @@ function startStage(stageId) {
     correctStreak: 0,
     maxCorrectStreak: 0,
     mode: "stage",
+    battle: createBattleState("stage", stageId, questions.length, rankId),
     reviewImpact: buildReviewImpact(`${stage.name} 演習`, questions, "stage")
   };
   setView("quiz");
@@ -5697,7 +6111,7 @@ function startStage(stageId) {
 }
 
 function startWeakMode() {
-  const weakQuestions = buildWeakQuestions();
+  const weakQuestions = buildWeakQuestions(10);
   current = {
     stage: {
       id: "weakness",
@@ -5715,6 +6129,7 @@ function startWeakMode() {
     correctStreak: 0,
     maxCorrectStreak: 0,
     mode: "weakness",
+    battle: createBattleState("weakness", "weakness", weakQuestions.length),
     reviewImpact: buildReviewImpact("弱点克服モード", weakQuestions, "weakness")
   };
   setView("quiz");
@@ -5862,7 +6277,7 @@ function startSubjectBTypeReview(type) {
     })
     .sort((a, b) => b.priority - a.priority)
     .map((item) => item.question);
-  const selected = uniqueQuestionsByText(questions).slice(0, randomInt(5, 10)).map(withQuestionOrder);
+  const selected = uniqueQuestionsByText(questions).slice(0, 10).map(withQuestionOrder);
   if (!selected.length) return;
   current = {
     stage: {
@@ -5879,6 +6294,7 @@ function startSubjectBTypeReview(type) {
     correctStreak: 0,
     maxCorrectStreak: 0,
     mode: "weakness",
+    battle: createBattleState("weakness", "weakness", selected.length),
     reviewSourceName: `科目B ${type}`,
     subjectBTypeReview: {
       type,
@@ -5896,6 +6312,7 @@ function startSubjectBTypeReview(type) {
 }
 
 function startRandomMode() {
+  const questions = buildRandomQuestions(10);
   current = {
     stage: {
       id: "random",
@@ -5903,7 +6320,7 @@ function startRandomMode() {
       min: 5,
       max: 10
     },
-    questions: buildRandomQuestions(),
+    questions,
     index: 0,
     score: 0,
     timeBonus: 0,
@@ -5912,14 +6329,15 @@ function startRandomMode() {
     records: [],
     correctStreak: 0,
     maxCorrectStreak: 0,
-    mode: "random"
+    mode: "random",
+    battle: createBattleState("random", "random", questions.length)
   };
   setView("quiz");
   renderQuestion();
 }
 
 function startReinforcementExam() {
-  const questions = buildReinforcementQuestions();
+  const questions = buildReinforcementQuestions().slice(0, 12);
   current = {
     stage: {
       id: "reinforcement",
@@ -5937,6 +6355,7 @@ function startReinforcementExam() {
     correctStreak: 0,
     maxCorrectStreak: 0,
     mode: "reinforcement",
+    battle: createBattleState("reinforcement", "reinforcement", questions.length),
     reviewImpact: buildReviewImpact("合格補強模試", questions, "reinforcement")
   };
   setView("quiz");
@@ -6298,7 +6717,7 @@ function resumeSuspendedExam(subject) {
   saveActiveExam();
 }
 
-function buildRandomQuestions() {
+function buildRandomQuestions(requestedCount = null) {
   const allQuestions = stages.flatMap((stage) =>
     stage.questions.map((question) => ({
       ...question,
@@ -6310,7 +6729,7 @@ function buildRandomQuestions() {
 
   const candidates = uniqueQuestionsByText(shuffle(allQuestions));
   return candidates
-    .slice(0, randomInt(5, 10))
+    .slice(0, requestedCount || randomInt(5, 10))
     .map((question) =>
       withQuestionOrder({
         ...question,
@@ -6349,7 +6768,7 @@ function buildReinforcementQuestions() {
   }));
 }
 
-function buildWeakQuestions() {
+function buildWeakQuestions(requestedCount = null) {
   const allQuestions = stages.flatMap((stage) =>
     stage.questions.map((question) => ({
       ...question,
@@ -6415,7 +6834,7 @@ function buildWeakQuestions() {
   ];
   const unique = uniqueQuestionsByText(pool);
   const candidates = unique.length >= 5 ? unique : uniqueQuestionsByText([...unique, ...shuffle(allQuestions)]);
-  return candidates.slice(0, randomInt(5, 10)).map((question) =>
+  return candidates.slice(0, requestedCount || randomInt(5, 10)).map((question) =>
     withQuestionOrder({
       ...question,
       tag: `${question.sourceStageName || "分野"} / ${question.tag}`
@@ -6430,7 +6849,9 @@ function renderQuestion() {
 
   els.backToStages.textContent = isFullExamMode() ? "← 中断して戻る" : "← ステージ";
   els.activeStageName.textContent = current.stage.name;
-  els.questionCounter.textContent = `${current.index + 1} / ${current.questions.length}`;
+  els.questionCounter.textContent = isBattleMode()
+    ? `第${current.index + 1}問 / 最大${current.battle.maxQuestions}問`
+    : `${current.index + 1} / ${current.questions.length}`;
   els.progressBar.style.width = `${(current.index / current.questions.length) * 100}%`;
   els.questionTag.textContent = "";
   const questionTagLabel = document.createElement("span");
@@ -6448,13 +6869,18 @@ function renderQuestion() {
   els.feedback.textContent = "";
   els.showAnswer.classList.toggle("hidden", isFullExamMode());
   els.examToolbar.classList.toggle("hidden", !isFullExamMode());
+  renderBattle();
   els.examNavigator.classList.add("hidden");
   const isReviewTarget = isFullExamMode() && (current.reviewQuestionIds || []).includes(question.id);
   els.toggleExamReview.classList.toggle("active", isReviewTarget);
   els.toggleExamReview.setAttribute("aria-pressed", String(isReviewTarget));
   els.toggleExamReview.textContent = isReviewTarget ? "見直し対象 ✓" : "見直す";
   els.nextQuestion.disabled = isFullExamMode() ? false : true;
-  els.nextQuestion.textContent = current.index === current.questions.length - 1 && isFullExamMode() ? "問題一覧へ" : "次へ";
+  els.nextQuestion.textContent = current.index === current.questions.length - 1 && isFullExamMode()
+    ? "問題一覧へ"
+    : isBattleMode() && current.index === current.questions.length - 1
+      ? "戦闘結果へ"
+      : "次へ";
   els.choiceList.innerHTML = "";
 
   question.order.forEach((item, shownIndex) => {
@@ -6807,6 +7233,13 @@ function answerQuestion(shownIndex) {
       Math.max(0, Math.ceil((Date.now() - current.questionStartedAt) / 1000))
     )
   });
+  updateBattleAfterAnswer(isCorrect);
+  const feedbackKind = current.battle?.result === "won"
+    ? "victory"
+    : isCorrect && current.battle?.combo > 0 && current.battle.combo % 3 === 0
+      ? "combo"
+      : isCorrect ? "correct" : "wrong";
+  triggerFeedbackEffect(feedbackKind);
 
   [...els.choiceList.children].forEach((choiceEl, index) => {
     choiceEl.disabled = true;
@@ -6819,7 +7252,8 @@ function answerQuestion(shownIndex) {
   showFeedbackExplanation(question, isCorrect);
   const streakReaction = isCorrect ? getCorrectStreakLine(current.correctStreak || 0) : null;
   animateCreatureReaction(streakReaction?.milestone ? "streak" : isCorrect ? "correct" : "wrong");
-  speakCreature(isCorrect ? streakReaction.kind : "wrong", streakReaction?.line || getWrongReactionLine(question));
+  const supportLine = current.battle?.support?.lastActivation || "";
+  speakCreature(isCorrect ? streakReaction.kind : "wrong", supportLine || streakReaction?.line || getWrongReactionLine(question));
   els.nextQuestion.disabled = false;
 }
 
@@ -6839,6 +7273,7 @@ function showAnswer() {
     correct: false,
     showedAnswer: true
   });
+  updateBattleAfterAnswer(false);
   [...els.choiceList.children].forEach((choiceEl, index) => {
     choiceEl.disabled = true;
     if (question.order[index].index === question.answer) choiceEl.classList.add("correct");
@@ -6865,6 +7300,7 @@ function timeOutQuestion() {
     correct: false,
     timedOut: true
   });
+  updateBattleAfterAnswer(false);
   [...els.choiceList.children].forEach((choiceEl, index) => {
     choiceEl.disabled = true;
     if (question.order[index].index === question.answer) choiceEl.classList.add("correct");
@@ -6915,6 +7351,11 @@ function commitFullExamAnswer() {
 
 function goNext() {
   commitFullExamAnswer();
+  if (isBattleMode() && (current.battle.hp <= 0 || current.index === current.questions.length - 1)) {
+    current.battle.result = current.battle.hp <= 0 ? "won" : "lost";
+    showResult();
+    return;
+  }
   if (isFullExamMode() && current.index === current.questions.length - 1) {
     renderExamNavigator();
     els.examNavigator.classList.remove("hidden");
@@ -6978,7 +7419,7 @@ function buildPracticeDomainBreakdown(records) {
 }
 
 function buildCreatureResultComment(percentage, examAssessment = null, weakTags = []) {
-  const total = current.questions.length;
+  const total = getCurrentResultTotal();
   const score = current.score;
   const maxStreak = current.maxCorrectStreak || 0;
   const typeReview = current.subjectBTypeReview;
@@ -7115,6 +7556,55 @@ function buildExamAssessment() {
   };
 }
 
+function buildBattleResultPanel(wrongRecords) {
+  if (!isBattleMode()) return "";
+  const battle = current.battle;
+  const won = battle.result === "won";
+  const previousVictories = history.slice(1).filter((attempt) =>
+    attempt.battle?.enemyId === battle.enemyId &&
+    (attempt.battle.rankId || "normal") === (battle.rankId || "normal") &&
+    attempt.battle.result === "won"
+  );
+  const previousMinAnswers = previousVictories.length
+    ? Math.min(...previousVictories.map((attempt) => attempt.battle.answered || attempt.total).filter(Boolean))
+    : null;
+  const previousMaxCombo = previousVictories.reduce((best, attempt) => Math.max(best, attempt.battle.maxCombo || 0), 0);
+  const bestAnswersUpdated = won && (previousMinAnswers === null || battle.answered < previousMinAnswers);
+  const bestComboUpdated = won && battle.maxCombo > previousMaxCombo;
+  const rankIndex = BATTLE_RANK_ORDER.indexOf(battle.rankId || "normal");
+  const nextRankId = current.mode === "stage" && won && rankIndex >= 0 && rankIndex < BATTLE_RANK_ORDER.length - 1
+    ? BATTLE_RANK_ORDER[rankIndex + 1]
+    : null;
+  const firstRankClear = won && previousVictories.length === 0;
+  const weakestTag = wrongRecords.length
+    ? getTopEntries(countRecords(wrongRecords, (record) => normalizeResultTag(record.tag)), 1)[0]?.[0]
+    : null;
+  const accuracy = Math.round((current.score / getCurrentResultTotal()) * 100);
+
+  return `
+    <div class="advice-card battle-result-card ${won ? "victory" : "defeat"}">
+      <span>Battle Record</span>
+      <div class="battle-result-heading">
+        <div>
+          <strong>${escapeHtml(battle.enemyName)}・${escapeHtml(battle.rankLabel)}ランク</strong>
+          <p>${won ? "撃破記録を更新しました。" : `${escapeHtml(weakestTag || "今回の誤答")}を復習して再戦しましょう。`}</p>
+        </div>
+        ${firstRankClear && nextRankId ? `<b>新ランク「${BATTLE_RANKS[nextRankId].label}」解放</b>` : ""}
+      </div>
+      <div class="battle-result-metrics">
+        <div><span>命中率</span><strong>${accuracy}%</strong></div>
+        <div><span>最大コンボ</span><strong>${battle.maxCombo}</strong>${bestComboUpdated ? "<small>BEST</small>" : ""}</div>
+        <div><span>回答数</span><strong>${battle.answered}問</strong>${bestAnswersUpdated ? "<small>BEST</small>" : ""}</div>
+      </div>
+      <div class="battle-result-actions">
+        ${nextRankId ? `<button class="primary-button compact" type="button" data-battle-result-action="next-rank" data-battle-rank="${nextRankId}">${BATTLE_RANKS[nextRankId].label}ランクへ挑戦</button>` : ""}
+        ${current.mode === "stage" ? `<button class="secondary-button compact" type="button" data-battle-result-action="retry" data-battle-rank="${battle.rankId || "normal"}">同ランクで再戦</button>` : ""}
+        <button class="ghost-button compact" type="button" data-battle-result-action="dex">敵図鑑を見る</button>
+      </div>
+    </div>
+  `;
+}
+
 function buildResultAdvice(percentage, examAssessment = current.examAssessment || null) {
   const wrongRecords = current.records.filter((record) => !record.correct);
   const wrongTagEntries = getTopEntries(countRecords(wrongRecords, (record) => normalizeResultTag(record.tag)));
@@ -7206,7 +7696,7 @@ function buildResultAdvice(percentage, examAssessment = current.examAssessment |
   const typeReviewSummary = typeReview?.before && typeReview?.after
     ? {
         delta: typeReview.after.percentage - typeReview.before.percentage,
-        sessionRate: Math.round((current.score / current.questions.length) * 100)
+        sessionRate: Math.round((current.score / getCurrentResultTotal()) * 100)
       }
     : null;
   const generalReviewImpact = current.reviewImpact?.before && current.reviewImpact?.after
@@ -7215,12 +7705,14 @@ function buildResultAdvice(percentage, examAssessment = current.examAssessment |
         before: current.reviewImpact.before.percentage,
         after: current.reviewImpact.after.percentage,
         delta: current.reviewImpact.after.percentage - current.reviewImpact.before.percentage,
-        sessionRate: Math.round((current.score / current.questions.length) * 100)
+        sessionRate: Math.round((current.score / getCurrentResultTotal()) * 100)
       }
     : null;
   const creatureResultComment = buildCreatureResultComment(percentage, examAssessment, weakTags);
   const evolutionResult = buildEvolutionResultInfo(current.evolutionMessages || []);
+  const battleResultPanel = buildBattleResultPanel(wrongRecords);
   els.resultAdvice.innerHTML = `
+    ${battleResultPanel}
     ${evolutionResult ? `
       <div class="advice-card evolution-result-card">
         <span>Evolution</span>
@@ -7245,7 +7737,7 @@ function buildResultAdvice(percentage, examAssessment = current.examAssessment |
       <div class="advice-card subject-b-type-improvement ${typeReviewSummary.delta >= 0 ? "improved" : "declined"}">
         <span>Type Review</span>
         <strong>${escapeHtml(typeReview.type)} 復習結果</strong>
-        <p>今回の復習は ${current.score}/${current.questions.length}問正解（${typeReviewSummary.sessionRate}%）です。</p>
+        <p>今回の復習は ${current.score}/${getCurrentResultTotal()}問正解（${typeReviewSummary.sessionRate}%）です。</p>
         <div class="weak-chip-list">
           <span class="weak-chip">正答率 ${typeReview.before.percentage}% → ${typeReview.after.percentage}%</span>
           <span class="weak-chip">${typeReviewSummary.delta >= 0 ? "+" : ""}${typeReviewSummary.delta}pt</span>
@@ -7257,7 +7749,7 @@ function buildResultAdvice(percentage, examAssessment = current.examAssessment |
       <div class="advice-card subject-b-type-improvement ${generalReviewImpact.delta >= 0 ? "improved" : "declined"}">
         <span>Review Impact</span>
         <strong>${escapeHtml(generalReviewImpact.label)} 復習効果</strong>
-        <p>今回の演習は ${current.score}/${current.questions.length}問正解（${generalReviewImpact.sessionRate}%）です。</p>
+        <p>今回の演習は ${current.score}/${getCurrentResultTotal()}問正解（${generalReviewImpact.sessionRate}%）です。</p>
         <div class="weak-chip-list">
           <span class="weak-chip">対象正答率 ${generalReviewImpact.before}% → ${generalReviewImpact.after}%</span>
           <span class="weak-chip">${generalReviewImpact.delta >= 0 ? "+" : ""}${generalReviewImpact.delta}pt</span>
@@ -7530,14 +8022,20 @@ function showResult() {
   clearQuizTimer();
   const completedExamSubject = getExamSubjectFromMode();
   if (completedExamSubject) current.examCompleted = true;
-  const percentage = Math.round((current.score / current.questions.length) * 100);
+  const resultTotal = getCurrentResultTotal();
+  const percentage = Math.round((current.score / resultTotal) * 100);
   const isFullExam = current.mode === "subject-a-exam" || current.mode === "subject-b-exam";
   current.examAssessment = isFullExam ? buildExamAssessment() : null;
-  const cleared = isFullExam ? current.examAssessment.level !== "review" : percentage >= 70;
+  const battleWon = isBattleMode() && current.battle.result === "won";
+  const cleared = isFullExam ? current.examAssessment.level !== "review" : isBattleMode() ? battleWon : percentage >= 70;
   const isWrongReview = current.mode === "wrong-review";
-  const baseFood = isWrongReview ? 0 : calculateFoodReward(current.score, current.questions.length);
+  const baseFood = isWrongReview ? 0 : calculateFoodReward(current.score, resultTotal);
   const timeBonus = isWrongReview ? 0 : current.timeBonus || 0;
-  const earnedFood = baseFood + timeBonus;
+  const battleVictoryBonus = battleWon ? current.battle.rewardBonus || (current.mode === "reinforcement" ? 5 : 3) : 0;
+  const battleDomainBonus = battleWon ? current.battle.support?.domainBonus || 0 : 0;
+  if (current.battle) current.battle.victoryBonus = battleVictoryBonus;
+  if (current.battle) current.battle.domainBonus = battleDomainBonus;
+  const earnedFood = baseFood + timeBonus + battleVictoryBonus + battleDomainBonus;
   if (current.mode === "stage") {
     progress[current.stage.id] = progress[current.stage.id] || cleared;
   }
@@ -7550,8 +8048,9 @@ function showResult() {
     stageName: current.stage.name,
     mode: current.mode,
     score: current.score,
-    total: current.questions.length,
+    total: resultTotal,
     percentage,
+    battle: current.battle ? { ...current.battle } : null,
     examSubject: current.mode === "subject-a-exam" ? "A" : current.mode === "subject-b-exam" ? "B" : null,
     examTimedOut: Boolean(current.examTimedOut),
     examAssessment: current.examAssessment,
@@ -7615,22 +8114,28 @@ function showResult() {
   els.progressBar.style.width = "100%";
   els.resultTitle.textContent = isFullExam
     ? current.examAssessment.label
+    : isBattleMode()
+      ? battleWon ? `${current.battle.enemyName}を撃破` : "あと一歩で撃破"
     : isWrongReview
       ? current.score === current.questions.length ? "復習完了" : "もう一度確認"
       : cleared ? "ステージクリア" : "もう一歩";
   els.resultSummary.textContent =
     isWrongReview
-      ? `${current.stage.name}: ${current.questions.length}問中 ${current.score}問正解。間違えた問題は、結果画面からもう一度復習できます。`
+      ? `${current.stage.name}: ${resultTotal}問中 ${current.score}問正解。間違えた問題は、結果画面からもう一度復習できます。`
+      : isBattleMode()
+      ? battleWon
+        ? `${current.stage.name}: ${resultTotal}問中 ${current.score}問正解。${current.battle.enemyName}へ${current.battle.damage}ダメージを与えて勝利しました。最大${current.battle.maxCombo}コンボ。`
+        : `${current.stage.name}: ${resultTotal}問中 ${current.score}問正解。${current.battle.enemyName}の残りHPは${current.battle.hp}です。最大${current.battle.maxCombo}コンボ。再挑戦して撃破しましょう。`
       : current.mode === "stage"
-      ? `${current.stage.name}: ${current.questions.length}問中 ${current.score}問正解。70%以上でクリアです。`
+      ? `${current.stage.name}: ${resultTotal}問中 ${current.score}問正解。70%以上でクリアです。`
       : isFullExam
-        ? `${current.stage.name}: ${current.questions.length}問中 ${current.score}問正解 (${percentage}%)、推定評価点 ${current.examAssessment.estimatedScore}/1000。${current.examTimedOut ? "制限時間終了のため、判定は要復習です。" : `最低分野正解率は${current.examAssessment.minimumDomainRate}%です。`}`
-        : `${current.stage.name}: ${current.questions.length}問中 ${current.score}問正解。結果は履歴に保存されました。`;
+        ? `${current.stage.name}: ${resultTotal}問中 ${current.score}問正解 (${percentage}%)、推定評価点 ${current.examAssessment.estimatedScore}/1000。${current.examTimedOut ? "制限時間終了のため、判定は要復習です。" : `最低分野正解率は${current.examAssessment.minimumDomainRate}%です。`}`
+        : `${current.stage.name}: ${resultTotal}問中 ${current.score}問正解。結果は履歴に保存されました。`;
   els.scoreRing.textContent = isFullExam ? `${current.examAssessment.estimatedScore}点` : `${percentage}%`;
   els.scoreRing.style.setProperty("--score", `${percentage}%`);
   els.earnedFood.textContent = isWrongReview && !studyPlanReward
     ? "誤答復習では進化ポイントは増えません。正解できるまで繰り返して定着させましょう。"
-    : `進化ポイントを${earnedFood + studyPlanReward}獲得しました。内訳: 基本${baseFood} + 時間内正解ボーナス${timeBonus}${studyPlanReward ? ` + 3日間プラン達成${studyPlanReward}` : ""}。条件を満たすと自動で成長・進化します。`;
+    : `進化ポイントを${earnedFood + studyPlanReward}獲得しました。内訳: 基本${baseFood} + 時間内正解ボーナス${timeBonus}${battleVictoryBonus ? ` + 撃破ボーナス${battleVictoryBonus}` : ""}${battleDomainBonus ? ` + 得意分野ボーナス${battleDomainBonus}` : ""}${studyPlanReward ? ` + 3日間プラン達成${studyPlanReward}` : ""}。条件を満たすと自動で成長・進化します。`;
   buildResultAdvice(percentage, current.examAssessment);
   renderResultReview();
   els.reviewWrongAnswers.classList.toggle("hidden", current.records.every((record) => record.correct));
@@ -8521,6 +9026,19 @@ els.cancelFinishExam.addEventListener("click", cancelFinishFullExam);
 els.confirmFinishExam.addEventListener("click", finishFullExam);
 els.reviewWrongAnswers.addEventListener("click", startWrongReview);
 els.resultAdvice.addEventListener("click", (event) => {
+  const battleActionButton = event.target.closest("[data-battle-result-action]");
+  if (battleActionButton) {
+    const action = battleActionButton.dataset.battleResultAction;
+    if (action === "dex") {
+      renderEnemyDex();
+      setView("enemy-dex");
+      return;
+    }
+    if ((action === "retry" || action === "next-rank") && current?.stage?.id) {
+      startStage(current.stage.id, battleActionButton.dataset.battleRank || "normal");
+      return;
+    }
+  }
   const type = event.target.closest("[data-result-subject-b-type]")?.dataset.resultSubjectBType;
   if (type) {
     startSubjectBTypeReview(type);
@@ -8580,6 +9098,10 @@ els.retryStage.addEventListener("click", () => {
     startReinforcementExam();
     return;
   }
+  if (current.mode === "random") {
+    startRandomMode();
+    return;
+  }
   if (current.mode === "subject-a-exam") {
     startFullExam("A");
     return;
@@ -8588,12 +9110,37 @@ els.retryStage.addEventListener("click", () => {
     startFullExam("B");
     return;
   }
-  startStage(current.stage.id);
+  startStage(current.stage.id, current.battle?.rankId || "normal");
 });
 els.returnStages.addEventListener("click", () => {
   clearQuizTimer();
   setView("stage");
 });
+els.showEffectsSettings.addEventListener("click", () => {
+  applyEffectsSettings();
+  els.effectsSettingsDialog.showModal();
+});
+els.soundEffectsEnabled.addEventListener("change", () => {
+  effectsSettings.sound = els.soundEffectsEnabled.checked;
+  saveEffectsSettings();
+  applyEffectsSettings();
+});
+els.soundEffectsVolume.addEventListener("input", () => {
+  effectsSettings.volume = Number(els.soundEffectsVolume.value);
+  saveEffectsSettings();
+  applyEffectsSettings();
+});
+els.vibrationEffectsEnabled.addEventListener("change", () => {
+  effectsSettings.vibration = els.vibrationEffectsEnabled.checked;
+  saveEffectsSettings();
+  applyEffectsSettings();
+});
+els.motionEffectsEnabled.addEventListener("change", () => {
+  effectsSettings.motion = els.motionEffectsEnabled.checked;
+  saveEffectsSettings();
+  applyEffectsSettings();
+});
+reducedMotionQuery.addEventListener?.("change", applyEffectsSettings);
 els.showStats.addEventListener("click", () => {
   clearQuizTimer();
   renderStats();
@@ -8786,6 +9333,12 @@ els.showEvolutionDex.addEventListener("click", () => {
   setView("evolution");
 });
 els.closeEvolutionDex.addEventListener("click", () => setView("stage"));
+els.showEnemyDex.addEventListener("click", () => {
+  clearQuizTimer();
+  renderEnemyDex();
+  setView("enemy-dex");
+});
+els.closeEnemyDex.addEventListener("click", () => setView("stage"));
 els.weakMode.addEventListener("click", startWeakMode);
 els.randomMode.addEventListener("click", startRandomMode);
 els.reinforcementExam.addEventListener("click", startReinforcementExam);
@@ -8836,7 +9389,8 @@ els.resetProgress.addEventListener("click", () => {
     unlockedEvolutions: [],
     unlockedSpecialForms: [],
     lastMissionDate: todayKey(),
-    completedMissions: []
+    completedMissions: [],
+    enemyDexRewardClaimed: false
   };
   creature = {
     speciesIndex: 0,
@@ -8862,6 +9416,7 @@ els.resetProgress.addEventListener("click", () => {
 });
 
 migrateWrongQuestionStats();
+applyEffectsSettings();
 enrichQuestionStatsMetadata();
 migrateWeaknessTypesFromHistory();
 recordEvolutionUnlock(creature.branchId);
